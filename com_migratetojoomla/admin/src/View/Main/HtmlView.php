@@ -23,9 +23,13 @@ class HtmlView extends BaseHtmlView {
      * Display the main "Migrate To Joomla" view
      *
      * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
+     *
+     * @since   1.5
+     *
      * @return  void
      */
-    public function display($tpl = null) {
+    public function display($tpl = null): void
+    {
         parent::display($tpl);
     }
 
