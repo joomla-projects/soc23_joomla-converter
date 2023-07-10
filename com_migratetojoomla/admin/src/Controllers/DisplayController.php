@@ -20,7 +20,8 @@ use Joomla\CMS\MVC\Controller\BaseController;
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
  */
-class DisplayController extends BaseController {
+class DisplayController extends BaseController 
+{
     /**
      * The default view for the display method.
      *

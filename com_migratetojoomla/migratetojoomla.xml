@@ -14,7 +14,6 @@
 	        <files folder="admin/">
 				<filename>access.xml</filename>
 				<filename>config.xml</filename>
-				<filename>migratetojoomla.xml</filename>
 				<folder>services</folder>
 				<folder>src</folder>
 				<folder>tmpl</folder>
