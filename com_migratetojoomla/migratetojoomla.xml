@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension type="component" method="upgrade">
-	<name>Migrate To Joomla</name>
+	<name>MigrateToJoomla</name>
 	<author>Joomla! Project</author>
 	<creationDate>2023</creationDate>
 	<copyright>(C) 2013 Open Source Matters, Inc.</copyright>
