@@ -74,10 +74,6 @@ class MainModel extends AdminModel
         // Check the session for previously entered form data.
         $data = Factory::getApplication()->getUserState('com_migratetojoomla.main', []);
 
-        if (empty($data)) {
-            $data = $this->getItem();
-        }
-
         $this->preprocessData('com_migratetojoomla.main', $data);
 
         return $data;
