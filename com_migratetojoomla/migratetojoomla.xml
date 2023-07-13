@@ -16,6 +16,9 @@
             <folder>services</folder>
             <folder>src</folder>
             <folder>tmpl</folder>
+            <folder>form</folder>
+            <file>access.xml</file>
+            <file>config.xml</file>
         </files>
         <languages folder="admin">
 			<language tag="en-GB">language/en-GB/com_migratetojoomla.ini</language>
