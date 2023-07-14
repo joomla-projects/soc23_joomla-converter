@@ -12,6 +12,8 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
 use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Http\HttpFactory;
 use Joomla\CMS\Versioning\VersionableControllerTrait;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -26,6 +28,23 @@ use Joomla\CMS\Versioning\VersionableControllerTrait;
 class HttpController extends FormController
 {
     use VersionableControllerTrait;
+    /**
+     * Method to check Enter http url connection
+     * 
+     * @return boolean True on success
+     * 
+     * since
+     */
+    public function testhttpconnection($url = NULL) {
+        
+        $http = HttpFactory::getHttp();
+        
+        $response = $http->get($url);
 
+        $statusCode = $response->code;
+
+        return ($statusCode==200);
+
+    }
     
 }

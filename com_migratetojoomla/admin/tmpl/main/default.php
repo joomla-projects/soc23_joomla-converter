@@ -9,7 +9,9 @@
  */
 
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Router\Route;
+
  // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
 
@@ -28,5 +30,8 @@ defined('_JEXEC') or die('Restricted Access');
 	<?php echo $this->form->renderField('livewebsiteurl');  ?>
 
 	<button type="button" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkconnection')">Check Connection</button>
+
+    <input type="hidden" name="task" value="">
+    <?php echo HTMLHelper::_('form.token'); ?>
 </form>
 </div>

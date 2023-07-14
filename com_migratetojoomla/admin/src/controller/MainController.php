@@ -14,7 +14,6 @@ use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Versioning\VersionableControllerTrait;
-
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
@@ -45,6 +44,8 @@ class MainController extends FormController
      */
     public function checkconnection()
     {
+        $this->checkToken();
+
         $app   = Factory::getApplication();
 		// $model = $this->getModel('form');
 		// $form = $model->getForm($data, false);
@@ -54,10 +55,15 @@ class MainController extends FormController
 		// 	return false;
 		// }
 
-        // $data  = $this->input->post->get('jform', array(), 'array');
+        $data  = $this->input->post->get('jform', array(), 'array');
 
-        // $input = Factory::getApplication()->input;
-        // $myFieldValue = $input->get('livewebsiteurl', '', 'STRING');
-        $app->enqueueMessage("Kaushik" , 'success');
+        $input = $app->getInput();
+        $myFieldValue = $input->get('livewebsiteurl', '', 'STRING');
+
+        $app->enqueueMessage("data found" , 'success');
+
+        $app->setUserState('com_migratetojoomla.main', $data);
+        // redirect in all case
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
     }
 }
