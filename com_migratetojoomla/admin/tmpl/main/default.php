@@ -27,6 +27,6 @@ defined('_JEXEC') or die('Restricted Access');
 
 	<?php echo $this->form->renderField('livewebsiteurl');  ?>
 
-	<button type="button" class="btn btn-primary" onclick="Joomla.submitbutton('myform.submit')">Submit</button>
+	<button type="button" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkconnection')">Check Connection</button>
 </form>
 </div>
