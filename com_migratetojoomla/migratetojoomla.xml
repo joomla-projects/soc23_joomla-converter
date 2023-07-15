@@ -16,7 +16,7 @@
             <folder>services</folder>
             <folder>src</folder>
             <folder>tmpl</folder>
-            <folder>form</folder>
+            <folder>forms</folder>
             <file>access.xml</file>
             <file>config.xml</file>
         </files>
@@ -28,5 +28,6 @@
     <media destination="com_migratetojoomla" folder="media">
 		<folder>js</folder>
 		<folder>css</folder>
+        <file>joomla.asset.json</file>
 	</media>
 </extension>
