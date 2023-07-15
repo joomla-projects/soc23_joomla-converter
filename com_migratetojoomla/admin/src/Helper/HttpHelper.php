@@ -12,8 +12,8 @@
 namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
  
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\Http\HttpFactory;
-
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
@@ -28,24 +28,23 @@ class HttpHelper
      * 
      * since
      */
-    public function testhttpconnection($url = NULL) {
+    public static function testhttpconnection($url = NULL) {
         
         $app   = Factory::getApplication();
 
         $http = HttpFactory::getHttp();
         
-        $response = $http->get($url);
+        $response = $http->head($url);
 
         $statusCode = $response->code;
         
         if($statusCode==200) {
-            $app->enqueueMessage("Http Connection Succesesfully" , 'success');
+           $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_SUCCESSFULLY') , 'success');
         }else{
-            $app->enqueueMessage("Http Connection Unsuccesesfully" , 'warning');
+           $$app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
         }
 
         return ($statusCode==200);
-
     }
     
 }?>
