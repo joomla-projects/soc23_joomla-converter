@@ -20,14 +20,11 @@ defined('_JEXEC') or die('Restricted Access');
 $wa = $this->document->getWebAssetManager();
 $wa->useScript('com_migratetojoomla.admin-migratetojoomla');
 
-// $document = Factory::getDocument();
-// $document->addScript('/media/migratetojoomla/js/admin-migratetojoomla.js');
-
 ?>
 <style>
-    /* #migratetojoomla{
+    #migratetojoomla{
         background-color: #F8FAFC;
-    } */
+    }
 </style>
 <div id="migratetojoomla" class="p-2">
     <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_WORDPRESS_WEBSITE_PARAMETERS')?></h3>

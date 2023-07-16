@@ -10,7 +10,7 @@
 
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
- 
+
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Http\HttpFactory;
@@ -24,27 +24,59 @@ class HttpHelper
     /**
      * Method to check Enter http url connection
      * 
+     * @param string Http url of live website
      * @return boolean True on success
      * 
      * since
      */
-    public static function testhttpconnection($url = NULL) {
+    public static function testhttpconnection($url = NULL)
+    {
         
         $app   = Factory::getApplication();
-
-        $http = HttpFactory::getHttp();
+       
+        $headers = [];
+        try 
+        {
+           $response = HttpFactory::getHttp()->get($url, $headers);
+           $statusCode = $response->code;
         
-        $response = $http->head($url);
+           if($statusCode==200) {
 
-        $statusCode = $response->code;
-        
-        if($statusCode==200) {
            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_SUCCESSFULLY') , 'success');
-        }else{
-           $$app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
+
+           }
+           else
+           {
+        
+           $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
+
+           }
+        } 
+        catch (\RuntimeException $exception)
+        {
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
+
         }
 
-        return ($statusCode==200);
     }
+    
+    /**
+    *  Method to get content of File with Http
+    * 
+    * @param string Source 
+    * @return string File content
+    */
+
+    public static function getcontent($source)
+    {
+       $content = false;
+       $source = str_replace(" ", "%20", $source); // for filenames with spaces
+
+       $http = HttpFactory::getHttp();
+
+       $response = $http->get($source);
+
+
+    }    
     
 }?>
