@@ -37,7 +37,7 @@ class MainController extends FormController
      * @since  
      */
     protected $text_prefix = 'COM_MIGRATETOJOOMLA_MAIN';
-    
+
     /**
      * Method to check connection.
      * 
@@ -64,4 +64,9 @@ class MainController extends FormController
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
     }
 
+    /**
+     * Method to Download file
+     * 
+     * 
+     */
 }

@@ -8,7 +8,6 @@
  * @license       GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Router\Route;
@@ -18,24 +17,26 @@ defined('_JEXEC') or die('Restricted Access');
 
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
 $wa = $this->document->getWebAssetManager();
-$wa->useScript('com_migratetojoomla.admin-migratetojoomla');
+$wa->useScript('com_migratetojoomla.admin-migratetojoomla')
+    ->useScript('keepalive');
 
 ?>
 <style>
-    #migratetojoomla{
+    /* #migratetojoomla{
         background-color: #F8FAFC;
-    }
+    } */
 </style>
+
 <div id="migratetojoomla" class="p-2">
-    <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_WORDPRESS_WEBSITE_PARAMETERS')?></h3>
-    <form action="<?php echo Route::_('index.php?option=com_migratetojoomla'); ?>"
-    method="post" name="adminForm" id="adminForm" enctype="multipart/form-data">
+    <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_WORDPRESS_WEBSITE_PARAMETERS') ?></h3>
+    <form action="<?php echo Route::_('index.php?option=com_migratetojoomla'); ?>" method="post" name="adminForm" id="adminForm" enctype="multipart/form-data">
 
-	<?php echo $this->form->renderField('livewebsiteurl');  ?>
+        <?php echo $this->form->renderField('mediaoptions'); ?>
+        <?php echo $this->form->renderField('livewebsiteurl');  ?>
 
-	<button type="button" id="migratetojoomlahttp"class="btn btn-primary" >Check Connection</button>
+        <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkconnection')">Check Connection</button>
 
-    <input type="hidden" name="task" value="">
-    <?php echo HTMLHelper::_('form.token'); ?>
-</form>
+        <input type="hidden" name="task" value="">
+        <?php echo HTMLHelper::_('form.token'); ?>
+    </form>
 </div>

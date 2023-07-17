@@ -17,10 +17,10 @@ use Joomla\CMS\Http\HttpFactory;
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
- 
+
 
 class HttpHelper
-{	
+{
     /**
      * Method to check Enter http url connection
      * 
@@ -31,52 +31,55 @@ class HttpHelper
      */
     public static function testhttpconnection($url = NULL)
     {
-        
+
         $app   = Factory::getApplication();
-       
+
         $headers = [];
-        try 
-        {
-           $response = HttpFactory::getHttp()->get($url, $headers);
-           $statusCode = $response->code;
-        
-           if($statusCode==200) {
+        try {
+            $response = HttpFactory::getHttp()->get($url, $headers);
+            $statusCode = $response->code;
 
-           $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_SUCCESSFULLY') , 'success');
+            if ($statusCode == 200) {
 
-           }
-           else
-           {
-        
-           $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
+                $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_SUCCESSFULLY'), 'success');
+            } else {
 
-           }
-        } 
-        catch (\RuntimeException $exception)
-        {
+                $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
+            }
+        } catch (\RuntimeException $exception) {
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
-
         }
-
     }
-    
+
     /**
-    *  Method to get content of File with Http
-    * 
-    * @param string Source 
-    * @return string File content
-    */
+     *  Method to get content of File with Http
+     * 
+     * @param string Source 
+     * @return string File content
+     */
 
     public static function getcontent($source)
     {
-       $content = false;
-       $source = str_replace(" ", "%20", $source); // for filenames with spaces
+        $app   = Factory::getApplication();
+        $source = str_replace(" ", "%20", $source); // for filenames with spaces
 
-       $http = HttpFactory::getHttp();
+        try {
+            $response = HttpFactory::getHttp([], ['curl', 'stream'])->get($source);
+            $statusCode = $response->code;
 
-       $response = $http->get($source);
+            if ($statusCode === 200) {
 
+                $content = $response->body;
+            } else {
 
-    }    
-    
-}?>
+                $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_DOWNLOAD_ERROR'), 'danger');
+                return false;
+            }
+        } catch (\RuntimeException $exception) {
+            $app->enqueueMessage($exception->getMessage(), 'warning');
+            return false;
+        }
+
+        return $content;
+    }
+}
