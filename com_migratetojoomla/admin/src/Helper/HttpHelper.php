@@ -29,7 +29,7 @@ class HttpHelper
      * 
      * since
      */
-    public static function testhttpconnection($url = NULL)
+    public static function testconnection($url = NULL)
     {
 
         $app   = Factory::getApplication();
@@ -52,6 +52,29 @@ class HttpHelper
     }
 
     /**
+     * Method to list files in a directory
+     * 
+     * @param string Directory
+     * @return array List of files
+     */
+    public static function listdirectory($directory)
+    {
+        // Not required in HTTP
+        return array();
+    }
+
+    /** Method to check given path is directory
+     * 
+     * @param string $path Path
+     * @return boolean
+     */
+    public static function isdir($path)
+    {
+        // Not required in HTTP
+        return false;
+    }
+
+    /**
      *  Method to get content of File with Http
      * 
      * @param string Source 
@@ -62,6 +85,7 @@ class HttpHelper
     {
         $app   = Factory::getApplication();
         $source = str_replace(" ", "%20", $source); // for filenames with spaces
+        $source = str_replace("&amp;", "&", $source); // for filenames with &
 
         try {
             $response = HttpFactory::getHttp([], ['curl', 'stream'])->get($source);

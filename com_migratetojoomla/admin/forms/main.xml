@@ -1,7 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <form>
 	<field
+		name="mediaoptions"
+		type="list"
+		label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA"
+		class="form-select"
+		default="1"
+		validate="options"
+	>
+		<option value="1">COM_MIGRATETOJOOMLA_HTTP</option>
+		<option value="2">COM_MIGRATETOJOOMLA_FS</option>
+		<option value="3">COM_MIGRATETOJOOMLA_FTP</option>
+	</field>
+	<field
 		name="livewebsiteurl"
 		type="text"
 		label="COM_MIGRATETOJOOMLA_HTTP_LINK"/>
+	<field
+		name="basedir"
+		type="text"
+		showon="mediaoptions:2"
+		label="COM_MIGRATETOJOOMLA_WEBSITE_BASE_DIRECTORY"/>
+	<field
+		name="ftphost"
+		type="text"
+		showon="mediaoptions:3"
+		label="COM_MIGRATETOJOOMLA_FTP_HOST"/>
+	<field
+		name="ftpport"
+		type="text"
+		showon="mediaoptions:3"
+		label="COM_MIGRATETOJOOMLA_FTP_PORT"/>
+	<field
+		name="ftplogin"
+		type="text"
+		showon="mediaoptions:3"
+		label="COM_MIGRATETOJOOMLA_FTP_LOGIN"/>
+	<field
+		name="ftppassword"
+		type="text"
+		showon="mediaoptions:3"
+		label="COM_MIGRATETOJOOMLA_FTP_PASSWORD"/>
+	<field
+		name="ftpprotocoloptions"
+		type="list"
+		label="COM_MIGRATETOJOOMLA_FTP_PROTOCOL"
+		class="form-select"
+		default="1"
+		showon="mediaoption:3"
+		validate="options"
+	>
+		<option value="1">COM_MIGRATETOJOOMLA_FTP</option>
+		<option value="2">COM_MIGRATETOJOOMLA_FTPS</option>
+		<option value="3">COM_MIGRATETOJOOMLA_SFTP</option>
+	</field>
+	<field
+		name="ftpbasedir"
+		type="text"
+		showon="mediaoptions:3"
+		label="COM_MIGRATETOJOOMLA_FTP_BASE_DIR"/>
 </form>

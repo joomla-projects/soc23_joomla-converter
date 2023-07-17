@@ -22,17 +22,26 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
 
 ?>
 <style>
-    /* #migratetojoomla{
+    #migratetojoomla{
         background-color: #F8FAFC;
-    } */
+    }
 </style>
 
-<div id="migratetojoomla" class="p-2">
+<div id="migratetojoomla" class="p-3">
     <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_WORDPRESS_WEBSITE_PARAMETERS') ?></h3>
     <form action="<?php echo Route::_('index.php?option=com_migratetojoomla'); ?>" method="post" name="adminForm" id="adminForm" enctype="multipart/form-data">
 
         <?php echo $this->form->renderField('mediaoptions'); ?>
         <?php echo $this->form->renderField('livewebsiteurl');  ?>
+        <?php echo $this->form->renderField('basedir');  ?>
+
+        <?php echo $this->form->renderField('ftphost');  ?>
+        <?php echo $this->form->renderField('ftpport');  ?>
+        <?php echo $this->form->renderField('ftplogin');  ?>
+        <?php echo $this->form->renderField('ftppassword');  ?>
+        <?php echo $this->form->renderField('protocol');  ?>
+        <?php echo $this->form->renderField('ftpbasedir');  ?>
+        
 
         <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkconnection')">Check Connection</button>
 
