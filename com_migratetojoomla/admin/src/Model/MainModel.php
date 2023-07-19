@@ -78,5 +78,4 @@ class MainModel extends AdminModel
 
         return $data;
     }
-
 }

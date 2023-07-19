@@ -18,7 +18,7 @@ use Joomla\CMS\Language\Text;
 // phpcs:enable PSR1.Files.SideEffects
 
 
-class FilesystemHelper
+class FtpHelper
 {
 
     /**
@@ -31,15 +31,7 @@ class FilesystemHelper
      */
     public static function testconnection($path = NULL)
     {
-        $app   = Factory::getApplication();
-
-        $check = FilesystemHelper::isdir($path);
-        if ($check) {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
-            return true;
-        }
-        $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_UNSUCCESSFULLY'), 'warning');
-        return false;
+        
     }
 
     /**
@@ -50,11 +42,7 @@ class FilesystemHelper
      */
     public static function listdirectory($directory)
     {
-        $files = array();
-        if (FilesystemHelper::isdir($directory)) {
-            $files = scandir($directory);
-        }
-        return $files;
+        
     }
 
     /** Method to check given path is directory
@@ -64,7 +52,6 @@ class FilesystemHelper
      */
     public static function isdir($path)
     {
-        return is_dir($path);
     }
 
     /**
@@ -76,6 +63,5 @@ class FilesystemHelper
 
     public static function getcontent($source)
     {
-        return file_get_contents($source);
     }
 }

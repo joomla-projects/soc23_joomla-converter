@@ -52,7 +52,7 @@ class MainController extends FormController
         $app   = Factory::getApplication();
 
         $data  = $this->input->post->get('jform', array(), 'array');
-        
+
         DownloadHelper::testconnection($data);
         // Store data in session
         $app->setUserState('com_migratetojoomla.main', $data);
@@ -66,4 +66,21 @@ class MainController extends FormController
      * 
      * 
      */
+    public function download()
+    {
+        $this->checkconnection();
+        $app   = Factory::getApplication();
+        try {
+
+            $data  = $this->input->post->get('jform', array(), 'array');
+
+            DownloadHelper::download($data);
+
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
+        } catch (\RuntimeException $th) {
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD__MEDIA_UNSUCCESSFULLY'), 'success');
+        }
+        // redirect in all case
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
+    }
 }

@@ -44,7 +44,8 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
         
 
         <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkconnection')">Check Connection</button>
-
+        
+        <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.download')">Download Media</button>
         <input type="hidden" name="task" value="">
         <?php echo HTMLHelper::_('form.token'); ?>
     </form>
