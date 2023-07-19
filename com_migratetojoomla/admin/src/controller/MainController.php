@@ -15,7 +15,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Versioning\VersionableControllerTrait;
 
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\DownloadHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -52,11 +52,8 @@ class MainController extends FormController
         $app   = Factory::getApplication();
 
         $data  = $this->input->post->get('jform', array(), 'array');
-
-        $input = $app->getInput();
-        $url = $input->get('livewebsiteurl', '', 'STRING');
-
-        HttpHelper::testhttpconnection($url);
+        
+        DownloadHelper::testconnection($data);
         // Store data in session
         $app->setUserState('com_migratetojoomla.main', $data);
 
