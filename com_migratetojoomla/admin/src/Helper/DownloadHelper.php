@@ -17,6 +17,7 @@ use Joomla\CMS\Language\Text;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\MainHelper;
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
@@ -24,7 +25,7 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
 
 class DownloadHelper
 {
-    public  $downloadmanager;
+    public  static $downloadmanager;
     /**
      * Method to check connection with respective method
      * 
@@ -59,19 +60,30 @@ class DownloadHelper
         switch ($method) {
             case 2:
                 DownloadHelper::$downloadmanager = new FilesystemHelper;
+                break;
             case 3:
                 DownloadHelper::$downloadmanager = new FtpHelper;
+                break;
             case 1:
             default:
                 DownloadHelper::$downloadmanager = new HttpHelper;
+                break;
         }
-        
-        $source = $data['basedir'].'wp-content\uploads';
 
-        $destination = JPATH_BASE.'\images';
+        $source = MainHelper::addtrailingslashit($data['basedir']) . 'wp-content\uploads';
 
-        DownloadHelper::copy($source , $destination);
+        $destination = JPATH_BASE . '\images';
 
+        // DownloadHelper::copy($source , $destination);
+        foreach (DownloadHelper::listdirectory($source) as $file) {
+            $isdirectory = false;
+            $source_filename = MainHelper::addtrailingslashit($source) . $file;
+            $dest_filename = MainHelper::addtrailingslashit($destination) . $file;
+            if (DownloadHelper::isdir($source_filename)) {
+                $isdirectory = true;
+                DownloadHelper::copy($source_filename, $dest_filename, $isdirectory);
+            }
+        }
     }
 
     /**
@@ -82,14 +94,14 @@ class DownloadHelper
      * @param bool $recursive Recursive copy?
      * @return bool File copied or not
      */
-    public function copy($source, $destination, $recursive = true)
+    public static function copy($source, $destination, $recursive = true)
     {
-        if ($this->isdir($source)) {
+        if (DownloadHelper::isdir($source)) {
             // Directory
-            return $this->copydir($source, $destination);
+            return DownloadHelper::copydir($source, $destination);
         } else {
             // File
-            return $this->copyfile($source, $destination);
+            return DownloadHelper::copyfile($source, $destination);
         }
     }
 
@@ -100,7 +112,7 @@ class DownloadHelper
      * @return array List of files and directory
      * 
      */
-    public function listdirectory($directory = '')
+    public static function listdirectory($directory = '')
     {
         return DownloadHelper::$downloadmanager::listdirectory($directory);
     }
@@ -112,7 +124,7 @@ class DownloadHelper
      * @param bool True on success
      * 
      */
-    public function isdir($path = '')
+    public static function isdir($path = '')
     {
         return DownloadHelper::$downloadmanager::isdir($path);
     }
@@ -125,7 +137,7 @@ class DownloadHelper
      * 
      * @return boolean True on success
      */
-    public function copyfile($source, $destination)
+    public static function copyfile($source, $destination)
     {
         $response = false;
 
@@ -149,20 +161,20 @@ class DownloadHelper
      * 
      * @return boolean True on Success
      */
-    public function copydir($source, $destination)
+    public static function copydir($source, $destination)
     {
         $response = true;
         if (!is_dir($destination)) {
             mkdir($destination, 0755, true); // Create the directory if not exist
         }
-        foreach ($this->listdirectory($source) as $file) {
+        foreach (DownloadHelper::listdirectory($source) as $file) {
             $isdirectory = false;
-            $source_filename = $source . $file;
-            $dest_filename = $destination . $file;
-            if ($this->isdir($source_filename)) {
+            $source_filename = MainHelper::addtrailingslashit($source) . $file;
+            $dest_filename = MainHelper::addtrailingslashit($destination) . $file;
+            if (DownloadHelper::isdir($source_filename)) {
                 $isdirectory = true;
             }
-            $response |= copy($source_filename, $$dest_filename, $isdirectory);
+            $response |= DownloadHelper::copy($source_filename, $dest_filename, $isdirectory);
         }
         return $response;
     }
