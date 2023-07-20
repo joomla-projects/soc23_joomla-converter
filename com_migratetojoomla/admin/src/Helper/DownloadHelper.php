@@ -70,19 +70,19 @@ class DownloadHelper
                 break;
         }
 
-        $source = MainHelper::addtrailingslashit($data['basedir']) . 'wp-content\uploads';
+        $source = MainHelper::addtrailingslashit($data['basedir']) . 'wp-content\uploads\\';
 
-        $destination = JPATH_BASE . '\images';
+        $destination = MainHelper::addtrailingslashit(JPATH_ROOT) . 'images\\';
+        $app   = Factory::getApplication();
 
-        // DownloadHelper::copy($source , $destination);
-        foreach (DownloadHelper::listdirectory($source) as $file) {
-            $isdirectory = false;
-            $source_filename = MainHelper::addtrailingslashit($source) . $file;
-            $dest_filename = MainHelper::addtrailingslashit($destination) . $file;
-            if (DownloadHelper::isdir($source_filename)) {
-                $isdirectory = true;
-                DownloadHelper::copy($source_filename, $dest_filename, $isdirectory);
+        try {
+            $response = false;
+            $response |= DownloadHelper::copy($source, $destination);
+            if ($response) {
+                $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
             }
+        } catch (\Throwable $th) {
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_UNSUCCESSFULLY'), 'danger');
         }
     }
 
@@ -94,12 +94,12 @@ class DownloadHelper
      * @param bool $recursive Recursive copy?
      * @return bool File copied or not
      */
-    public static function copy($source, $destination, $recursive = true)
+    public static function copy($source, $destination)
     {
         if (DownloadHelper::isdir($source)) {
             // Directory
             return DownloadHelper::copydir($source, $destination);
-        } else {
+        } else if (file_exists($source)) {
             // File
             return DownloadHelper::copyfile($source, $destination);
         }
@@ -140,13 +140,12 @@ class DownloadHelper
     public static function copyfile($source, $destination)
     {
         $response = false;
-
         if (file_exists($destination) && (filesize($destination) > 0)) {
             // file Already downloaded 
             return true;
         }
 
-        $filecontent = DownloadHelper::$downloadmanager->getcontent($source);
+        $filecontent = DownloadHelper::$downloadmanager::getcontent($source);
         if ($filecontent !== false) {
             $response = (file_put_contents($destination, $filecontent) !== false);
         }
@@ -167,14 +166,19 @@ class DownloadHelper
         if (!is_dir($destination)) {
             mkdir($destination, 0755, true); // Create the directory if not exist
         }
-        foreach (DownloadHelper::listdirectory($source) as $file) {
-            $isdirectory = false;
-            $source_filename = MainHelper::addtrailingslashit($source) . $file;
-            $dest_filename = MainHelper::addtrailingslashit($destination) . $file;
-            if (DownloadHelper::isdir($source_filename)) {
-                $isdirectory = true;
+        $files = DownloadHelper::listdirectory($source);
+
+        if (is_array($files) || is_object($files)) {
+
+            foreach ($files as $file) {
+                if (preg_match('/^\.+$/', $file)) { // Skip . and ..
+                    continue;
+                }
+                $source_filename = MainHelper::addtrailingslashit($source) . $file;
+                $dest_filename = MainHelper::addtrailingslashit($destination) . $file;
+
+                $response |= DownloadHelper::copy($source_filename, $dest_filename);
             }
-            $response |= DownloadHelper::copy($source_filename, $dest_filename, $isdirectory);
         }
         return $response;
     }

@@ -15,6 +15,7 @@
 	<field
 		name="livewebsiteurl"
 		type="text"
+		showon="mediaoptions:1"
 		label="COM_MIGRATETOJOOMLA_HTTP_LINK"/>
 	<field
 		name="basedir"

@@ -43,6 +43,8 @@ class MainHelper
      */
     public static function untrailingslashit($path)
     {
-        return rtrim($path, '/\\');
+        $path = rtrim($path , '/');
+        $path = rtrim($path , '\\');
+        return $path;
     }
 }

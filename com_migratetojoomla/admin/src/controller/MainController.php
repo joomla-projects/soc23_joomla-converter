@@ -12,6 +12,7 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
 use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Versioning\VersionableControllerTrait;
 

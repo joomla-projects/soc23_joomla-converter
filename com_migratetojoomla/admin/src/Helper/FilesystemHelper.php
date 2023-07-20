@@ -53,7 +53,7 @@ class FilesystemHelper
     public static function listdirectory($directory)
     {
         $files = array();
-        if (FilesystemHelper::isdir($directory)) {
+        if (FilesystemHelper::isdir($directory) && scandir($directory)) {
             $files = scandir($directory);
         }
         return $files;
@@ -78,6 +78,8 @@ class FilesystemHelper
 
     public static function getcontent($source)
     {
-        return file_get_contents($source);
+        $content = false;
+        $content = file_get_contents($source);
+        return $content;
     }
 }
