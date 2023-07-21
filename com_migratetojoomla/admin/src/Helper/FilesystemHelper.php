@@ -8,17 +8,14 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-
 namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\MainHelper;
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
-
 
 class FilesystemHelper
 {
@@ -29,11 +26,11 @@ class FilesystemHelper
      * @param string Base url of live website
      * @return boolean True on success
      * 
-     * since
+     * @since 1.0
      */
-    public static function testconnection($path = NULL)
+    public static function testConnection($path = NULL)
     {
-        $app   = Factory::getApplication();
+        $app = Factory::getApplication();
 
         $check = FilesystemHelper::isdir($path);
         if ($check) {
@@ -49,11 +46,13 @@ class FilesystemHelper
      * 
      * @param string Directory
      * @return array List of files
+     * 
+     * @since  1.0
      */
-    public static function listdirectory($directory)
+    public static function listDirectory($directory)
     {
         $files = array();
-        if (FilesystemHelper::isdir($directory) && scandir($directory)) {
+        if (FilesystemHelper::isDir($directory) && scandir($directory)) {
             $files = scandir($directory);
         }
         return $files;
@@ -63,8 +62,10 @@ class FilesystemHelper
      * 
      * @param string $path Path
      * @return boolean
+     * 
+     * @since  1.0
      */
-    public static function isdir($path)
+    public static function isDir($path)
     {
         return is_dir($path);
     }
@@ -74,12 +75,16 @@ class FilesystemHelper
      * 
      * @param string Source 
      * @return string File content
+     * 
+     * @since  1.0
      */
 
-    public static function getcontent($source)
+    public static function getContent($source)
     {
         $content = false;
-        $content = file_get_contents($source);
+        if (ini_get('allow_url_fopen')) {
+            $content = file_get_contents($source);
+        }
         return $content;
     }
 }

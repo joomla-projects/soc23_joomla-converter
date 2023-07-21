@@ -8,20 +8,18 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-
 namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
-
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\MainHelper;
+
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
-
 
 class DownloadHelper
 {
@@ -32,18 +30,18 @@ class DownloadHelper
      * @param array form data
      * @return boolean True on success
      * 
-     * since
+     * @since 1.0
      */
-    public static function testconnection($data = [])
+    public static function testConnection($data = [])
     {
         $method = $data['mediaoptions'];
 
         if ($method == 1) {
             // Http
-            HttpHelper::testconnection($data['livewebsiteurl']);
+            HttpHelper::testConnection($data['livewebsiteurl']);
         } else if ($method == 2) {
             // File system
-            FilesystemHelper::testconnection($data['basedir']);
+            FilesystemHelper::testConnection($data['basedir']);
         }
     }
 
@@ -52,6 +50,7 @@ class DownloadHelper
      * 
      * @param array form data
      * 
+     * @since  1.0
      */
     public static function download($data = [])
     {
@@ -70,17 +69,13 @@ class DownloadHelper
                 break;
         }
 
-        $source = MainHelper::addtrailingslashit($data['basedir']) . 'wp-content\uploads\\';
-
-        $destination = MainHelper::addtrailingslashit(JPATH_ROOT) . 'images\\';
+        $source = MainHelper::addTrailingSlashit($data['basedir']) . 'wp-content\uploads\\';
+        $destination = MainHelper::addTrailingSlashit(JPATH_ROOT) . 'images\\';
         $app   = Factory::getApplication();
 
         try {
-            $response = false;
-            $response |= DownloadHelper::copy($source, $destination);
-            if ($response) {
-                $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
-            }
+            DownloadHelper::copy($source, $destination);
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
         } catch (\Throwable $th) {
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_UNSUCCESSFULLY'), 'danger');
         }
@@ -93,6 +88,8 @@ class DownloadHelper
      * @param string $destination Destination file or directory name
      * @param bool $recursive Recursive copy?
      * @return bool File copied or not
+     * 
+     * @since  1.0
      */
     public static function copy($source, $destination)
     {
@@ -111,10 +108,11 @@ class DownloadHelper
      * @param string $directory path
      * @return array List of files and directory
      * 
+     * @since  1.0
      */
-    public static function listdirectory($directory = '')
+    public static function listDirectory($directory = '')
     {
-        return DownloadHelper::$downloadmanager::listdirectory($directory);
+        return DownloadHelper::$downloadmanager::listDirectory($directory);
     }
 
     /**
@@ -123,10 +121,11 @@ class DownloadHelper
      * @param string $path 
      * @param bool True on success
      * 
+     * @since  1.0
      */
-    public static function isdir($path = '')
+    public static function isDir($path = '')
     {
-        return DownloadHelper::$downloadmanager::isdir($path);
+        return DownloadHelper::$downloadmanager::isDir($path);
     }
 
     /**
@@ -136,8 +135,10 @@ class DownloadHelper
      * @param string $destination destination path
      * 
      * @return boolean True on success
+     * 
+     * @since  1.0
      */
-    public static function copyfile($source, $destination)
+    public static function copyFile($source, $destination)
     {
         $response = false;
         if (file_exists($destination) && (filesize($destination) > 0)) {
@@ -145,7 +146,7 @@ class DownloadHelper
             return true;
         }
 
-        $filecontent = DownloadHelper::$downloadmanager::getcontent($source);
+        $filecontent = DownloadHelper::$downloadmanager::getContent($source);
         if ($filecontent !== false) {
             $response = (file_put_contents($destination, $filecontent) !== false);
         }
@@ -159,25 +160,25 @@ class DownloadHelper
      * @param string $source Destination path
      * 
      * @return boolean True on Success
+     * 
+     * @since  1.0
      */
-    public static function copydir($source, $destination)
+    public static function copyDir($source, $destination)
     {
         $response = true;
         if (!is_dir($destination)) {
             mkdir($destination, 0755, true); // Create the directory if not exist
         }
-        $files = DownloadHelper::listdirectory($source);
+        $files = DownloadHelper::listDirectory($source);
 
         if (is_array($files) || is_object($files)) {
-
             foreach ($files as $file) {
                 if (preg_match('/^\.+$/', $file)) { // Skip . and ..
                     continue;
                 }
-                $source_filename = MainHelper::addtrailingslashit($source) . $file;
-                $dest_filename = MainHelper::addtrailingslashit($destination) . $file;
-
-                $response |= DownloadHelper::copy($source_filename, $dest_filename);
+                $source_filename = MainHelper::addTrailingSlashit($source) . $file;
+                $dest_filename = MainHelper::addTrailingSlashit($destination) . $file;
+                $response = DownloadHelper::copy($source_filename, $dest_filename);
             }
         }
         return $response;

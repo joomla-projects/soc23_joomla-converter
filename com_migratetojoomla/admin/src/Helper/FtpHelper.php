@@ -8,15 +8,14 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-
 namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
+
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
-
 
 class FtpHelper
 {
@@ -27,11 +26,10 @@ class FtpHelper
      * @param string Base url of live website
      * @return boolean True on success
      * 
-     * since
+     * @since 1.0
      */
-    public static function testconnection($path = NULL)
+    public static function testConnection($path = NULL)
     {
-        
     }
 
     /**
@@ -39,18 +37,21 @@ class FtpHelper
      * 
      * @param string Directory
      * @return array List of files
+     * 
+     * @since  1.0
      */
-    public static function listdirectory($directory)
+    public static function listDirectory($directory)
     {
-        
     }
 
     /** Method to check given path is directory
      * 
      * @param string $path Path
      * @return boolean
+     * 
+     * @since  1.0
      */
-    public static function isdir($path)
+    public static function isDir($path)
     {
     }
 
@@ -59,9 +60,11 @@ class FtpHelper
      * 
      * @param string Source 
      * @return string File content
+     * 
+     * @since  1.0
      */
 
-    public static function getcontent($source)
+    public static function getContent($source)
     {
     }
 }

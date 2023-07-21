@@ -21,7 +21,7 @@ use Joomla\CMS\Versioning\VersionableModelTrait;
 /**
  * Migratetojoomla Component main Model
  *
- * @since  
+ * @since  1.0
  */
 class MainModel extends AdminModel
 {
@@ -29,13 +29,13 @@ class MainModel extends AdminModel
 
     /**
      * @var    string  The prefix to use with controller messages.
-     * @since  3.1
+     * @since  1.0
      */
     protected $text_prefix = 'COM_MIGRATETOJOOMLA';
 
     /**
      * @var    string  The type alias for this content type.
-     * @since  3.2
+     * @since  1.0
      */
     public $typeAlias = 'com_migratetojoomla.main';
 
@@ -47,7 +47,7 @@ class MainModel extends AdminModel
      *
      * @return  bool|\Joomla\CMS\Form\Form  A Form object on success, false on failure
      *
-     * @since   
+     * @since   1.0
      */
     public function getForm($data = [], $loadData = true)
     {
@@ -67,7 +67,7 @@ class MainModel extends AdminModel
      *
      * @return  mixed  The data for the form.
      *
-     * @since   
+     * @since   1.0
      */
     protected function loadFormData()
     {

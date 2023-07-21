@@ -15,7 +15,6 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Versioning\VersionableControllerTrait;
-
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\DownloadHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -25,7 +24,7 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\DownloadHelper;
 /**
  * main controller class.
  *
- * @since  
+ * @since  1.0
  */
 class MainController extends FormController
 {
@@ -44,7 +43,7 @@ class MainController extends FormController
      * 
      * @return boolean True on success
      * 
-     * @since
+     * @since 1.0
      */
     public function checkconnection()
     {
@@ -65,7 +64,7 @@ class MainController extends FormController
     /**
      * Method to Download file
      * 
-     * 
+     * @since  1.0
      */
     public function download()
     {

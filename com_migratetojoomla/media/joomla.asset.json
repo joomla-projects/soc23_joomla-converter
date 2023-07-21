@@ -18,7 +18,7 @@
       }
     },
     {
-      "name": "com_migratetojoomla.admin-migratetojoomla",
+      "name": "com_migratetojoomla.migratetojoomla",
       "type": "style",
       "uri": "com_migratetojoomla/migratetojoomla.css"
     }

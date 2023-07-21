@@ -19,6 +19,8 @@ use Joomla\CMS\MVC\Controller\BaseController;
  *
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
+ * 
+ * @since  1.0
  */
 class DisplayController extends BaseController
 {
@@ -28,7 +30,7 @@ class DisplayController extends BaseController
      * @var string
      */
     protected $default_view = 'main';
-    
+
     /**
      * Method to display a view.
      *
@@ -37,12 +39,10 @@ class DisplayController extends BaseController
      *
      * @return  static |boolean  This object to support chaining. False on failure.
      *
-     * @since   4.3.0
+     * @since  1.0
      */
-
     public function display($cachable = false, $urlparams = array())
     {
         return parent::display($cachable, $urlparams);
     }
-    
 }

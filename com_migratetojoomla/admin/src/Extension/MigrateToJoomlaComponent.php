@@ -21,7 +21,7 @@ use Joomla\CMS\Extension\MVCComponent;
 /**
  * Component class for com_migratetojoomla
  *
- * @since  4.0.0
+ * @since  1.0
  */
 class MigrateToJoomlaComponent extends MVCComponent implements RouterServiceInterface
 {

@@ -8,14 +8,11 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-
 namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
-
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
-
 
 class MainHelper
 {
@@ -26,9 +23,9 @@ class MainHelper
      * @param string file or directory path
      * @return string file or dirctory path
      * 
-     * since
+     * @since 1.0
      */
-    public static function addtrailingslashit($path)
+    public static function addTrailingSlashit($path)
     {
         return MainHelper::untrailingslashit($path) . '/';
     }
@@ -39,12 +36,11 @@ class MainHelper
      * @param string file or directory path
      * @return string file or dirctory path
      * 
-     * since
+     * @since 1.0
      */
-    public static function untrailingslashit($path)
+    public static function unTrailingSlashit($path)
     {
-        $path = rtrim($path , '/');
-        $path = rtrim($path , '\\');
+        $path = rtrim($path, '/\\');
         return $path;
     }
 }

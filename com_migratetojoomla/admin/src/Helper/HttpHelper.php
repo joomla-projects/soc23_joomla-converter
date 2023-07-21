@@ -14,10 +14,10 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Http\HttpFactory;
+
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
-
 
 class HttpHelper
 {
@@ -27,9 +27,9 @@ class HttpHelper
      * @param string Http url of live website
      * @return boolean True on success
      * 
-     * since
+     * @since 1.0
      */
-    public static function testconnection($url = NULL)
+    public static function testConnection($url = NULL)
     {
 
         $app   = Factory::getApplication();
@@ -43,7 +43,6 @@ class HttpHelper
 
                 $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_SUCCESSFULLY'), 'success');
             } else {
-
                 $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
             }
         } catch (\RuntimeException $exception) {
@@ -56,8 +55,10 @@ class HttpHelper
      * 
      * @param string Directory
      * @return array List of files
+     * 
+     * @since  1.0
      */
-    public static function listdirectory($directory)
+    public static function listDirectory($directory)
     {
         // Not required in HTTP
         return array();
@@ -67,8 +68,10 @@ class HttpHelper
      * 
      * @param string $path Path
      * @return boolean
+     * 
+     * @since  1.0
      */
-    public static function isdir($path)
+    public static function isDir($path)
     {
         // Not required in HTTP
         return false;
@@ -79,9 +82,11 @@ class HttpHelper
      * 
      * @param string Source 
      * @return string File content
+     * 
+     * @since  1.0
      */
 
-    public static function getcontent($source)
+    public static function getContent($source)
     {
         $app   = Factory::getApplication();
         $source = str_replace(" ", "%20", $source); // for filenames with spaces
@@ -95,7 +100,6 @@ class HttpHelper
 
                 $content = $response->body;
             } else {
-
                 $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_DOWNLOAD_ERROR'), 'danger');
                 return false;
             }
