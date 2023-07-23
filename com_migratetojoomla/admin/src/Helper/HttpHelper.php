@@ -76,6 +76,34 @@ class HttpHelper
         // Not required in HTTP
         return false;
     }
+    // /**
+    //  * Method to list files in a directory
+    //  * 
+    //  * @param string Directory
+    //  * @return array List of files
+    //  * 
+    //  * @since  1.0
+    //  */
+    // public static function listDirectory($directory)
+    // {
+    //     $files = array();
+    //     if (HttpHelper::isDir($directory) && scandir($directory)) {
+    //         $files = scandir($directory);
+    //     }
+    //     return $files;
+    // }
+
+    // /** Method to check given path is directory
+    //  * 
+    //  * @param string $path Path
+    //  * @return boolean
+    //  * 
+    //  * @since  1.0
+    //  */
+    // public static function isDir($path)
+    // {
+    //     return is_dir($path);
+    // }
 
     /**
      *  Method to get content of File with Http
@@ -99,6 +127,7 @@ class HttpHelper
             if ($statusCode === 200) {
 
                 $content = $response->body;
+                
             } else {
                 $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_DOWNLOAD_ERROR'), 'danger');
                 return false;

@@ -33,7 +33,7 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
 
         <?php echo $this->form->renderField('ftphost');  ?>
         <?php echo $this->form->renderField('ftpport');  ?>
-        <?php echo $this->form->renderField('ftplogin');  ?>
+        <?php echo $this->form->renderField('ftpusername');  ?>
         <?php echo $this->form->renderField('ftppassword');  ?>
         <?php echo $this->form->renderField('protocol');  ?>
         <?php echo $this->form->renderField('ftpbasedir');  ?>

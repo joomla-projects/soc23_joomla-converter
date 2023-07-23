@@ -29,14 +29,14 @@
 		label="COM_MIGRATETOJOOMLA_FTP_HOST"/>
 	<field
 		name="ftpport"
-		type="text"
+		type="int"
 		showon="mediaoptions:3"
 		label="COM_MIGRATETOJOOMLA_FTP_PORT"/>
 	<field
-		name="ftplogin"
+		name="ftpusername"
 		type="text"
 		showon="mediaoptions:3"
-		label="COM_MIGRATETOJOOMLA_FTP_LOGIN"/>
+		label="COM_MIGRATETOJOOMLA_FTP_USERNAME"/>
 	<field
 		name="ftppassword"
 		type="text"

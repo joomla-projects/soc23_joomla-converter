@@ -42,6 +42,8 @@ class DownloadHelper
         } else if ($method == 2) {
             // File system
             FilesystemHelper::testConnection($data['basedir']);
+        }else if($method ==3){
+            FtpHelper::testConnection($data);
         }
     }
 
@@ -55,10 +57,12 @@ class DownloadHelper
     public static function download($data = [])
     {
         $method = $data['mediaoptions'];
+        $source='';
 
         switch ($method) {
             case 2:
                 DownloadHelper::$downloadmanager = new FilesystemHelper;
+                $source = MainHelper::addTrailingSlashit($data['basedir']) . 'wp-content\uploads\\';
                 break;
             case 3:
                 DownloadHelper::$downloadmanager = new FtpHelper;
@@ -66,15 +70,17 @@ class DownloadHelper
             case 1:
             default:
                 DownloadHelper::$downloadmanager = new HttpHelper;
+                $source = MainHelper::addTrailingSlashit($data['livewebsiteurl']) . 'wp-content\uploads\\';
                 break;
         }
 
-        $source = MainHelper::addTrailingSlashit($data['basedir']) . 'wp-content\uploads\\';
         $destination = MainHelper::addTrailingSlashit(JPATH_ROOT) . 'images\\';
         $app   = Factory::getApplication();
 
         try {
-            DownloadHelper::copy($source, $destination);
+            DownloadHelper::copy("https://kaushik.sfclient.co.uk/wp-content/uploads/2023/07/kaushik12.jpeg", $destination.'kaushik12.jpeg');
+            // HttpHelper::getContent($source);
+            
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
         } catch (\Throwable $th) {
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_UNSUCCESSFULLY'), 'danger');
