@@ -43,4 +43,18 @@ class MainHelper
         $path = rtrim($path, '/\\');
         return $path;
     }
+
+    /**
+     * Method to remove start and trailing forward slashes and backslashes if they exist.
+     * 
+     * @param string file or directory path
+     * @return string file or dirctory path
+     * 
+     * @since 1.0
+     */
+    public static function unSlashit($path)
+    {
+        $path  = trim($path, '/\\');
+        return $path;
+    }
 }

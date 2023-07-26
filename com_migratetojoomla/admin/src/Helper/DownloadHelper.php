@@ -72,7 +72,7 @@ class DownloadHelper
                 break;
             case 1:
             default:
-                $this->downloadmanager = new HttpHelper;
+                $this->downloadmanager = new HttpHelper($data['livewebsiteurl']);
                 $source = MainHelper::addTrailingSlashit($data['livewebsiteurl']) . 'wp-content\uploads\\';
                 break;
         }

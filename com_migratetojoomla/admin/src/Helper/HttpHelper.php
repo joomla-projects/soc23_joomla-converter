@@ -14,8 +14,7 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Http\HttpFactory;
-use Joomla\CMS\Filesystem\File;
-use Joomla\CMS\Filesystem\Folder;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\MainHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -23,6 +22,22 @@ use Joomla\CMS\Filesystem\Folder;
 
 class HttpHelper
 {
+    /**
+     * @var string live website url
+     * 
+     * @since 1.0
+     */
+    public $websiteurl;
+
+    /**
+     * Http constructor
+     * 
+     * @since 1.0
+     */
+    public function _constructor($url)
+    {
+        $this->websiteurl = MainHelper::unTrailingSlashit($url);
+    }
     /**
      * Method to check Enter http url connection
      * 
@@ -42,10 +57,15 @@ class HttpHelper
             $statusCode = $response->code;
 
             if ($statusCode == 200) {
-
                 $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_SUCCESSFULLY'), 'success');
             } else {
                 $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
+            }
+            $instance = new HttpHelper();
+            $isdirectorylist = $instance->listDirectory($url);
+
+            if (empty($isdirectorylist)) {
+                $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_PLEASE_ALLOW_LIST_DIRECTORY'), 'warning');
             }
         } catch (\RuntimeException $exception) {
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
@@ -60,10 +80,39 @@ class HttpHelper
      * 
      * @since  1.0
      */
-    public static function listDirectory($directory)
+    public function listDirectory($url='')
     {
-        // Not required in HTTP
-        return array();
+        $files = array();
+        $tmpfiles = $this->listDirectoriesAndFiles($url);
+        $firstprocess = array();
+
+        // remove live website url from file/directory path if exist
+        foreach ($tmpfiles as $file) {
+            $pos = strpos($file, $this->websiteurl);
+            $result = $file;
+            if ($pos !== false) {
+                $result = substr_replace($result, '', $pos, strlen($this->websiteurl));
+            }
+            array_push($firstprocess, $result);
+        }
+
+        // remove live website url from current url
+        $pos = strpos($url, $this->websiteurl);
+        if ($pos !== false) {
+            $url = substr_replace($url, '', $pos, strlen($this->websiteurl));
+        }
+
+        // remove current directory path from file/directory path to get exact file/directory path
+        foreach ($firstprocess as $file) {
+            $pos = strpos($file, $url);
+            $result = $file;
+            if ($pos !== false) {
+                $result = substr_replace($result, '', $pos, strlen($url));
+            }
+            array_push($files, MainHelper::unSlashit($result));
+        }
+
+        return $files;
     }
 
     /** Method to check given path is directory
@@ -73,39 +122,15 @@ class HttpHelper
      * 
      * @since  1.0
      */
-    public static function isDir($path)
+    public function isDir($url)
     {
-        // Not required in HTTP
-        return false;
+        $result = false;
+        // If current url represent file then file get content will return true;
+        if (!@file_get_contents($url)) {
+            $result = true;
+        }
+        return $result;
     }
-    // /**
-    //  * Method to list files in a directory
-    //  * 
-    //  * @param string Directory
-    //  * @return array List of files
-    //  * 
-    //  * @since  1.0
-    //  */
-    // public static function listDirectory($directory)
-    // {
-    //     $files = array();
-    //     if (HttpHelper::isDir($directory) && scandir($directory)) {
-    //         $files = scandir($directory);
-    //     }
-    //     return $files;
-    // }
-
-    // /** Method to check given path is directory
-    //  * 
-    //  * @param string $path Path
-    //  * @return boolean
-    //  * 
-    //  * @since  1.0
-    //  */
-    // public static function isDir($path)
-    // {
-    //     return is_dir($path);
-    // }
 
     /**
      *  Method to get content of File with Http
@@ -116,28 +141,67 @@ class HttpHelper
      * @since  1.0
      */
 
-    public static function getContent($source)
+    public  function getContent($source, $destination)
     {
         $app   = Factory::getApplication();
         $source = str_replace(" ", "%20", $source); // for filenames with spaces
         $source = str_replace("&amp;", "&", $source); // for filenames with &
 
         try {
-            $response = HttpFactory::getHttp([], ['curl', 'stream'])->get($source);
-            $statusCode = $response->code;
+            $content = @file_get_contents($source);
 
-            if ($statusCode === 200) {
-
-                $content = $response->body;
+            if ($content) {
+                $response = (file_put_contents($destination, $content) !== false);
+                return $response;
             } else {
                 $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_DOWNLOAD_ERROR'), 'danger');
-                return false;
             }
         } catch (\RuntimeException $exception) {
             $app->enqueueMessage($exception->getMessage(), 'warning');
-            return false;
         }
 
-        return $content;
+        return false;
+    }
+
+    /**
+     *  Method to get list of directory and files in a http url
+     * 
+     * @param string a directory url
+     * 
+     * @since 1.0
+     */
+    public function listDirectoriesAndFiles($url)
+    {
+        $html = @file_get_contents($url);
+
+        if ($html === false) {
+            // Error handling if unable to fetch the content.
+            return [];
+        }
+
+        // Create a DOMDocument object to parse the HTML content.
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true); // Disable error reporting for invalid HTML.
+        $dom->loadHTML($html);
+        libxml_clear_errors();
+
+        $links = $dom->getElementsByTagName('a');
+        $directoriesAndFiles = [];
+
+        foreach ($links as $link) {
+            $href = $link->getAttribute('href');
+
+            // You might need to adjust the condition here based on the structure of the page.
+            // For example, you might want to exclude parent directory links (../).
+            if ($href !== '../') {
+                $directoriesAndFiles[] = $href;
+            }
+        }
+
+        if (count($directoriesAndFiles) > 4) {
+            // remove unwanted elements from array
+            $directoriesAndFiles = array_slice($directoriesAndFiles, 4);
+        }
+        return $directoriesAndFiles;
     }
 }
