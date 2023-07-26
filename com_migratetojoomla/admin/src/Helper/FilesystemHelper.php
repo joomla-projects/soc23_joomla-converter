@@ -12,6 +12,7 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
+use PHPUnit\Util\Filesystem;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -19,7 +20,6 @@ use Joomla\CMS\Language\Text;
 
 class FilesystemHelper
 {
-
     /**
      * Method to check Enter base url connection
      * 
@@ -31,8 +31,8 @@ class FilesystemHelper
     public static function testConnection($path = NULL)
     {
         $app = Factory::getApplication();
-
-        $check = FilesystemHelper::isdir($path);
+        $object = new FilesystemHelper();
+        $check = $object->isDir($path);
         if ($check) {
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
             return true;
@@ -49,10 +49,10 @@ class FilesystemHelper
      * 
      * @since  1.0
      */
-    public static function listDirectory($directory)
+    public  function listDirectory($directory)
     {
         $files = array();
-        if (FilesystemHelper::isDir($directory) && scandir($directory)) {
+        if ($this->isDir($directory) && scandir($directory)) {
             $files = scandir($directory);
         }
         return $files;
@@ -65,7 +65,7 @@ class FilesystemHelper
      * 
      * @since  1.0
      */
-    public static function isDir($path)
+    public  function isDir($path)
     {
         return is_dir($path);
     }
@@ -79,12 +79,12 @@ class FilesystemHelper
      * @since  1.0
      */
 
-    public static function getContent($source)
+    public  function getContent($source, $destination)
     {
-        $content = false;
         if (ini_get('allow_url_fopen')) {
             $content = file_get_contents($source);
         }
-        return $content;
+        $response = (file_put_contents($destination, $content) !== false);
+        return $response;
     }
 }

@@ -20,9 +20,32 @@ use Joomla\CMS\Client\FtpClient;
 
 class FtpHelper
 {
+    /**
+     * @var array  ftp parameters
+     * 
+     * @since 1.0
+     */
+    public  $options = array();
 
-    public static $options = array();
-    public static $ftp = false;
+    /**
+     * @var object ftpclient object
+     * 
+     * @since 1.0
+     */
+    public  $ftp;
+
+    /**
+     * Class constructor
+     * 
+     * @param array ftpparameters
+     * 
+     * @since 1.0
+     */
+    public function __construct($data = [])
+    {
+        $this->options = $data;
+    }
+
     /**
      * Method to check Enter base url connection
      * 
@@ -33,20 +56,15 @@ class FtpHelper
      */
     public static function testConnection($data = [])
     {
-        FtpHelper::$options['host'] = $data['ftphost'];
-        FtpHelper::$options['port'] = $data['ftpport'];
-        FtpHelper::$options['username'] = $data['ftpusername'];
-        FtpHelper::$options['password'] = $data['ftppassword'];
-        FtpHelper::$options['basedir'] = $data['ftpbasefir'];
-
-        $response = FtpHelper::login();
-
+        $instance = new FtpHelper();
+        $instance->options = $data;
+        $response = $instance->login();
         $app = Factory::getApplication();
 
         if ($response) {
-            $app->enqueueMessage("Ftp connection Success", 'success');
-        }else{
-            $app->enqueueMessage("Ftp connection Unsuccessful", 'danger');
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_SUCCESFULLY'), 'success');
+        } else {
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_UNSUCCESSFULLY'), 'danger');
         }
     }
 
@@ -58,8 +76,14 @@ class FtpHelper
      * 
      * @since  1.0
      */
-    public static function listDirectory($directory)
+    public function listDirectory($directory)
     {
+        if (!$this->ftp->isConnected()) {
+            $this->login();
+        }
+        $files = array();
+        $files = $this->ftp->listNames($directory);
+        return $files;
     }
 
     /** Method to check given path is directory
@@ -69,8 +93,12 @@ class FtpHelper
      * 
      * @since  1.0
      */
-    public static function isDir($path)
+    public function isDir($path)
     {
+        if (!$this->ftp->isConnected()) {
+            $this->login();
+        }
+        return !empty($this->ftp->listNames($path));
     }
 
     /**
@@ -81,47 +109,30 @@ class FtpHelper
      * 
      * @since  1.0
      */
-
-    public static function getContent($source)
+    public  function getContent($source, $destination)
     {
+        if (!$this->ftp->isConnected()) {
+            $this->login();
+        }
+        return $this->ftp->get($destination, $source);
     }
 
     /**
-     *  Method to login using ftp options
+     * Method to login using ftp options
      * 
      * @return boolean True on success
      * 
      * @since 1.0
      */
-    public static function login()
+    public function login()
     {
-        $result = false;
-        $app = Factory::getApplication();
+        $this->ftp = new FtpClient();
 
-        FtpHelper::$ftp = new FtpClient();
+        $instance = $this->ftp;
+        $isconnect = $instance->connect($this->options['ftphost'], $this->options['ftpport']);
+        $islogin = $instance->login($this->options['ftpusername'], $this->options['ftppassword']);
+        $isdir = $instance->listNames($this->options['ftpbasedir']);
 
-        $connection = ftp_connect(FtpHelper::$options['host'], FtpHelper::$options['port']);
-
-        if (!$connection) {
-            $app->enqueueMessage("Ftp connection Unsuccessful Due to host or port", 'danger');
-            return false;
-        }
-        
-        $islogin = ftp_login($connection, FtpHelper::$options['username'], FtpHelper::$options['password']);
-        
-        if (!$islogin) {
-            $app->enqueueMessage("Ftp login  Unsuccessful dues to username or password", 'danger');
-            return false;
-        }
- 
-        $isbasedirexist = @ftp_chdir( $connection, FtpHelper::$options['ftpbasedir'] );
-        
-        if (!$isbasedirexist) {
-            $app->enqueueMessage("Ftp base directory not exist ", 'danger');
-            return false;
-        }
-
-        $result = $connection && $islogin && $isbasedirexist;
-        return $result;
+        return $isconnect && $islogin && !empty($isdir);
     }
 }

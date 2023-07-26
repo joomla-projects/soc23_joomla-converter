@@ -23,7 +23,7 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\MainHelper;
 
 class DownloadHelper
 {
-    public  static $downloadmanager;
+    public  $downloadmanager;
     /**
      * Method to check connection with respective method
      * 
@@ -42,7 +42,7 @@ class DownloadHelper
         } else if ($method == 2) {
             // File system
             FilesystemHelper::testConnection($data['basedir']);
-        }else if($method ==3){
+        } else if ($method == 3) {
             FtpHelper::testConnection($data);
         }
     }
@@ -54,35 +54,35 @@ class DownloadHelper
      * 
      * @since  1.0
      */
-    public static function download($data = [])
+    public  function download($data = [])
     {
+        $app   = Factory::getApplication();
         $method = $data['mediaoptions'];
-        $source='';
+        $source = '';
 
         switch ($method) {
             case 2:
-                DownloadHelper::$downloadmanager = new FilesystemHelper;
+                $this->downloadmanager = new FilesystemHelper;
                 $source = MainHelper::addTrailingSlashit($data['basedir']) . 'wp-content\uploads\\';
                 break;
             case 3:
-                DownloadHelper::$downloadmanager = new FtpHelper;
+                $this->downloadmanager = new FtpHelper($data);
+                $response = $this->downloadmanager->login();
+                $source = MainHelper::addTrailingSlashit($data['ftpbasedir']) . 'wp-content\uploads\\';
                 break;
             case 1:
             default:
-                DownloadHelper::$downloadmanager = new HttpHelper;
+                $this->downloadmanager = new HttpHelper;
                 $source = MainHelper::addTrailingSlashit($data['livewebsiteurl']) . 'wp-content\uploads\\';
                 break;
         }
 
         $destination = MainHelper::addTrailingSlashit(JPATH_ROOT) . 'images\\';
-        $app   = Factory::getApplication();
 
         try {
-            DownloadHelper::copy("https://kaushik.sfclient.co.uk/wp-content/uploads/2023/07/kaushik12.jpeg", $destination.'kaushik12.jpeg');
-            // HttpHelper::getContent($source);
-            
+            $this->copy($source, $destination);
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
-        } catch (\Throwable $th) {
+        } catch (\RuntimeException $th) {
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_UNSUCCESSFULLY'), 'danger');
         }
     }
@@ -97,14 +97,14 @@ class DownloadHelper
      * 
      * @since  1.0
      */
-    public static function copy($source, $destination)
+    public function copy($source, $destination)
     {
-        if (DownloadHelper::isdir($source)) {
+        if ($this->isdir($source)) {
             // Directory
-            return DownloadHelper::copydir($source, $destination);
+            return $this->copydir($source, $destination);
         } else if (file_exists($source)) {
             // File
-            return DownloadHelper::copyfile($source, $destination);
+            return $this->copyfile($source, $destination);
         }
     }
 
@@ -116,9 +116,9 @@ class DownloadHelper
      * 
      * @since  1.0
      */
-    public static function listDirectory($directory = '')
+    public function listDirectory($directory = '')
     {
-        return DownloadHelper::$downloadmanager::listDirectory($directory);
+        return $this->downloadmanager->listDirectory($directory);
     }
 
     /**
@@ -129,9 +129,9 @@ class DownloadHelper
      * 
      * @since  1.0
      */
-    public static function isDir($path = '')
+    public function isDir($path = '')
     {
-        return DownloadHelper::$downloadmanager::isDir($path);
+        return $this->downloadmanager->isDir($path);
     }
 
     /**
@@ -144,7 +144,7 @@ class DownloadHelper
      * 
      * @since  1.0
      */
-    public static function copyFile($source, $destination)
+    public function copyFile($source, $destination)
     {
         $response = false;
         if (file_exists($destination) && (filesize($destination) > 0)) {
@@ -152,10 +152,7 @@ class DownloadHelper
             return true;
         }
 
-        $filecontent = DownloadHelper::$downloadmanager::getContent($source);
-        if ($filecontent !== false) {
-            $response = (file_put_contents($destination, $filecontent) !== false);
-        }
+        $response = $this->downloadmanager->getContent($source, $destination);
         return $response;
     }
 
@@ -169,13 +166,13 @@ class DownloadHelper
      * 
      * @since  1.0
      */
-    public static function copyDir($source, $destination)
+    public function copyDir($source, $destination)
     {
         $response = true;
         if (!is_dir($destination)) {
             mkdir($destination, 0755, true); // Create the directory if not exist
         }
-        $files = DownloadHelper::listDirectory($source);
+        $files = $this->listDirectory($source);
 
         if (is_array($files) || is_object($files)) {
             foreach ($files as $file) {
@@ -184,7 +181,7 @@ class DownloadHelper
                 }
                 $source_filename = MainHelper::addTrailingSlashit($source) . $file;
                 $dest_filename = MainHelper::addTrailingSlashit($destination) . $file;
-                $response = DownloadHelper::copy($source_filename, $dest_filename);
+                $response = $this->copy($source_filename, $dest_filename);
             }
         }
         return $response;

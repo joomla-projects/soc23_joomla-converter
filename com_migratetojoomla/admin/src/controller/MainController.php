@@ -73,8 +73,8 @@ class MainController extends FormController
         try {
 
             $data  = $this->input->post->get('jform', array(), 'array');
-
-            DownloadHelper::download($data);
+            $load = new DownloadHelper();
+            $load->download($data);
 
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
         } catch (\RuntimeException $th) {

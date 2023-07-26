@@ -14,6 +14,8 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Http\HttpFactory;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Filesystem\Folder;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -127,7 +129,6 @@ class HttpHelper
             if ($statusCode === 200) {
 
                 $content = $response->body;
-                
             } else {
                 $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_DOWNLOAD_ERROR'), 'danger');
                 return false;
