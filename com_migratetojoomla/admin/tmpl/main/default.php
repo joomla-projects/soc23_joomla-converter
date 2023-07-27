@@ -38,9 +38,23 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
         <?php echo $this->form->renderField('protocol');  ?>
         <?php echo $this->form->renderField('ftpbasedir');  ?>
 
-        <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkconnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_CHECK_MEDIA_CONNECTION') ?></button>
+        <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_CHECK_MEDIA_CONNECTION') ?></button>
 
         <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.download')"><?php echo Text::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA') ?></button>
+
+        <br>
+        <br>
+        <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_WORDPRESS_DATABASE_PARAMETERS') ?></h3>
+        <br>
+        <?php echo $this->form->renderField('dbhostname');  ?>
+        <?php echo $this->form->renderField('dbdriver');  ?>
+        <?php echo $this->form->renderField('dbport');  ?>
+        <?php echo $this->form->renderField('dbname');  ?>
+        <?php echo $this->form->renderField('dbusername');  ?>
+        <?php echo $this->form->renderField('dbpassword');  ?>
+        <?php echo $this->form->renderField('dbtableprefix');  ?>
+
+        <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkDatabaseConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_TEST_DATABASE_CONNECTION') ?></button>
         <input type="hidden" name="task" value="">
         <?php echo HTMLHelper::_('form.token'); ?>
     </form>

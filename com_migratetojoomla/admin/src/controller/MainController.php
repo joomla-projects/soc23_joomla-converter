@@ -10,6 +10,7 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
+use Joomla\Database\DatabaseFactory;
 use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
@@ -41,11 +42,9 @@ class MainController extends FormController
     /**
      * Method to check connection.
      * 
-     * @return boolean True on success
-     * 
      * @since 1.0
      */
-    public function checkconnection()
+    public function checkConnection()
     {
         $this->checkToken();
 
@@ -54,6 +53,46 @@ class MainController extends FormController
         $data  = $this->input->post->get('jform', array(), 'array');
 
         DownloadHelper::testconnection($data);
+        // Store data in session
+        $app->setUserState('com_migratetojoomla.main', $data);
+
+        // redirect in all case
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
+    }
+
+    /**
+     * Controller funciton to check Database connection
+     * 
+     * @since 1.0
+     */
+    public function checkDatabaseConnection()
+    {
+        $this->checkToken();
+
+        $app   = Factory::getApplication();
+
+        $data  = $this->input->post->get('jform', array(), 'array');
+
+        $option = array(); //prevent problems
+
+        $option['driver']   = $data['dbdriver'];
+        $option['host']     = $data['dbhostname'] . ':' . $data['dbport'];
+        $option['user']     = $data['dbusername'];
+        $option['password'] = $data['dbpassword'];
+        $option['database'] = $data['dbname'];
+        $option['prefix']   = $data['dbtableprefix'];
+
+        $factory      = new DatabaseFactory();
+        $db = $factory->getDriver(
+            $option['driver'],
+            $option
+        );
+
+        if ($db) {
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY'), 'success');
+        } else {
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'danger');
+        }
         // Store data in session
         $app->setUserState('com_migratetojoomla.main', $data);
 

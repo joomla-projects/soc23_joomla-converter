@@ -60,4 +60,34 @@
 		type="text"
 		showon="mediaoptions:3"
 		label="COM_MIGRATETOJOOMLA_FTP_BASE_DIR"/>
+	<field
+		name="dbhostname"
+		type="text"
+		label="COM_MIGRATETOJOOMLA_HOSTNAME"/>
+	<field
+		name="dbdriver"
+		type="text"
+		default="mysqli"
+		label="COM_MIGRATETOJOOMLA_DATABASE_DRIVER"/>
+	<field
+		name="dbport"
+		type="int"
+		default='3306'
+		label="COM_MIGRATETOJOOMLA_PORT"/>
+	<field
+		name="dbname"
+		type="text"
+		label="COM_MIGRATETOJOOMLA_DATABASE_NAME"/>
+	<field
+		name="dbusername"
+		type="text"
+		label="COM_MIGRATETOJOOMLA_USERNAME"/>
+	<field
+		name="dbpassword"
+		type="text"
+		label="COM_MIGRATETOJOOMLA_PASSWORD"/>
+	<field
+		name="dbtableprefix"
+		type="text"
+		label="COM_MIGRATETOJOOMLA_TABLE_PREFIX"/>
 </form>
