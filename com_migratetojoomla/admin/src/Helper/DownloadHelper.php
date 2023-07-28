@@ -63,17 +63,17 @@ class DownloadHelper
         switch ($method) {
             case 2:
                 $this->downloadmanager = new FilesystemHelper;
-                $source = MainHelper::addTrailingSlashit($data['basedir']) . 'wp-content\uploads\\';
+                $source = MainHelper::addTrailingSlashit($data['basedir']) . 'wp-content/uploads/';
                 break;
             case 3:
                 $this->downloadmanager = new FtpHelper($data);
                 $response = $this->downloadmanager->login();
-                $source = MainHelper::addTrailingSlashit($data['ftpbasedir']) . 'wp-content\uploads\\';
+                $source = MainHelper::addTrailingSlashit($data['ftpbasedir']) . 'wp-content/uploads/';
                 break;
             case 1:
             default:
                 $this->downloadmanager = new HttpHelper($data['livewebsiteurl']);
-                $source = MainHelper::addTrailingSlashit($data['livewebsiteurl']) . 'wp-content\uploads\\';
+                $source = MainHelper::addTrailingSlashit($data['livewebsiteurl']) . 'wp-content/uploads/';
                 break;
         }
 
@@ -99,12 +99,13 @@ class DownloadHelper
      */
     public function copy($source, $destination)
     {
-        if ($this->isdir($source)) {
+        if ($this->isDir($source)) {
+            // $app->enqueueMessage($source, 'success');
             // Directory
-            return $this->copydir($source, $destination);
-        } else if (file_exists($source)) {
+            return $this->copyDir($source, $destination);
+        } else {
             // File
-            return $this->copyfile($source, $destination);
+            return $this->copyFile($source, $destination);
         }
     }
 

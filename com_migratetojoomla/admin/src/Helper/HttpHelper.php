@@ -34,9 +34,9 @@ class HttpHelper
      * 
      * @since 1.0
      */
-    public function _constructor($url)
+    public function __construct($websiteurl = '')
     {
-        $this->websiteurl = MainHelper::unTrailingSlashit($url);
+        $this->websiteurl = MainHelper::unTrailingSlashit($websiteurl);
     }
     /**
      * Method to check Enter http url connection
@@ -46,11 +46,9 @@ class HttpHelper
      * 
      * @since 1.0
      */
-    public static function testConnection($url = NULL)
+    public static function testConnection($url = '')
     {
-
         $app   = Factory::getApplication();
-
         $headers = [];
         try {
             $response = HttpFactory::getHttp()->get($url, $headers);
@@ -62,7 +60,7 @@ class HttpHelper
                 $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
             }
             $instance = new HttpHelper();
-            $isdirectorylist = $instance->listDirectory($url);
+            $isdirectorylist = $instance->listDirectoriesAndFiles($url);
 
             if (empty($isdirectorylist)) {
                 $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_PLEASE_ALLOW_LIST_DIRECTORY'), 'warning');
@@ -80,30 +78,20 @@ class HttpHelper
      * 
      * @since  1.0
      */
-    public function listDirectory($url='')
+    public function listDirectory($url = '')
     {
         $files = array();
-        $tmpfiles = $this->listDirectoriesAndFiles($url);
-        $firstprocess = array();
-
-        // remove live website url from file/directory path if exist
-        foreach ($tmpfiles as $file) {
-            $pos = strpos($file, $this->websiteurl);
-            $result = $file;
-            if ($pos !== false) {
-                $result = substr_replace($result, '', $pos, strlen($this->websiteurl));
-            }
-            array_push($firstprocess, $result);
-        }
+        $tmpfiles  = $this->listDirectoriesAndFiles($url);
 
         // remove live website url from current url
         $pos = strpos($url, $this->websiteurl);
         if ($pos !== false) {
             $url = substr_replace($url, '', $pos, strlen($this->websiteurl));
         }
+        $url = MainHelper::unSlashit($url);
 
         // remove current directory path from file/directory path to get exact file/directory path
-        foreach ($firstprocess as $file) {
+        foreach ($tmpfiles as $file) {
             $pos = strpos($file, $url);
             $result = $file;
             if ($pos !== false) {
@@ -122,12 +110,12 @@ class HttpHelper
      * 
      * @since  1.0
      */
-    public function isDir($url)
+    public function isDir($url = '')
     {
-        $result = false;
+        $result = true;
         // If current url represent file then file get content will return true;
-        if (!@file_get_contents($url)) {
-            $result = true;
+        if (!($this->listDirectoriesAndFiles($url))) {
+            $result = false;
         }
         return $result;
     }
@@ -170,7 +158,7 @@ class HttpHelper
      * 
      * @since 1.0
      */
-    public function listDirectoriesAndFiles($url)
+    public function listDirectoriesAndFiles($url = '')
     {
         $html = @file_get_contents($url);
 
@@ -191,17 +179,31 @@ class HttpHelper
         foreach ($links as $link) {
             $href = $link->getAttribute('href');
 
-            // You might need to adjust the condition here based on the structure of the page.
-            // For example, you might want to exclude parent directory links (../).
             if ($href !== '../') {
                 $directoriesAndFiles[] = $href;
             }
         }
 
-        if (count($directoriesAndFiles) > 4) {
-            // remove unwanted elements from array
-            $directoriesAndFiles = array_slice($directoriesAndFiles, 4);
+        // it is not directory
+        if (empty($directoriesAndFiles)) {
+            return false;
         }
-        return $directoriesAndFiles;
+        // remove Http urls 
+        $tmpfiles = array();
+        $count = -1;
+        foreach ($directoriesAndFiles as $file) {
+            $pos = strpos($file, 'http');
+            $count = $count + 1;
+            if (!($pos !== false)) {
+                array_push($tmpfiles, $file);
+            }
+        }
+
+        //remove unnecceary elements
+        if (count($tmpfiles) > 4) {
+            // remove unwanted elements from array
+            $tmpfiles = array_slice($tmpfiles, 4);
+        }
+        return $tmpfiles;
     }
 }
