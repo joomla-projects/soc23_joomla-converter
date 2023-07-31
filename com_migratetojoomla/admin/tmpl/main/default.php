@@ -38,7 +38,7 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
         <?php echo $this->form->renderField('protocol');  ?>
         <?php echo $this->form->renderField('ftpbasedir');  ?>
 
-        <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_CHECK_MEDIA_CONNECTION') ?></button>
+        <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkMediaConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_CHECK_MEDIA_CONNECTION') ?></button>
 
         <button type="button" id="migratetojoomlahttp" class="btn btn-primary" onclick="Joomla.submitbutton('main.download')"><?php echo Text::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA') ?></button>
 

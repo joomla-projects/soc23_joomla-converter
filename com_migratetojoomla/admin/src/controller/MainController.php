@@ -16,7 +16,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Versioning\VersionableControllerTrait;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\DownloadHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\MainHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -40,11 +40,11 @@ class MainController extends FormController
     protected $text_prefix = 'COM_MIGRATETOJOOMLA_MAIN';
 
     /**
-     * Method to check connection.
+     * Method to check media connection.
      * 
      * @since 1.0
      */
-    public function checkConnection()
+    public function checkMediaConnection()
     {
         $this->checkToken();
 
@@ -52,7 +52,7 @@ class MainController extends FormController
 
         $data  = $this->input->post->get('jform', array(), 'array');
 
-        DownloadHelper::testconnection($data);
+        MainHelper::testconnection($data);
         // Store data in session
         $app->setUserState('com_migratetojoomla.main', $data);
 
@@ -107,13 +107,13 @@ class MainController extends FormController
      */
     public function download()
     {
-        $this->checkconnection();
+        $this->checkMediaConnection();
         $app   = Factory::getApplication();
         try {
 
             $data  = $this->input->post->get('jform', array(), 'array');
-            $load = new DownloadHelper();
-            $load->download($data);
+            $load = new MainHelper();
+            $load->downloadMedia($data);
 
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
         } catch (\RuntimeException $th) {
