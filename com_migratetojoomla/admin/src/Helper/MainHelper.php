@@ -22,7 +22,32 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
 
 class MainHelper
 {
-    public  $downloadmanager;
+    /**
+     * @var object  Media Download object
+     * 
+     * @since 1.0
+     */
+    public  $mediaDownloadManager;
+
+    /**
+     * @var array Form data
+     * 
+     * @since 1.0
+     */
+    public $data;
+
+    /**
+     * Class constructor
+     * 
+     * @param array ftpparameters
+     * 
+     * @since 1.0
+     */
+    public function __construct($data = [])
+    {
+        $this->data = $data;
+    }
+
     /**
      * Method to check connection with respective method
      * 
@@ -31,7 +56,7 @@ class MainHelper
      * 
      * @since 1.0
      */
-    public static function testConnection($data = [])
+    public static function testMediaConnection($data = [])
     {
         $method = $data['mediaoptions'];
 
@@ -53,29 +78,30 @@ class MainHelper
      * 
      * @since  1.0
      */
-    public  function downloadMedia($data = [])
+    public  function downloadMedia()
     {
         $app   = Factory::getApplication();
-        $method = $data['mediaoptions'];
+        $method = $this->data['mediaoptions'];
         $source = '';
 
         switch ($method) {
             case 2:
-                $this->downloadmanager = new FilesystemHelper;
-                $source = MainHelper::addTrailingSlashit($data['basedir']) . 'wp-content/uploads/';
+                $this->mediaDownloadManager = new FilesystemHelper;
+                $source = $this->data['basedir'];
                 break;
             case 3:
-                $this->downloadmanager = new FtpHelper($data);
-                $response = $this->downloadmanager->login();
-                $source = MainHelper::addTrailingSlashit($data['ftpbasedir']) . 'wp-content/uploads/';
+                $this->mediaDownloadManager = new FtpHelper($this->data);
+                $response = $this->mediaDownloadManager->login();
+                $source = $this->data['ftpbasedir'];
                 break;
             case 1:
             default:
-                $this->downloadmanager = new HttpHelper($data['livewebsiteurl']);
-                $source = MainHelper::addTrailingSlashit($data['livewebsiteurl']) . 'wp-content/uploads/';
+                $this->mediaDownloadManager = new HttpHelper($this->data['livewebsiteurl']);
+                $source = $this->data['livewebsiteurl'];
                 break;
         }
 
+        $source = MainHelper::addTrailingSlashit($source) . 'wp-content/uploads/';
         $destination = MainHelper::addTrailingSlashit(JPATH_ROOT) . 'images\\';
 
         try {
@@ -98,7 +124,7 @@ class MainHelper
      */
     public function copy($source, $destination)
     {
-        if ($this->downloadmanager->isDir($source)) {
+        if ($this->mediaDownloadManager->isDir($source)) {
             // Directory
             return $this->copyDir($source, $destination);
         } else {
@@ -125,7 +151,7 @@ class MainHelper
             return true;
         }
 
-        $response = $this->downloadmanager->getContent($source, $destination);
+        $response = $this->mediaDownloadManager->getContent($source, $destination);
         return $response;
     }
 
@@ -145,7 +171,7 @@ class MainHelper
         if (!is_dir($destination)) {
             mkdir($destination, 0755, true); // Create the directory if not exist
         }
-        $files = $this->downloadmanager->listDirectory($source);
+        $files = $this->mediaDownloadManager->listDirectory($source);
 
         if (is_array($files) || is_object($files)) {
             foreach ($files as $file) {

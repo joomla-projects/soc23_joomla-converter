@@ -83,7 +83,8 @@ class HttpHelper
         $files = array();
         $tmpfiles  = $this->listDirectoriesAndFiles($url);
 
-        // remove live website url from current url
+        // remove live website url from current url so that url contain directory path inside which directory and files scan
+        // Response obtain contain this in path so required to remove
         $pos = strpos($url, $this->websiteurl);
         if ($pos !== false) {
             $url = substr_replace($url, '', $pos, strlen($this->websiteurl));
@@ -156,12 +157,18 @@ class HttpHelper
      * 
      * @param string a directory url
      * 
+     * @return 
+     * Empty array if directory listing is disable
+     * False if given url is file
+     * Directory and Files in given directory url
+     * 
      * @since 1.0
      */
     public function listDirectoriesAndFiles($url = '')
     {
         $html = @file_get_contents($url);
 
+        // if unable to load data it mean directory list is disable on server so return empty array 
         if ($html === false) {
             // Error handling if unable to fetch the content.
             return [];
@@ -184,11 +191,13 @@ class HttpHelper
             }
         }
 
-        // it is not directory
+        // it is not directory $directoryAndFiles will empty 
         if (empty($directoriesAndFiles)) {
             return false;
         }
-        // remove Http urls 
+
+        // remove Http urls
+        // response obtain from dom document contain wordpress and livewebsite utl  
         $tmpfiles = array();
         $count = -1;
         foreach ($directoriesAndFiles as $file) {
@@ -199,7 +208,8 @@ class HttpHelper
             }
         }
 
-        //remove unnecceary elements
+        // remove unnecceary elements
+        // response optain using href contain 4 unwanted element 
         if (count($tmpfiles) > 4) {
             // remove unwanted elements from array
             $tmpfiles = array_slice($tmpfiles, 4);

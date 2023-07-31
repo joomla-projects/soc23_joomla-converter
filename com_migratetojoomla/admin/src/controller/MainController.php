@@ -52,7 +52,7 @@ class MainController extends FormController
 
         $data  = $this->input->post->get('jform', array(), 'array');
 
-        MainHelper::testconnection($data);
+        MainHelper::testMediaConnection($data);
         // Store data in session
         $app->setUserState('com_migratetojoomla.main', $data);
 
@@ -101,7 +101,7 @@ class MainController extends FormController
     }
 
     /**
-     * Method to Download file
+     * Method to Download 
      * 
      * @since  1.0
      */
@@ -112,8 +112,8 @@ class MainController extends FormController
         try {
 
             $data  = $this->input->post->get('jform', array(), 'array');
-            $load = new MainHelper();
-            $load->downloadMedia($data);
+            $load = new MainHelper($data);
+            $load->downloadMedia();
 
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
         } catch (\RuntimeException $th) {
