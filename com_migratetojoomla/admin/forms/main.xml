@@ -4,6 +4,7 @@
 		name="mediaoptions"
 		type="list"
 		label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
+		description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
 		class="form-select"
 		default="1"
 		validate="options"
@@ -16,12 +17,14 @@
 		name="livewebsiteurl"
 		type="text"
 		showon="mediaoptions:1"
-		label="COM_MIGRATETOJOOMLA_HTTP_LINK_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_HTTP_LINK_LABEL"
+		description="COM_MIGRATETOJOOMLA_HTTP_LINK_DESC"/>
 	<field
 		name="basedir"
 		type="text"
 		showon="mediaoptions:2"
-		label="COM_MIGRATETOJOOMLA_WEBSITE_BASE_DIRECTORY_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_WEBSITE_BASE_DIRECTORY_LABEL"
+		description="COM_MIGRATETOJOOMLA_WEBSITE_BASE_DIRECTORY_DESC"/>
 	<field
 		name="ftphost"
 		type="text"
@@ -59,7 +62,8 @@
 		name="ftpbasedir"
 		type="text"
 		showon="mediaoptions:3"
-		label="COM_MIGRATETOJOOMLA_FTP_BASE_DIR_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_FTP_BASE_DIR_LABEL"
+		description="COM_MIGRATETOJOOMLA_FTP_BASE_DIR_DESC"/>
 	<field
 		name="dbhostname"
 		type="text"
