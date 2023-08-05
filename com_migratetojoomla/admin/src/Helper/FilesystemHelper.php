@@ -12,7 +12,6 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
-use PHPUnit\Util\Filesystem;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -31,60 +30,12 @@ class FilesystemHelper
     public static function testConnection($path = NULL)
     {
         $app = Factory::getApplication();
-        $object = new FilesystemHelper();
-        $check = $object->isDir($path);
+        $check = is_dir($path);
         if ($check) {
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
             return true;
         }
         $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_UNSUCCESSFULLY'), 'warning');
         return false;
-    }
-
-    /**
-     * Method to list files in a directory
-     * 
-     * @param string Directory
-     * @return array List of files
-     * 
-     * @since  1.0
-     */
-    public  function listDirectory($directory)
-    {
-        $files = array();
-        if ($this->isDir($directory) && scandir($directory)) {
-            $files = scandir($directory);
-        }
-        return $files;
-    }
-
-    /** Method to check given path is directory
-     * 
-     * @param string $path Path
-     * @return boolean
-     * 
-     * @since  1.0
-     */
-    public  function isDir($path)
-    {
-        return is_dir($path);
-    }
-
-    /**
-     *  Method to get content of File with File system
-     * 
-     * @param string Source 
-     * @return string File content
-     * 
-     * @since  1.0
-     */
-
-    public  function getContent($source, $destination)
-    {
-        if (ini_get('allow_url_fopen')) {
-            $content = file_get_contents($source);
-        }
-        $response = (file_put_contents($destination, $content) !== false);
-        return $response;
     }
 }

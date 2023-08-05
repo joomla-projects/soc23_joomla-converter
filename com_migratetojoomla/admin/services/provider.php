@@ -20,6 +20,7 @@ use Joomla\CMS\Extension\Service\Provider\RouterFactory;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
+
 /**
  * The migratetojoomla service provider.
  *
