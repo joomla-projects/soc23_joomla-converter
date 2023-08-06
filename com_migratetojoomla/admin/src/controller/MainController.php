@@ -13,6 +13,7 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 use Joomla\Database\DatabaseFactory;
 use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Versioning\VersionableControllerTrait;
@@ -20,7 +21,8 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\MainHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
-use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Filesystem\path;
+
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -120,16 +122,13 @@ class MainController extends FormController
         $this->checkMediaConnection();
         $app   = Factory::getApplication();
         try {
-
             $data  = $this->input->post->get('jform', array(), 'array');
             $load = new self();
             $load->downloadMedia($data);
 
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
         } catch (\RuntimeException $th) {
-            $app->enqueueMessage($th->getMessage(), 'error');
-            // $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD__MEDIA_UNSUCCESSFULLY'), 'danger');
-
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD__MEDIA_UNSUCCESSFULLY'), 'danger');
         }
         // redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
@@ -147,13 +146,13 @@ class MainController extends FormController
     {
         $method = $data['mediaoptions'];
 
-        if ($method == 1) {
+        if ($method == "http") {
             // Http
             HttpHelper::testConnection($data['livewebsiteurl']);
-        } else if ($method == 2) {
+        } else if ($method == "fs") {
             // File system
             FilesystemHelper::testConnection($data['basedir']);
-        } else if ($method == 3) {
+        } else if ($method == "ftp") {
             FtpHelper::testConnection($data);
         }
     }
@@ -172,15 +171,15 @@ class MainController extends FormController
         $source = '';
 
         switch ($method) {
-            case 2:
+            case "fs":
                 $source = $data['basedir'];
                 break;
-            case 3:
+            case 'ftp':
                 $this->mediaDownloadManager = new FtpHelper($data);
                 $response = $this->mediaDownloadManager->login();
                 $source = $data['ftpbasedir'];
                 break;
-            case 1:
+            case "http":
             default:
                 $this->mediaDownloadManager = new HttpHelper($data['livewebsiteurl']);
                 $source = $data['livewebsiteurl'];
@@ -191,7 +190,7 @@ class MainController extends FormController
         $destination = MainHelper::addTrailingSlashit(JPATH_ROOT) . 'images';
 
         try {
-            if ($method == 2) {
+            if ($method == "fs") {
                 Folder::copy($source, $destination, '', true, false);
             } else {
                 $this->copy($source, $destination);
@@ -257,6 +256,7 @@ class MainController extends FormController
      */
     public function copyDir($source, $destination)
     {
+        $destination = path::clean($destination);
         $response = true;
         if (!is_dir($destination)) {
             mkdir($destination, 0755, true); // Create the directory if not exist

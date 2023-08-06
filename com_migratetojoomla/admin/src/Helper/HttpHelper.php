@@ -15,6 +15,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Http\HttpFactory;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\MainHelper;
+use Joomla\CMS\Filesystem\path;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -81,6 +82,7 @@ class HttpHelper
     public function listDirectory($url = '')
     {
         $files = array();
+
         $tmpfiles  = $this->listDirectoriesAndFiles($url);
 
         // remove live website url from current url so that url contain directory path inside which directory and files scan
@@ -89,7 +91,7 @@ class HttpHelper
         if ($pos !== false) {
             $url = substr_replace($url, '', $pos, strlen($this->websiteurl));
         }
-        $url = MainHelper::unSlashit($url);
+        $url = path::clean($url);
 
         // remove current directory path from file/directory path to get exact file/directory path
         foreach ($tmpfiles as $file) {
@@ -98,7 +100,7 @@ class HttpHelper
             if ($pos !== false) {
                 $result = substr_replace($result, '', $pos, strlen($url));
             }
-            array_push($files, MainHelper::unSlashit($result));
+            array_push($files, path::clean($result));
         }
 
         return $files;

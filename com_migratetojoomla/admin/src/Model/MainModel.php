@@ -25,14 +25,6 @@ use Joomla\CMS\Versioning\VersionableModelTrait;
  */
 class MainModel extends AdminModel
 {
-    use VersionableModelTrait;
-
-    /**
-     * @var    string  The prefix to use with controller messages.
-     * @since  1.0
-     */
-    protected $text_prefix = 'COM_MIGRATETOJOOMLA';
-
     /**
      * @var    string  The type alias for this content type.
      * @since  1.0
