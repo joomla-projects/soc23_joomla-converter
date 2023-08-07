@@ -98,6 +98,33 @@ class MainController extends FormController
         $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', array(), 'array');
 
+        if (self::setdatabase($this, $data)) {
+            $app->enqueueMessage('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY', 'success');
+        } else {
+            $app->enqueueMessage('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY', 'error');
+        }
+
+        // Store data in session
+        $app->setUserState('com_migratetojoomla.main', $data);
+
+        // redirect in all case
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
+    }
+
+    /**
+     * Method to set database $db if it is not set
+     * 
+     * @param array form data
+     * @return boolean True on success
+     * 
+     * @since 1.0
+     */
+    public static function setdatabase($instance, $data = [])
+    {
+        if (\is_resource($instance->db)) {
+            return true;
+        }
+
         $options = [
             'driver'    => $data['dbdriver'],
             'host'      => $data['dbhostname'] . ':' . $data['dbport'],
@@ -110,16 +137,11 @@ class MainController extends FormController
         try {
             $db = DatabaseDriver::getInstance($options);
             $db->getVersion();
-            $app->enqueueMessage('Database connection succesfully', 'success');
+            $instance->db = $db;
+            return true;
         } catch (\Exception $e) {
-            $app->enqueueMessage('Cannot connect to database, verify that you specified the correct database details', 'error');
+            return false;
         }
-
-        // Store data in session
-        $app->setUserState('com_migratetojoomla.main', $data);
-
-        // redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
     }
 
     /**
