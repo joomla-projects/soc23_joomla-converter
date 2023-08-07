@@ -27,11 +27,10 @@ class FilesystemHelper
      * 
      * @since 1.0
      */
-    public static function testConnection($path = NULL)
+    public static function testConnection($path = '')
     {
         $app = Factory::getApplication();
-        $check = is_dir($path);
-        if ($check) {
+        if (is_dir($path)) {
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
             return true;
         }
