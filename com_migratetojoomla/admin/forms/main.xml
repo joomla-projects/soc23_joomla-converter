@@ -6,7 +6,7 @@
 		label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
 		description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
 		class="form-select"
-		default="1"
+		default="http"
 		validate="options"
 	>
 		<option value="http">COM_MIGRATETOJOOMLA_HTTP</option>
@@ -42,7 +42,7 @@
 		label="COM_MIGRATETOJOOMLA_FTP_USERNAME_LABEL"/>
 	<field
 		name="ftppassword"
-		type="text"
+		type="password"
 		showon="mediaoptions:ftp"
 		label="COM_MIGRATETOJOOMLA_FTP_PASSWORD_LABEL"/>
 	<field
@@ -50,13 +50,13 @@
 		type="list"
 		label="COM_MIGRATETOJOOMLA_FTP_PROTOCOL_LABEL"
 		class="form-select"
-		default="1"
+		default="ftp"
 		showon="mediaoption:ftp"
 		validate="options"
 	>
-		<option value="1">COM_MIGRATETOJOOMLA_FTP</option>
-		<option value="2">COM_MIGRATETOJOOMLA_FTPS</option>
-		<option value="3">COM_MIGRATETOJOOMLA_SFTP</option>
+		<option value="ftp">COM_MIGRATETOJOOMLA_FTP</option>
+		<option value="ftps">COM_MIGRATETOJOOMLA_FTPS</option>
+		<option value="sftp">COM_MIGRATETOJOOMLA_SFTP</option>
 	</field>
 	<field
 		name="ftpbasedir"
@@ -88,7 +88,7 @@
 		label="COM_MIGRATETOJOOMLA_USERNAME_LABEL"/>
 	<field
 		name="dbpassword"
-		type="text"
+		type="password"
 		label="COM_MIGRATETOJOOMLA_PASSWORD_LABEL"/>
 	<field
 		name="dbtableprefix"

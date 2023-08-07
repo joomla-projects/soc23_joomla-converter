@@ -10,7 +10,6 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
-use Joomla\Database\DatabaseFactory;
 use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filesystem\Folder;
@@ -22,7 +21,7 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
 use Joomla\CMS\Filesystem\path;
-
+use Joomla\Database\DatabaseDriver;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -98,13 +97,24 @@ class MainController extends FormController
 
         $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', array(), 'array');
-        $isconnected = MainHelper::testDatabaseConnection($data);
 
-        if ($isconnected) {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY'), 'success');
-        } else {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'danger');
+        $options = [
+            'driver'    => $data['dbdriver'],
+            'host'      => $data['dbhostname'] . ':' . $data['dbport'],
+            'user'      => $data['dbusername'],
+            'password'  => $data['dbpassword'],
+            'database'  => $data['dbname'],
+            'prefix'    => $data['dbtableprefix'],
+        ];
+
+        try {
+            $db = DatabaseDriver::getInstance($options);
+            $db->getVersion();
+            $app->enqueueMessage('Database connection succesfully', 'success');
+        } catch (\Exception $e) {
+            $app->enqueueMessage('Cannot connect to database, verify that you specified the correct database details', 'error');
         }
+
         // Store data in session
         $app->setUserState('com_migratetojoomla.main', $data);
 
