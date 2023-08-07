@@ -29,22 +29,27 @@
 		name="ftphost"
 		type="text"
 		showon="mediaoptions:ftp"
-		label="COM_MIGRATETOJOOMLA_FTP_HOST_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_FTP_HOST_LABEL"
+		description="COM_MIGRATETOJOOMLA_FTP_HOST_DESC"/>
 	<field
 		name="ftpport"
 		type="int"
 		showon="mediaoptions:ftp"
-		label="COM_MIGRATETOJOOMLA_FTP_PORT_LABEL"/>
+		default="21"
+		label="COM_MIGRATETOJOOMLA_FTP_PORT_LABEL"
+		description="COM_MIGRATETOJOOMLA_FTP_PORT_DESC"/>
 	<field
 		name="ftpusername"
 		type="text"
 		showon="mediaoptions:ftp"
-		label="COM_MIGRATETOJOOMLA_FTP_USERNAME_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_FTP_USERNAME_LABEL"
+		description="COM_MIGRATETOJOOMLA_FTP_USERNAME_DESC"/>
 	<field
 		name="ftppassword"
 		type="password"
 		showon="mediaoptions:ftp"
-		label="COM_MIGRATETOJOOMLA_FTP_PASSWORD_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_FTP_PASSWORD_LABEL"
+		description="COM_MIGRATETOJOOMLA_FTP_PASSWORD_DESC"/>
 	<field
 		name="ftpprotocoloptions"
 		type="list"
@@ -53,6 +58,7 @@
 		default="ftp"
 		showon="mediaoption:ftp"
 		validate="options"
+		description="COM_MIGRATETOJOOMLA_FTP_PROTOCOL_DESC"
 	>
 		<option value="ftp">COM_MIGRATETOJOOMLA_FTP</option>
 		<option value="ftps">COM_MIGRATETOJOOMLA_FTPS</option>
@@ -67,31 +73,38 @@
 	<field
 		name="dbhostname"
 		type="text"
-		label="COM_MIGRATETOJOOMLA_HOSTNAME_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_DATABASE_HOSTNAME_LABEL"
+		description="COM_MIGRATETOJOOMLA_DATABASE_HOSTNAME_DESC"/>
 	<field
 		name="dbdriver"
 		type="text"
 		default="mysqli"
-		label="COM_MIGRATETOJOOMLA_DATABASE_DRIVER_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_DATABASE_DRIVER_LABEL"
+		description="COM_MIGRATETOJOOMLA_DATABASE_DRIVER_DESC"/>
 	<field
 		name="dbport"
 		type="int"
 		default='3306'
-		label="COM_MIGRATETOJOOMLA_PORT_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_DATABASE_PORT_LABEL"
+		description="COM_MIGRATETOJOOMLA_DATABASE_PORT_DESC"/>
 	<field
 		name="dbname"
 		type="text"
-		label="COM_MIGRATETOJOOMLA_DATABASE_NAME_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_DATABASE_NAME_LABEL"
+		description="COM_MIGRATETOJOOMLA_DATABASE_NAME_DESC"/>
 	<field
 		name="dbusername"
 		type="text"
-		label="COM_MIGRATETOJOOMLA_USERNAME_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_DATABASE_USERNAME_LABEL"
+		description="COM_MIGRATETOJOOMLA_DATABASE_USERNAME_DESC"/>
 	<field
 		name="dbpassword"
 		type="password"
-		label="COM_MIGRATETOJOOMLA_PASSWORD_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_DATABASE_PASSWORD_LABEL"
+		description="COM_MIGRATETOJOOMLA_DATABASE_PASSWORD_DESC"/>
 	<field
 		name="dbtableprefix"
 		type="text"
-		label="COM_MIGRATETOJOOMLA_TABLE_PREFIX_LABEL"/>
+		label="COM_MIGRATETOJOOMLA_DATABASE_TABLE_PREFIX_LABEL"
+		description="COM_MIGRATETOJOOMLA_DATABASE_TABLE_PREFIX_DESC"/>
 </form>
