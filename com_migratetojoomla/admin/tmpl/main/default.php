@@ -55,6 +55,7 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
         <?php echo $this->form->renderField('dbtableprefix');  ?>
 
         <button type="button" id="migratetojoomladatabaseconnection" class="btn btn-primary" onclick="Joomla.submitbutton('main.checkDatabaseConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_TEST_DATABASE_CONNECTION') ?></button>
+        <button type="button" id="migratetojoomlaimportdatabase" class="btn btn-primary" onclick="Joomla.submitbutton('main.importDatabase')"><?php echo Text::_('COM_MIGRATETOJOOMLA_TEST_DATABASE_CONNECTION') ?></button>
         <input type="hidden" name="task" value="">
         <?php echo HTMLHelper::_('form.token'); ?>
     </form>

@@ -10,6 +10,7 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
+use Joomla\Database\DatabaseDriver;
 use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filesystem\Folder;
@@ -21,7 +22,6 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
 use Joomla\CMS\Filesystem\path;
-use Joomla\Database\DatabaseDriver;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -99,9 +99,9 @@ class MainController extends FormController
         $data  = $this->input->post->get('jform', array(), 'array');
 
         if (self::setdatabase($this, $data)) {
-            $app->enqueueMessage('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY', 'success');
+            $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY'), 'success');
         } else {
-            $app->enqueueMessage('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY', 'error');
+            $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
         }
 
         // Store data in session
@@ -141,6 +141,89 @@ class MainController extends FormController
             return true;
         } catch (\Exception $e) {
             return false;
+        }
+    }
+
+    /** Method to import database  
+     * 
+     * @since 1.0
+     */
+    public function importDatabase()
+    {
+        $this->checkToken();
+        $data  = $this->input->post->get('jform', array(), 'array');
+        $this->checkDatabaseConnection();
+        $this->importUsers($data);
+    }
+
+    /** 
+     * Method to import user table
+     * 
+     * @since 1.0
+     */
+    public function importUsers($data = [])
+    {
+        $app   = Factory::getApplication();
+        // Get the database connection
+        $db = $this->db;
+        // Specify the table name
+        $tableName = rtrim($data['dbtableprefix'], '_') . '_users';
+        $config['dbo'] = $this->db;
+        $tablePrefix = Factory::getConfig()->get('dbprefix');
+        $query = $db->getQuery(true)
+            ->select('*')
+            ->from($db->quoteName($tableName));
+
+        $db->setQuery($query);
+        $results = $db->loadAssocList();
+
+        $data = array();
+
+        $app->enqueueMessage('user start', 'success');
+
+        $jdb = Factory::getDbo();
+        $count = 1;
+        foreach ($results as $row) {
+            // $data = array(
+            //     $jdb->quoteName('id')             => $row['id'],
+            //     $jdb->quoteName('name')           => $row['display_name'],
+            //     $jdb->quoteName('username')       => $row['user_login'],
+            //     $jdb->quoteName('email')          => $row['user_email'],
+            //     $jdb->quoteName('registeredDate') => $row['user_registered'],
+            //     $jdb->quoteName('activation')     => $row['user_activation_key'],
+            //     $jdb->quoteName('requireReset')   => 1
+            // );
+            $c = array(
+                $row['id'], $row['display_name'], $row['user_login'],
+                $row['user_email'], $row['user_registered'], $row['user_activation_key'], 1
+            );
+
+            $query = $jdb->getQuery(true)
+                ->clear()
+                ->insert($jdb->quoteName($tablePrefix . 'users'))
+                ->columns(
+                    $jdb->quoteName('id'),
+                    $jdb->quoteName('name'),
+                    $jdb->quoteName('username'),
+                    $jdb->quoteName('email'),
+                    $jdb->quoteName('registeredDate'),
+                    $jdb->quoteName('activation'),
+                    $jdb->quoteName('requireReset')
+                )
+                ->values(
+                    $row['id'],
+                    $row['display_name'],
+                    $row['user_login'],
+                    $row['user_email'],
+                    $row['user_registered'],
+                    $row['user_activation_key'],
+                    1
+                );
+
+            $jdb->setQuery($query);
+            $jdb->execute();
+            // $app->enqueueMessage(strval($count), 'warning');
+            // $count = $count + 1;
         }
     }
 
