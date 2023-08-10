@@ -154,6 +154,8 @@ class MainController extends FormController
         $data  = $this->input->post->get('jform', array(), 'array');
         $this->checkDatabaseConnection();
         $this->importUsers($data);
+         // redirect in all case
+         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
     }
 
     /** 
@@ -193,11 +195,18 @@ class MainController extends FormController
             //     $jdb->quoteName('activation')     => $row['user_activation_key'],
             //     $jdb->quoteName('requireReset')   => 1
             // );
+            // print_r($row);
+            // echo '<pre>';
+            // var_dump($row);
+            // die;
             $c = array(
-                $row['id'], $row['display_name'], $row['user_login'],
+                $row['ID'], $row['display_name'], $row['user_login'],
                 $row['user_email'], $row['user_registered'], $row['user_activation_key'], 1
             );
-
+            // echo "<pre>";
+            // echo var_dump($row);
+            // die;
+            $dateTimeObject = new \DateTime($row['user_registered']);
             $query = $jdb->getQuery(true)
                 ->clear()
                 ->insert($jdb->quoteName($tablePrefix . 'users'))
@@ -206,24 +215,25 @@ class MainController extends FormController
                     $jdb->quoteName('name'),
                     $jdb->quoteName('username'),
                     $jdb->quoteName('email'),
-                    $jdb->quoteName('registeredDate'),
+                    $jdb->quoteName('registerDate'),
                     $jdb->quoteName('activation'),
                     $jdb->quoteName('requireReset')
                 )
                 ->values(
-                    $row['id'],
+                    $row['ID'],
                     $row['display_name'],
                     $row['user_login'],
                     $row['user_email'],
-                    $row['user_registered'],
+                    Factory::getDate($row['user_registered'])->toSql(),
                     $row['user_activation_key'],
                     1
                 );
-
+            // echo $query;
+            // die;
             $jdb->setQuery($query);
             $jdb->execute();
-            // $app->enqueueMessage(strval($count), 'warning');
-            // $count = $count + 1;
+            $app->enqueueMessage(strval($count), 'warning');
+            $count = $count + 1;
         }
     }
 

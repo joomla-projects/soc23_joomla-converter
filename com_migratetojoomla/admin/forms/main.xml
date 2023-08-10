@@ -6,11 +6,11 @@
 		label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
 		description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
 		class="form-select"
-		default="http"
+		default="fs"
 		validate="options"
 	>
-		<option value="http">COM_MIGRATETOJOOMLA_HTTP</option>
 		<option value="fs">COM_MIGRATETOJOOMLA_FS</option>
+		<option value="http">COM_MIGRATETOJOOMLA_HTTP</option>
 		<option value="ftp">COM_MIGRATETOJOOMLA_FTP</option>
 	</field>
 	<field
