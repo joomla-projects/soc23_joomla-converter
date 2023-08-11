@@ -17,7 +17,7 @@ use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Versioning\VersionableControllerTrait;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\MainHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
@@ -28,11 +28,11 @@ use Joomla\CMS\Filesystem\path;
 // phpcs:enable PSR1.Files.SideEffects
 
 /**
- * main controller class.
+ * Migrate controller class.
  *
  * @since  1.0
  */
-class MainController extends FormController
+class MigrateController extends FormController
 {
     use VersionableControllerTrait;
 
@@ -63,7 +63,7 @@ class MainController extends FormController
      * @var    string
      * @since  
      */
-    protected $text_prefix = 'COM_MIGRATETOJOOMLA_MAIN';
+    protected $text_prefix = 'COM_MIGRATETOJOOMLA_Migrate';
 
     /**
      * Method to check media connection.
@@ -80,7 +80,7 @@ class MainController extends FormController
 
         $this->testMediaConnection($data);
         // Store data in session
-        $app->setUserState('com_migratetojoomla.main', $data);
+        $app->setUserState('com_migratetojoomla.information', $data);
 
         // redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
@@ -105,7 +105,7 @@ class MainController extends FormController
         }
 
         // Store data in session
-        $app->setUserState('com_migratetojoomla.main', $data);
+        $app->setUserState('com_migratetojoomla.information', $data);
 
         // redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
@@ -154,8 +154,8 @@ class MainController extends FormController
         $data  = $this->input->post->get('jform', array(), 'array');
         $this->checkDatabaseConnection();
         $this->importUsers($data);
-         // redirect in all case
-         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
+        // redirect in all case
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
     }
 
     /** 
@@ -168,23 +168,35 @@ class MainController extends FormController
         $app   = Factory::getApplication();
         // Get the database connection
         $db = $this->db;
+        $jdb = Factory::getDbo();
         // Specify the table name
         $tableName = rtrim($data['dbtableprefix'], '_') . '_users';
         $config['dbo'] = $this->db;
         $tablePrefix = Factory::getConfig()->get('dbprefix');
-        $query = $db->getQuery(true)
+        // $query = $db->getQuery(true)
+        //     ->select('*')
+        //     ->from($db->quoteName($tableName));
+
+        // $db->setQuery($query);
+        // $results = $db->loadAssocList();
+
+        // $data = array();
+
+        // $app->enqueueMessage('user start', 'success');
+        $query = $jdb->getQuery(true)
             ->select('*')
-            ->from($db->quoteName($tableName));
+            ->from($jdb->quoteName($tablePrefix . '_users'));
+        $results2 = $jdb->loadAssocList();
 
-        $db->setQuery($query);
-        $results = $db->loadAssocList();
-
-        $data = array();
-
-        $app->enqueueMessage('user start', 'success');
-
-        $jdb = Factory::getDbo();
+        echo $tablePrefix;
+        foreach ($results2 as $row) {
+            echo "<pre>";
+            echo var_dump($row);
+            echo "<br/>";
+        }
+        die;
         $count = 1;
+
         foreach ($results as $row) {
             // $data = array(
             //     $jdb->quoteName('id')             => $row['id'],
@@ -203,9 +215,13 @@ class MainController extends FormController
                 $row['ID'], $row['display_name'], $row['user_login'],
                 $row['user_email'], $row['user_registered'], $row['user_activation_key'], 1
             );
+            $dateTimeObject = new \DateTime($row['user_registered']);
             // echo "<pre>";
+            // echo var_dump($row['user_registered']);
+            // echo var_dump($dateTimeObject);
+            // echo var_dump(Factory::getDate($row['user_registered'])->toSql());
             // echo var_dump($row);
-            // die;
+            die;
             $dateTimeObject = new \DateTime($row['user_registered']);
             $query = $jdb->getQuery(true)
                 ->clear()
@@ -224,7 +240,7 @@ class MainController extends FormController
                     $row['display_name'],
                     $row['user_login'],
                     $row['user_email'],
-                    Factory::getDate($row['user_registered'])->toSql(),
+                    $row['user_registered'],
                     $row['user_activation_key'],
                     1
                 );
@@ -311,8 +327,8 @@ class MainController extends FormController
                 break;
         }
 
-        $source = MainHelper::addTrailingSlashit($source) . 'wp-content\uploads';
-        $destination = MainHelper::addTrailingSlashit(JPATH_ROOT) . 'images';
+        $source = PathHelper::addTrailingSlashit($source) . 'wp-content\uploads';
+        $destination = PathHelper::addTrailingSlashit(JPATH_ROOT) . 'images';
 
         try {
             if ($method == "fs") {
@@ -393,8 +409,8 @@ class MainController extends FormController
                 if (preg_match('/^\.+$/', $file)) { // Skip . and ..
                     continue;
                 }
-                $source_filename = MainHelper::addTrailingSlashit($source) . $file;
-                $dest_filename = MainHelper::addTrailingSlashit($destination) . $file;
+                $source_filename = PathHelper::addTrailingSlashit($source) . $file;
+                $dest_filename = PathHelper::addTrailingSlashit($destination) . $file;
                 $response = $this->copy($source_filename, $dest_filename);
             }
         }

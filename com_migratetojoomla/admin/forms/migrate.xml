@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+	<field
+		name="frameworkoptions"
+		type="list"
+		label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
+		description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
+		class="form-select"
+		default="none"
+		validate="options"
+	>
+		<option value="none">COM_MIGRATETOJOOMLA_NONE</option>
+		<option value="wordpress">COM_MIGRATETOJOOMLA_WORDPRESS</option>
+	</field>
+</form>

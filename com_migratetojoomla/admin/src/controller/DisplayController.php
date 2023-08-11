@@ -31,5 +31,34 @@ class DisplayController extends BaseController
      *
      * @var string
      */
-    protected $default_view = 'main';
+    protected $default_view = 'migrate';
+
+    /**
+     * Method to display a view.
+     *
+     * @param   boolean  $cachable   If true, the view output will be cached
+     * @param   array    $urlparams  An array of safe URL parameters and their variable types, for valid values see {@link JFilterInput::clean()}.
+     *
+     * @return  BaseController|boolean  This object to support chaining.
+     *
+     * @since   1.5
+     */
+    public function display($cachable = false, $urlparams = [])
+    {
+        // Get the document object.
+        $document = $this->app->getDocument();
+
+        $view   = $this->input->get('view', 'migrate');
+        $layout = $this->input->get('layout', 'migrate');
+
+        if ($view = $this->getView($view, $document->getType())) {
+            $view->setLayout($layout);
+
+            // Push document object into the view.
+            $view->document = $document;
+            $view->display();
+        }
+
+        return $this;
+    }
 }

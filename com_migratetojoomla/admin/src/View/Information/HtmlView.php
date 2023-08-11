@@ -1,6 +1,6 @@
 <?php
 
-namespace Joomla\Component\MigrateToJoomla\Administrator\View\Main;
+namespace Joomla\Component\MigrateToJoomla\Administrator\View\Migrate;
 
 defined('_JEXEC') or die;
 
@@ -17,7 +17,7 @@ use Joomla\CMS\Toolbar\ToolbarHelper;
  */
 
 /**
- * Main "Migrate To Joomla" Admin View
+ * Migrate "Migrate To Joomla" Admin View
  */
 class HtmlView extends BaseHtmlView
 {
@@ -30,7 +30,7 @@ class HtmlView extends BaseHtmlView
     protected $form;
 
     /**
-     * Display the main "Migrate To Joomla" view
+     * Display the information "Migrate To Joomla" view
      *
      * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
      * @return  void
@@ -41,7 +41,7 @@ class HtmlView extends BaseHtmlView
     {
         // Get Form
         $this->form  = $this->get('Form');
-        
+
         if(!$this->form) {
             Factory::getApplication()->enqueueMessage('This is a warning message', 'warning');
         }

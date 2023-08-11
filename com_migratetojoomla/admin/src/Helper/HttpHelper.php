@@ -14,7 +14,7 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Http\HttpFactory;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\MainHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\pathHelper;
 use Joomla\CMS\Filesystem\path;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -37,7 +37,7 @@ class HttpHelper
      */
     public function __construct($websiteurl = '')
     {
-        $this->websiteurl = MainHelper::unTrailingSlashit($websiteurl);
+        $this->websiteurl = pathHelper::unTrailingSlashit($websiteurl);
     }
     /**
      * Method to check Enter http url connection

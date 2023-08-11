@@ -18,17 +18,17 @@ use Joomla\CMS\MVC\Model\AdminModel;
 // phpcs:enable PSR1.Files.SideEffects
 
 /**
- * Migratetojoomla Component main Model
+ * Migratetojoomla Component information Model
  *
  * @since  1.0
  */
-class MainModel extends AdminModel
+class InformationModel extends AdminModel
 {
     /**
      * @var    string  The type alias for this content type.
      * @since  1.0
      */
-    public $typeAlias = 'com_migratetojoomla.main';
+    public $typeAlias = 'com_migratetojoomla.information';
 
     /**
      * Method to get the form.
@@ -44,7 +44,7 @@ class MainModel extends AdminModel
     {
 
         // Get the form.
-        $form = $this->loadForm('com_migratetojoomla.main', 'main', ['control' => 'jform', 'load_data' => $loadData]);
+        $form = $this->loadForm('com_migratetojoomla.information', 'information', ['control' => 'jform', 'load_data' => $loadData]);
 
         if (empty($form)) {
             return false;
@@ -63,9 +63,9 @@ class MainModel extends AdminModel
     protected function loadFormData()
     {
         // Check the session for previously entered form data.
-        $data = Factory::getApplication()->getUserState('com_migratetojoomla.main', []);
+        $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
 
-        $this->preprocessData('com_migratetojoomla.main', $data);
+        $this->preprocessData('com_migratetojoomla.information', $data);
 
         return $data;
     }
