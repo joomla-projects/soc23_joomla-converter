@@ -80,7 +80,7 @@ class InformationController extends FormController
         $app->setUserState('com_migratetojoomla.information', $data);
 
         // redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
 
     /**
@@ -105,7 +105,7 @@ class InformationController extends FormController
         $app->setUserState('com_migratetojoomla.information', $data);
 
         // redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
 
     /**
@@ -152,7 +152,7 @@ class InformationController extends FormController
         $this->checkDatabaseConnection();
         $this->importUsers($data);
         // redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
 
     /** 
@@ -269,7 +269,7 @@ class InformationController extends FormController
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD__MEDIA_UNSUCCESSFULLY'), 'danger');
         }
         // redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla', false));
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
 
     /**

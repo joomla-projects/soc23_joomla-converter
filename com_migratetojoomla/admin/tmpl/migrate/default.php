@@ -23,7 +23,6 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
 ?>
-<div id="migratetojoomla" class="p-3">
-    <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_WORDPRESS_WEBSITE_PARAMETERS') ?></h3>
-    
+<div id="migratetojoomla" class="p-4">
+    <?php echo $this->form->renderField('frameworkoptions'); ?>
 </div>

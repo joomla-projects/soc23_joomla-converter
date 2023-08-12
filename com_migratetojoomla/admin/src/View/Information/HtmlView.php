@@ -7,7 +7,9 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
+use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
+use Joomla\CMS\Router\Route;
 use Joomla\Component\MigrateToJoomla\Administrator\Model\InformationModel;
 
 /**
@@ -23,7 +25,7 @@ use Joomla\Component\MigrateToJoomla\Administrator\Model\InformationModel;
  */
 class HtmlView extends BaseHtmlView
 {
-    
+
     /**
      * The Form object
      *
@@ -47,12 +49,30 @@ class HtmlView extends BaseHtmlView
         $model       = $this->getModel();
         $this->form  = $model->getForm();
 
-        if(!$this->form) {
+        if (!$this->form) {
             Factory::getApplication()->enqueueMessage('This is a warning message', 'warning');
         }
         // Set ToolBar title
         ToolbarHelper::title(Text::_('COM_MIGRATETOJOOMLA'), 'Migrate To Joomla');
 
+        $this->addToolbar();
+
         parent::display($tpl);
+    }
+
+    /**
+     * Setup the Toolbar
+     *
+     * @return  void
+     *
+     * @since   1.6
+     */
+    protected function addToolbar(): void
+    {
+        $toolbar = Toolbar::getInstance();
+        $toolbar->linkButton('previous', 'COM_MIGRATETOJOOMLA_PREVIOUS')
+            ->url(Route::_('index.php?option=com_migratetojoomla&view=migrate'));
+        $toolbar->linkButton('next', 'COM_MIGRATETOJOOMLA_NEXT')
+            ->url(Route::_('index.php?option=com_migratetojoomla&view=migrate'));
     }
 }
