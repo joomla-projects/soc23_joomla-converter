@@ -16,7 +16,6 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
-use Joomla\CMS\Versioning\VersionableControllerTrait;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
@@ -28,14 +27,12 @@ use Joomla\CMS\Filesystem\path;
 // phpcs:enable PSR1.Files.SideEffects
 
 /**
- * Migrate controller class.
+ * Information controller class.
  *
  * @since  1.0
  */
-class MigrateController extends FormController
+class InformationController extends FormController
 {
-    use VersionableControllerTrait;
-
     /**
      * @var object  Media Download object
      * 
@@ -63,7 +60,7 @@ class MigrateController extends FormController
      * @var    string
      * @since  
      */
-    protected $text_prefix = 'COM_MIGRATETOJOOMLA_Migrate';
+    protected $text_prefix = 'COM_MIGRATETOJOOMLA_INFORMATION';
 
     /**
      * Method to check media connection.
@@ -173,12 +170,12 @@ class MigrateController extends FormController
         $tableName = rtrim($data['dbtableprefix'], '_') . '_users';
         $config['dbo'] = $this->db;
         $tablePrefix = Factory::getConfig()->get('dbprefix');
-        // $query = $db->getQuery(true)
-        //     ->select('*')
-        //     ->from($db->quoteName($tableName));
+        $query = $db->getQuery(true)
+            ->select('*')
+            ->from($db->quoteName($tableName));
 
-        // $db->setQuery($query);
-        // $results = $db->loadAssocList();
+        $db->setQuery($query);
+        $results = $db->loadAssocList();
 
         // $data = array();
 

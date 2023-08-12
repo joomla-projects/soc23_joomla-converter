@@ -1,6 +1,6 @@
 <?php
 
-namespace Joomla\Component\MigrateToJoomla\Administrator\View\Migrate;
+namespace Joomla\Component\MigrateToJoomla\Administrator\View\Information;
 
 defined('_JEXEC') or die;
 
@@ -8,6 +8,8 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\ToolbarHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Model\InformationModel;
+
 /**
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
@@ -40,7 +42,10 @@ class HtmlView extends BaseHtmlView
     public function display($tpl = null)
     {
         // Get Form
-        $this->form  = $this->get('Form');
+        // $this->form  = $this->get('Form');
+        /** @var InformationModel $model */
+        $model       = $this->getModel();
+        $this->form  = $model->getForm();
 
         if(!$this->form) {
             Factory::getApplication()->enqueueMessage('This is a warning message', 'warning');

@@ -10,18 +10,7 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
-use Joomla\Database\DatabaseDriver;
 use Joomla\CMS\MVC\Controller\FormController;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Filesystem\Folder;
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\Router\Route;
-use Joomla\CMS\Versioning\VersionableControllerTrait;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\MigrateHelper;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
-use Joomla\CMS\Filesystem\path;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -34,8 +23,4 @@ use Joomla\CMS\Filesystem\path;
  */
 class MigrateController extends FormController
 {
-    use VersionableControllerTrait;
-
-    
-    
 }
