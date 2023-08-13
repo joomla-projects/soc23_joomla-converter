@@ -63,6 +63,40 @@ class InformationController extends FormController
     protected $text_prefix = 'COM_MIGRATETOJOOMLA_INFORMATION';
 
     /**
+     * Method to save form data and redirect to next view
+     * 
+     * @since 1.0
+     */
+    public function storeFormAndPrevious()
+    {
+        $this->checkToken();
+        $app   = Factory::getApplication();
+        $data  = $this->input->post->get('jform', array(), 'array');
+
+        $app->setUserState('com_migratetojoomla.information', $data);
+
+        // redirect in all case
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=migrate', false));
+    }
+
+    /**
+     * Method to save form data and redirect to next view
+     * 
+     * @since 1.0
+     */
+    public function storeFormAndNext()
+    {
+        $this->checkToken();
+        $app   = Factory::getApplication();
+        $data  = $this->input->post->get('jform', array(), 'array');
+
+        $app->setUserState('com_migratetojoomla.information', $data);
+
+        // redirect in all case
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=migrate', false));
+    }
+
+    /**
      * Method to check media connection.
      * 
      * @since 1.0

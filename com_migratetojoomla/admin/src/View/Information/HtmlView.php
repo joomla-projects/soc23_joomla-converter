@@ -60,6 +60,12 @@ class HtmlView extends BaseHtmlView
         parent::display($tpl);
     }
 
+    public function alert()
+    {
+        $app   = Factory::getApplication();
+        $app->enqueueMessage("I am here ", 'success');
+    }
+
     /**
      * Setup the Toolbar
      *
@@ -70,9 +76,13 @@ class HtmlView extends BaseHtmlView
     protected function addToolbar(): void
     {
         $toolbar = Toolbar::getInstance();
-        $toolbar->linkButton('previous', 'COM_MIGRATETOJOOMLA_PREVIOUS')
-            ->url(Route::_('index.php?option=com_migratetojoomla&view=migrate'));
-        $toolbar->linkButton('next', 'COM_MIGRATETOJOOMLA_NEXT')
-            ->url(Route::_('index.php?option=com_migratetojoomla&view=migrate'));
+        $toolbar->customButton('previous')
+            ->html('<joomla-toolbar-button><button onclick="Joomla.submitbutton(\'information.storeFormAndPrevious\')" '
+                . 'class="btn btn-primary"><span class="icon-previous" aria-hidden="true"></span>'
+                . Text::_('COM_MIGRATETOJOOMLA_PREVIOUS') . '</button></joomla-toolbar-button>');
+        $toolbar->customButton('next')
+            ->html('<joomla-toolbar-button><button onclick="Joomla.submitbutton(\'information.storeFormAndNext\')" '
+                . 'class="btn btn-primary"><span class="icon-next" aria-hidden="true"></span>'
+                . Text::_('COM_MIGRATETOJOOMLA_NEXT') . '</button></joomla-toolbar-button>');
     }
 }

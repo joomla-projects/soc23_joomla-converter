@@ -24,7 +24,7 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
 
 ?>
 <div id="migratetojoomla" class="p-3">
-    <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_SELECT_FRAMEWORK') ?></h3>
+    <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_FRAMEWORK_INFORMATION') ?></h3>
     <form action="<?php echo Route::_('index.php?option=com_migratetojoomla'); ?>" method="post" name="adminForm" id="adminForm" enctype="multipart/form-data">
 
         <?php echo $this->form->renderField('mediaoptions'); ?>
@@ -38,9 +38,9 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
         <?php echo $this->form->renderField('protocol');  ?>
         <?php echo $this->form->renderField('ftpbasedir');  ?>
 
-        <button type="button" id="migratetojoomlamediaconnection" class="btn btn-primary" onclick="Joomla.submitbutton('migrate.checkMediaConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_CHECK_MEDIA_CONNECTION') ?></button>
+        <button type="button" id="migratetojoomlamediaconnection" class="btn btn-primary" onclick="Joomla.submitbutton('information.checkMediaConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_CHECK_MEDIA_CONNECTION') ?></button>
 
-        <button type="button" id="migratetojoomladownload" class="btn btn-primary" onclick="Joomla.submitbutton('migrate.download')"><?php echo Text::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA') ?></button>
+        <button type="button" id="migratetojoomladownload" class="btn btn-primary" onclick="Joomla.submitbutton('information.download')"><?php echo Text::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA') ?></button>
 
         <br>
         <br>
@@ -54,8 +54,8 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
         <?php echo $this->form->renderField('dbpassword');  ?>
         <?php echo $this->form->renderField('dbtableprefix');  ?>
 
-        <button type="button" id="migratetojoomladatabaseconnection" class="btn btn-primary" onclick="Joomla.submitbutton('migrate.checkDatabaseConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_TEST_DATABASE_CONNECTION') ?></button>
-        <button type="button" id="migratetoimportdatabase" class="btn btn-primary" onclick="Joomla.submitbutton('migrate.importDatabase')"><?php echo "import Database" ?></button>
+        <button type="button" id="migratetojoomladatabaseconnection" class="btn btn-primary" onclick="Joomla.submitbutton('information.checkDatabaseConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_TEST_DATABASE_CONNECTION') ?></button>
+        <button type="button" id="migratetoimportdatabase" class="btn btn-primary" onclick="Joomla.submitbutton('information.importDatabase')"><?php echo "import Database" ?></button>
         <input type="hidden" name="task" value="">
         <?php echo HTMLHelper::_('form.token'); ?>
     </form>

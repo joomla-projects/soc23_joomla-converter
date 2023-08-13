@@ -67,7 +67,9 @@ class HtmlView extends BaseHtmlView
     protected function addToolbar(): void
     {
         $toolbar = Toolbar::getInstance();
-        $toolbar->linkButton('next', 'COM_MIGRATETOJOOMLA_NEXT')
-            ->url(Route::_('index.php?option=com_migratetojoomla&view=information'));
+        $toolbar->customButton('next')
+            ->html('<joomla-toolbar-button><button onclick="Joomla.submitbutton(\'migrate.storeFormAndNext\')" '
+                . 'class="btn btn-primary"><span class="icon-next" aria-hidden="true"></span>'
+                . Text::_('COM_MIGRATETOJOOMLA_NEXT') . '</button></joomla-toolbar-button>');
     }
 }
