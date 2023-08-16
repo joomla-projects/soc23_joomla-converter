@@ -14,7 +14,7 @@ use Joomla\CMS\Router\Route;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
-/** @var \Joomla\Component\Banners\Administrator\View\Banner\HtmlView $this */
+/** @var \Joomla\Component\MigrateToJoomla\Administrator\View\Information\HtmlView $this */
 
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
 $wa = $this->document->getWebAssetManager();

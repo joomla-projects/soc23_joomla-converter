@@ -12,6 +12,7 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Model;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\AdminModel;
+use Joomla\CMS\Plugin\PluginHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -42,6 +43,8 @@ class ParameterModel extends AdminModel
      */
     public function getForm($data = [], $loadData = true)
     {
+        // Load the fields plugin that they can add additional parameters to the form
+        PluginHelper::importPlugin('migratetojoomla');
 
         // Get the form.
         $form = $this->loadForm('com_migratetojoomla.parameter', 'parameter', ['control' => 'jform', 'load_data' => $loadData]);

@@ -94,7 +94,7 @@ class InformationController extends FormController
         $app->setUserState('com_migratetojoomla.information', $data);
 
         // redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=migrate', false));
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=parameter', false));
     }
 
     /**
