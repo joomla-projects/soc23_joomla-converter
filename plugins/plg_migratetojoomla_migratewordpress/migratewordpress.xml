@@ -9,7 +9,7 @@
 	<authorUrl>www.joomla.org</authorUrl>
 	<version>1.0</version>
     <description>COM_MIGRATETOJOOMLA_XML_DESCRIPTION</description>
-    <namespace path="src/">Joomla\Comp\MigrateToJoomla</namespace>
+    <namespace path="src">Joomla\Plugin\MigrateToJoomla\MediaDownload</namespace>
 	<files>
 		<folder>forms</folder>
 		<folder plugin="migratewordpress">services</folder>
