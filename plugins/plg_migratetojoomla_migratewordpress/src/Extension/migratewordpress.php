@@ -11,6 +11,7 @@
 namespace Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension;
 
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\Event\EventInterface;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -23,5 +24,21 @@ use Joomla\CMS\Plugin\CMSPlugin;
  */
 final class MigrateWordpress extends CMSPlugin
 {
-    
+      /**
+     * The form event.
+     *
+     * @param   Form      $form  The form
+     * @param   stdClass  $data  The data
+     *
+     * @return   boolean
+     *
+     * @since   4.0.0
+     */
+    public function onContentPrepareForm(EventInterface $event)
+    {
+        $form = $event->getArgument('0');
+
+        return true;
+    }
+ 
 }
