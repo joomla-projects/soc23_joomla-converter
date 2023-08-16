@@ -23,7 +23,7 @@ use Joomla\CMS\Router\Route;
  *
  * @since  1.0
  */
-class MigrateController extends FormController
+class ParameterController extends FormController
 {
 
     /**
@@ -37,9 +37,26 @@ class MigrateController extends FormController
         $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', array(), 'array');
 
-        $app->setUserState('com_migratetojoomla.migrate', $data);
+        $app->setUserState('com_migratetojoomla.parmeters', $data);
 
-        // redirect in all case
+        //redirect in all case
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=parameters', false));
+    }
+
+    /**
+     * Method to save form data and redirect to next view
+     * 
+     * @since 1.0
+     */
+    public function storeFormAndPrevios()
+    {
+        $this->checkToken();
+        $app   = Factory::getApplication();
+        $data  = $this->input->post->get('jform', array(), 'array');
+
+        $app->setUserState('com_migratetojoomla.parmeters', $data);
+
+        //redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
 }

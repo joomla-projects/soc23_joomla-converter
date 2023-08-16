@@ -3,13 +3,12 @@
 	<field
 		name="frameworkoptions"
 		type="list"
-		label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
-		description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
+		label="COM_MIGRATETOJOOMLA_SELECT_FRAMEWORK_LABEL"
+		description="COM_MIGRATETOJOOMLA_SELECT_FRAMEWORK_DESC"
 		class="form-select"
-		default="none"
 		validate="options"
+		require="true"
 	>
-		<option value="none">COM_MIGRATETOJOOMLA_NONE</option>
 		<option value="wordpress">COM_MIGRATETOJOOMLA_WORDPRESS</option>
 	</field>
 </form>
