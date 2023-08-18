@@ -1,15 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>	
 <form>
-	<field
-		name="mediadownloadstatus"
-		type="radio"
-		label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
-		description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
-		class="form-select"
-		default="yes"
-		validate="options"
-	>
-		<option value="yes">JYES</option>
-		<option value="no">JNO</option>
-	</field>
+    <fields name="migratewordpress">
+        <fieldset name="migratewordpress">
+            <field
+			name="mediadownloadstatus"
+			type="radio"
+			label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
+			description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
+			class="form-select"
+			default="yes"
+			validate="options"
+			>
+				<option value="yes">JYES</option>
+				<option value="no">JNO</option>
+			</field>
+        </fieldset>
+    </fields>
 </form>

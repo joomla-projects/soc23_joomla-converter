@@ -12,6 +12,8 @@ namespace Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension;
 
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Event\EventInterface;
+use Joomla\CMS\Form\Form;
+use ReflectionClass;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -24,7 +26,7 @@ use Joomla\Event\EventInterface;
  */
 final class MigrateWordpress extends CMSPlugin
 {
-      /**
+    /**
      * The form event.
      *
      * @param   Form      $form  The form
@@ -37,8 +39,40 @@ final class MigrateWordpress extends CMSPlugin
     public function onContentPrepareForm(EventInterface $event)
     {
         $form = $event->getArgument('0');
+        $data = $event->getArgument('1');
 
+        $name = $form->getName();
+
+        $allowedForms = [
+            'com_migratetojoomla.parameter'
+        ];
+
+        if (!\in_array($name, $allowedForms)) {
+            return;
+        }
+
+        Form::addFormPath(JPATH_PLUGINS . '/' .'migratetojoomla' . '/' . 'migratewordpress'. '/forms');
+        $form->loadFile('migratewordpress.xml', false);
         return true;
     }
- 
+
+    /**
+     *
+     * @param   Form      $form The form
+     * @param   \stdClass $data The data
+     *
+     * @return  boolean|\stdClass
+     *
+     * @since   4.0.0
+     */
+    public function enhanceForm(Form $form)
+    {
+        // Load XML file from "parent" plugin
+        $path = dirname((new ReflectionClass(static::class))->getFileName());
+
+        if (is_file($path . '/forms/migratewordpress.xml')) {
+            $form->loadFile($path . '/forms/migratewordpress.xml');
+        }
+    }
+
 }

@@ -31,6 +31,12 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
         /** this is plugin field */
         <?php echo $this->form->renderField('mediadownloadstatus'); ?>
 
+        <?php foreach ($this->form->getFieldsets('migratewordpress') as $name => $fieldSet) : ?>
+             <?php foreach ($this->form->getFieldset($name) as $field) : ?>
+                <?php echo $field->renderField(); ?>
+                <?php endforeach; ?>
+        <?php endforeach; ?>
+
         <input type="hidden" name="task" value="">
         <?php echo HTMLHelper::_('form.token'); ?>
     </form>
