@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>	
 <form>
-    <fields name="migratewordpress">
-        <fieldset name="migratewordpress">
+    <fields name="frameworkparams">
+        <fieldset name="frameworkparams">
             <field
 			name="mediadownloadstatus"
 			type="radio"

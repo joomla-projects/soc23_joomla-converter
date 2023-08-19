@@ -29,9 +29,8 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
         <?php echo $this->form->renderField('mediaoptions'); ?>
 
         /** this is plugin field */
-        <?php echo $this->form->renderField('mediadownloadstatus'); ?>
 
-        <?php foreach ($this->form->getFieldsets('migratewordpress') as $name => $fieldSet) : ?>
+        <?php foreach ($this->form->getFieldsets('frameworkparams') as $name => $fieldSet) : ?>
              <?php foreach ($this->form->getFieldset($name) as $field) : ?>
                 <?php echo $field->renderField(); ?>
                 <?php endforeach; ?>

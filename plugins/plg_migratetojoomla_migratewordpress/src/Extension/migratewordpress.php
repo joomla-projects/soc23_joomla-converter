@@ -52,7 +52,8 @@ final class MigrateWordpress extends CMSPlugin
         }
 
         Form::addFormPath(JPATH_PLUGINS . '/' .'migratetojoomla' . '/' . 'migratewordpress'. '/forms');
-        $form->loadFile('migratewordpress.xml', false);
+        // $form->loadFile('migratewordpress.xml', false);
+        $form->loadFile('migratewordpress', false);
         return true;
     }
 
