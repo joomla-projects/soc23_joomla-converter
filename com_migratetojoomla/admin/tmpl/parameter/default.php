@@ -27,6 +27,7 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
     <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_FRAMEWORK_PARAMETERS') ?></h3>
     <form action="<?php echo Route::_('index.php?option=com_migratetojoomla'); ?>" method="post" name="adminForm" id="adminForm" enctype="multipart/form-data">
         <?php echo $this->form->renderField('mediaoptions'); ?>
+        <?php echo $this->form->renderField('mediadownloadstatus'); ?>
 
         /** this is plugin field */
 

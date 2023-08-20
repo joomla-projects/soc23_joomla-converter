@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <form>
 	<field
-		name="frameworkoptions"
+		name="framework"
 		type="list"
 		label="COM_MIGRATETOJOOMLA_SELECT_FRAMEWORK_LABEL"
 		description="COM_MIGRATETOJOOMLA_SELECT_FRAMEWORK_DESC"

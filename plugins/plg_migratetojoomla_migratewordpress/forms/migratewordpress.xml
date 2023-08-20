@@ -7,12 +7,12 @@
 			type="radio"
 			label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
 			description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
-			class="form-select"
-			default="yes"
+			default="1"
+			layout="joomla.form.field.radio.switcher"
 			validate="options"
 			>
-				<option value="yes">JYES</option>
-				<option value="no">JNO</option>
+			   <option value="1">JYES</option>
+			   <option value="0">JNO</option>
 			</field>
         </fieldset>
     </fields>

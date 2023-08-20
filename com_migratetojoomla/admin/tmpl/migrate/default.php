@@ -25,7 +25,7 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
 ?>
 <div id="migratetojoomla" class="p-4">
     <form action="<?php echo Route::_('index.php?option=com_migratetojoomla'); ?>" method="post" name="adminForm" id="adminForm" enctype="multipart/form-data">
-        <?php echo $this->form->renderField('frameworkoptions'); ?>
+        <?php echo $this->form->renderField('framework'); ?>
         <input type="hidden" name="task" value="">
         <?php echo HTMLHelper::_('form.token'); ?>
     </form>

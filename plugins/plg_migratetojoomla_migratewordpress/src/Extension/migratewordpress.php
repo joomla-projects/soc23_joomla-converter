@@ -8,7 +8,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-namespace Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension;
+namespace Joomla\Plugin\MigrateToJoomla\MigrateWordpress\Extension;
 
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Event\EventInterface;

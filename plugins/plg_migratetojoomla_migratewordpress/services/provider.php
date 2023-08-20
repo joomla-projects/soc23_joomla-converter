@@ -16,7 +16,7 @@ use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
-use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\MigrateWordpress;
+use Joomla\Plugin\MigrateToJoomla\MigrateWordpress\Extension\MigrateWordpress;
 
 return new class() implements ServiceProviderInterface
 {
