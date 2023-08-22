@@ -26,15 +26,14 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
 <div id="migratetojoomla" class="p-3">
     <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_FRAMEWORK_PARAMETERS') ?></h3>
     <form action="<?php echo Route::_('index.php?option=com_migratetojoomla'); ?>" method="post" name="adminForm" id="adminForm" enctype="multipart/form-data">
-        <?php echo $this->form->renderField('mediaoptions'); ?>
-        <?php echo $this->form->renderField('mediadownloadstatus'); ?>
+        <?php echo $this->form->renderField('mediamigratestatus'); ?>
+        <?php echo $this->form->renderField('databasemigratestatus'); ?>
 
-        /** this is plugin field */
-
+        <hr/>
         <?php foreach ($this->form->getFieldsets('frameworkparams') as $name => $fieldSet) : ?>
-             <?php foreach ($this->form->getFieldset($name) as $field) : ?>
+            <?php foreach ($this->form->getFieldset($name) as $field) : ?>
                 <?php echo $field->renderField(); ?>
-                <?php endforeach; ?>
+            <?php endforeach; ?>
         <?php endforeach; ?>
 
         <input type="hidden" name="task" value="">

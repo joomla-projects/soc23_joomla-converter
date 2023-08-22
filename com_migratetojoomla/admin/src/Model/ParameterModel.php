@@ -14,7 +14,8 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\AdminModel;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Language\Text;
-
+use Joomla\CMS\Form\Form;
+use Joomla\CMS\Event\AbstractEvent;
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
@@ -44,18 +45,19 @@ class ParameterModel extends AdminModel
      */
     public function getForm($data = [], $loadData = true)
     {
-        // Load the fields plugin that they can add additional parameters to the form
-        $app   = Factory::getApplication();
-        if(PluginHelper::importPlugin('migratetojoomla' , 'migratewordpress')){
-            
-            $app->enqueueMessage("Plugin success", 'success');
-        } else {
-            $app->enqueueMessage("Plugin unsuccess", 'danger');
-
-        }
+        PluginHelper::importPlugin('migratetojoomla');
 
         // Get the form.
         $form = $this->loadForm('com_migratetojoomla.parameter', 'parameter', ['control' => 'jform', 'load_data' => $loadData]);
+
+        $event = AbstractEvent::create(
+            'onContentPrepareFormmigrate',
+            [
+                'subject'    => $this,
+                'form'       => $form
+            ]
+        );
+        Factory::getApplication()->triggerEvent('onContentPrepareFormmigrate', $event);
 
         if (empty($form)) {
             return false;

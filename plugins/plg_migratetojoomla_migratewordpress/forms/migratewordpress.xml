@@ -3,7 +3,7 @@
     <fields name="frameworkparams">
         <fieldset name="frameworkparams">
             <field
-			name="mediadownloadstatus"
+			name="userdatamigrate"
 			type="radio"
 			label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
 			description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"

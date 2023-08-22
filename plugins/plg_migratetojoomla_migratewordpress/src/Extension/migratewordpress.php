@@ -10,10 +10,13 @@
 
 namespace Joomla\Plugin\MigrateToJoomla\MigrateWordpress\Extension;
 
+use Hoa\Event\Test\Unit\Event;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Event\EventInterface;
 use Joomla\CMS\Form\Form;
 use ReflectionClass;
+use Joomla\Event\SubscriberInterface;
+use Joomla\CMS\Factory;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -24,8 +27,24 @@ use ReflectionClass;
  *
  * @since  3.2
  */
-final class MigrateWordpress extends CMSPlugin
-{
+
+final class MigrateWordpress extends CMSPlugin implements SubscriberInterface
+{   
+
+    /**
+     * Returns an array of events this subscriber will listen to.
+     *
+     * @return  array
+     *
+     * @since   4.3.0
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            'onContentPrepareFormmigrate' => 'onContentPrepareForm',
+        ];
+    }
+
     /**
      * The form event.
      *
@@ -36,44 +55,23 @@ final class MigrateWordpress extends CMSPlugin
      *
      * @since   4.0.0
      */
-    public function onContentPrepareForm(EventInterface $event)
-    {
-        $form = $event->getArgument('0');
-        $data = $event->getArgument('1');
-
-        $name = $form->getName();
+    public function onContentPrepareForm(EventInterface $event )
+    {   
+        $form = $event->getArgument('form');
+        $formName = $form->getName();
 
         $allowedForms = [
             'com_migratetojoomla.parameter'
         ];
 
-        if (!\in_array($name, $allowedForms)) {
-            return;
+        if (!in_array($formName, $allowedForms, true)) {
+            return true;
         }
 
-        Form::addFormPath(JPATH_PLUGINS . '/' .'migratetojoomla' . '/' . 'migratewordpress'. '/forms');
-        // $form->loadFile('migratewordpress.xml', false);
+        Form::addFormPath(JPATH_PLUGINS . '/' . $this->_type . '/' . $this->_name . '/forms');
+
         $form->loadFile('migratewordpress', false);
         return true;
-    }
-
-    /**
-     *
-     * @param   Form      $form The form
-     * @param   \stdClass $data The data
-     *
-     * @return  boolean|\stdClass
-     *
-     * @since   4.0.0
-     */
-    public function enhanceForm(Form $form)
-    {
-        // Load XML file from "parent" plugin
-        $path = dirname((new ReflectionClass(static::class))->getFileName());
-
-        if (is_file($path . '/forms/migratewordpress.xml')) {
-            $form->loadFile($path . '/forms/migratewordpress.xml');
-        }
     }
 
 }

@@ -20,8 +20,12 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
-
 use Joomla\CMS\Filesystem\path;
+use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\MediaDownload;
+use Joomla\Event\Dispatcher;
+use Joomla\CMS\Event\AbstractEvent;
+use Joomla\Event\DispatcherAwareTrait;
+use Joomla\Plugin\Editors\TinyMCE\PluginTraits\DisplayTrait;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -34,6 +38,7 @@ use Joomla\CMS\Filesystem\path;
  */
 class InformationController extends FormController
 {
+    use DisplayTrait;
     /**
      * @var object  Media Download object
      * 
@@ -110,7 +115,19 @@ class InformationController extends FormController
 
         $data  = $this->input->post->get('jform', array(), 'array');
 
-        $this->testMediaConnection($data);
+        // Pre-processing by observers
+        // $event = AbstractEvent::create(
+        //     'testMediaConnection',
+        //     $data
+        // );
+        $event = AbstractEvent::create(
+            'testMediaConnection',
+            [
+                'subject'    => $this
+            ]
+        );
+        $this->getDispatcher()->dispatch('testMediaConnection' , $event);  
+        // MediaDownload::testMediaConnection($data);
         // Store data in session
         $app->setUserState('com_migratetojoomla.information', $data);
 
