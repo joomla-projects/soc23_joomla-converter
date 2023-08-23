@@ -8,11 +8,15 @@
 	<authorEmail>admin@joomla.org</authorEmail>
 	<authorUrl>www.joomla.org</authorUrl>
 	<version>1.0</version>
-    <description>COM_MIGRATETOJOOMLA_XML_DESCRIPTION</description>
+    <description>PLG_MIGRATETOJOOMLA_MIGRATEWORDPRESS_DESC</description>
     <namespace path="src">Joomla\Plugin\MigrateToJoomla\MigrateWordpress</namespace>
 	<files>
 		<folder>forms</folder>
 		<folder plugin="migratewordpress">services</folder>
 		<folder>src</folder>
 	</files>
+	<languages folder="admin">
+        <language tag="en-GB">language/en-GB/plg_migratetojoomla_migratewordpress.ini</language>
+        <language tag="en-GB">language/en-GB/plg_migratetojoomla_migratewordpress.sys.ini</language>
+	</languages>
 </extension>

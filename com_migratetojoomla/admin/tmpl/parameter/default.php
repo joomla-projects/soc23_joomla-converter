@@ -11,6 +11,7 @@
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Factory;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
@@ -22,6 +23,8 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
     ->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
+$lang = Factory::getLanguage();    
+$lang->load('plg_migratetojoomla_migratewordpress', JPATH_ADMINISTRATOR);
 ?>
 <div id="migratetojoomla" class="p-3">
     <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_FRAMEWORK_PARAMETERS') ?></h3>

@@ -14,4 +14,8 @@
 		<folder plugin="mediadownload">services</folder>
 		<folder>src</folder>
 	</files>
+	<languages folder="admin">
+        <language tag="en-GB">language/en-GB/plg_migratetojoomla_mediadownload.ini</language>
+        <language tag="en-GB">language/en-GB/plg_migratetojoomla_mediadownload.sys.ini</language>
+	</languages>
 </extension>
