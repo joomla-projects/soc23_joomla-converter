@@ -54,18 +54,22 @@ class FtpHelper
      * 
      * @since 1.0
      */
-    public static function testConnection($data = [])
+    public static function testConnection($data = [] , $msgshow = 1)
     {
         $instance = new FtpHelper();
         $instance->options = $data;
         $response = $instance->login();
         $app = Factory::getApplication();
+        $result = false;
 
         if ($response) {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_SUCCESFULLY'), 'success');
+            $msgshow && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_SUCCESFULLY'), 'success');
+            $result = true;
         } else {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_UNSUCCESSFULLY'), 'danger');
+            $msgshow && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_UNSUCCESSFULLY'), 'danger');
         }
+
+        return $result;
     }
 
     /**

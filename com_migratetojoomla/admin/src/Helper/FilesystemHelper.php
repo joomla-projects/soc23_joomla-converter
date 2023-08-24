@@ -27,14 +27,14 @@ class FilesystemHelper
      * 
      * @since 1.0
      */
-    public static function testConnection($path = '')
+    public static function testConnection($path = '' , $msgshow = 1)
     {
         $app = Factory::getApplication();
         if (is_dir($path)) {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
+           $msgshow && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
             return true;
         }
-        $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_UNSUCCESSFULLY'), 'warning');
+        $msgshow && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_UNSUCCESSFULLY'), 'warning');
         return false;
     }
 }

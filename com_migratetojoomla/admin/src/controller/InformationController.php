@@ -107,7 +107,7 @@ class InformationController extends FormController
      * 
      * @since 1.0
      */
-    public function checkMediaConnection()
+    public function checkMediaConnection($msgshow = 1)
     {
         $this->checkToken();
 
@@ -120,14 +120,15 @@ class InformationController extends FormController
         //     'testMediaConnection',
         //     $data
         // );
-        $event = AbstractEvent::create(
-            'testMediaConnection',
-            [
-                'subject'    => $this
-            ]
-        );
-        $this->getDispatcher()->dispatch('testMediaConnection' , $event);  
+        // $event = AbstractEvent::create(
+        //     'testMediaConnection',
+        //     [
+        //         'subject'    => $this
+        //     ]
+        // );
+        // $this->getDispatcher()->dispatch('testMediaConnection' , $event);  
         // MediaDownload::testMediaConnection($data);
+        $this->testMediaConnection($data , $msgshow);
         // Store data in session
         $app->setUserState('com_migratetojoomla.information', $data);
 
@@ -140,7 +141,7 @@ class InformationController extends FormController
      * 
      * @since 1.0
      */
-    public function checkDatabaseConnection()
+    public function checkDatabaseConnection($msgshow = 1)
     {
         $this->checkToken();
 
@@ -148,9 +149,9 @@ class InformationController extends FormController
         $data  = $this->input->post->get('jform', array(), 'array');
 
         if (self::setdatabase($this, $data)) {
-            $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY'), 'success');
+            $msgshow && $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY'), 'success');
         } else {
-            $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
+            $msgshow &&  $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
         }
 
         // Store data in session
@@ -332,19 +333,22 @@ class InformationController extends FormController
      * 
      * @since 1.0
      */
-    public static function testMediaConnection($data = [])
+    public static function testMediaConnection($data = [], $msgshow = 1)
     {
         $method = $data['mediaoptions'];
 
+        $result = false;
         if ($method == "http") {
             // Http
-            HttpHelper::testConnection($data['livewebsiteurl']);
+            $result = HttpHelper::testConnection($data['livewebsiteurl'], $msgshow);
         } else if ($method == "fs") {
             // File system
-            FilesystemHelper::testConnection($data['basedir']);
+            $result = FilesystemHelper::testConnection($data['basedir'], $msgshow);
         } else if ($method == "ftp") {
-            FtpHelper::testConnection($data);
+            $result = FtpHelper::testConnection($data, $msgshow);
         }
+
+        return $result;
     }
 
     /**
