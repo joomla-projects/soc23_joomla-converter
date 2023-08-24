@@ -10,7 +10,7 @@ use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 use Joomla\CMS\Router\Route;
-use Joomla\Component\MigrateToJoomla\Administrator\Model\ParameterModel;
+use Joomla\Component\MigrateToJoomla\Administrator\Model\CheckModel;
 
 /**
  * @package     Joomla.Administrator
@@ -25,7 +25,6 @@ use Joomla\Component\MigrateToJoomla\Administrator\Model\ParameterModel;
  */
 class HtmlView extends BaseHtmlView
 {
-
     /**
      * The Form object
      *

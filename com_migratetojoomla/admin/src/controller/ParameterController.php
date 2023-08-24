@@ -40,7 +40,7 @@ class ParameterController extends FormController
         $app->setUserState('com_migratetojoomla.parameters', $data);
 
         //redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=parameter', false));
+        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=check', false));
     }
 
     /**

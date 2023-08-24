@@ -37,6 +37,9 @@ class MigrateController extends FormController
         $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', array(), 'array');
 
+        $session = Factory::getSession();
+        $session->set('framework', $data['framework']);
+
         $app->setUserState('com_migratetojoomla.migrate', $data);
 
         // redirect in all case

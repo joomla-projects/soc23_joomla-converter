@@ -96,6 +96,8 @@ class InformationController extends FormController
         $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', array(), 'array');
 
+        $this->checkMediaConnection(0);
+        $this->checkDatabaseConnection(0);
         $app->setUserState('com_migratetojoomla.information', $data);
 
         // redirect in all case
@@ -128,11 +130,15 @@ class InformationController extends FormController
         // );
         // $this->getDispatcher()->dispatch('testMediaConnection' , $event);  
         // MediaDownload::testMediaConnection($data);
-        $this->testMediaConnection($data , $msgshow);
+        $response = $this->testMediaConnection($data , $msgshow);
+
+        $session = Factory::getSession();
+        $session->set('mediaconnectionresult', $response);
+
         // Store data in session
         $app->setUserState('com_migratetojoomla.information', $data);
 
-        // redirect in all case
+        // // redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
 
@@ -148,10 +154,14 @@ class InformationController extends FormController
         $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', array(), 'array');
 
+        $session = Factory::getSession();
+
         if (self::setdatabase($this, $data)) {
             $msgshow && $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY'), 'success');
+            $session->set('databaseconnectionresult', true);
         } else {
             $msgshow &&  $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
+            $session->set('databaseconnectionresult', false);
         }
 
         // Store data in session

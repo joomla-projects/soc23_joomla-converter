@@ -6,6 +6,7 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Router\Route;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
@@ -64,11 +65,10 @@ class HtmlView extends BaseHtmlView
      */
     public function onBeforeDisplay()
     {
-        $infocontroller = new InformationController();
+        $session = Factory::getSession();
 
-        $this->ismediaconnection = $infocontroller->checkMediaConnection(0);
-
-        // $this->isdatabaseconnection = $infocontroller->checkDatabaseConnection(0);
+        $this->ismediaconnection = $session->get('mediaconnectionresult');
+        $this->isdatabaseconnection = $session->get('databaseconnectionresult');
     }
     /**
      * Setup the Toolbar
@@ -80,13 +80,14 @@ class HtmlView extends BaseHtmlView
     protected function addToolbar(): void
     {
         $toolbar = Toolbar::getInstance();
-        $toolbar->customButton('previous')
-            ->html('<joomla-toolbar-button><button onclick="Joomla.submitbutton(\'check.storeFormAndPrevious\')" '
-                . 'class="btn btn-primary"><span class="icon-previous" aria-hidden="true"></span>'
-                . Text::_('COM_MIGRATETOJOOMLA_PREVIOUS') . '</button></joomla-toolbar-button>');
-        $toolbar->customButton('next')
-            ->html('<joomla-toolbar-button><button onclick="Joomla.submitbutton(\'check.storeFormAndNext\')" '
-                . 'class="btn btn-primary"><span class="icon-next" aria-hidden="true"></span>'
-                . Text::_('COM_MIGRATETOJOOMLA_NEXT') . '</button></joomla-toolbar-button>');
+      
+        $toolbar->linkButton('previous')
+			->icon('icon-previous')
+			->text('COM_MIGRATETOJOOMLA_PREVIOUS')
+			->url(Route::_('index.php?option=com_migratetojoomla&view=parameter'));
+        $toolbar->linkButton('next')
+			->icon('icon-next')
+			->text('COM_MIGRATETOJOOMLA_NEXT')
+			->url(Route::_('index.php?option=com_migratetojoomla&view=migrate'));
     }
 }

@@ -23,13 +23,49 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
     ->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
+$session = Factory::getSession();
+$framework = $session->get('framework');
 ?>
 <div id="migratetojoomla" class="p-3">
     <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_CHECK_INFORMATION') ?></h3>
 
-    <?php if ($this->ismediaconnection) : ?>
-        <?= Text::sprintf('Media connection Successfully') ?>
-    <?php else : ?>
-        <?= Text::sprintf('Media connection Unsuccessfully') ?>
-    <?php endif ?>
+    <div id="migratetojoomla_status" class="alert alert-info">
+        <h3 class="alert-heading">
+            <?= TEXT::_('COM_MIGRATETOJOOMLA_FRAMEWORK_SELECTED') . ' ' . TEXT::_($framework) ?>
+            <a href="index.php?option=com_migratetojoomla&view=migrate">
+                <?= Text::_('COM_MIGRATETOJOOMLA_CHANGE') ?>
+            </a>
+        </h3>
+    </div>
+    <div id="migratetojoomla_status" class="alert alert-<?= $this->ismediaconnection ? 'info' : 'warning' ?>">
+        <?php if ($this->ismediaconnection) : ?>
+            <h3 class="alert-heading">
+                <?= Text::_('COM_MIGRATETOJOOMLA_MEDIA_CONNECTION_SUCCESSFULLY') ?>
+            </h3>
+        <?php else : ?>
+            <h3 class="alert-heading">
+                <?= Text::_('COM_MIGRATETOJOOMLA_MEDIA_CONNECTION_UNSUCCESSFULLY') ?>
+            </h3>
+            <a href="index.php?option=com_migratetojoomla&view=information">
+                <?= Text::_('COM_MIGRATETOJOOMLA_CHECK') ?>
+            </a>
+        <?php endif ?>
+    </div>
+
+    <div id="migratetojoomla_status" class="alert alert-<?= $this->isdatabaseconnection ? 'info' : 'warning' ?>">
+        <?php if ($this->isdatabaseconnection) : ?>
+            <h3 class="alert-heading">
+                <?= Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY') ?>
+            </h3>
+        <?php else : ?>
+            <h3 class="alert-heading">
+                <?= Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY') ?>
+            </h3>
+
+            <a href="index.php?option=com_migratetojoomla&view=information">
+                <?= Text::_('COM_MIGRATETOJOOMLA_CHECK') ?>
+            </a>
+
+        <?php endif ?>
+    </div>
 </div>

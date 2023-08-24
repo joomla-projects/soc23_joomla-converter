@@ -25,27 +25,4 @@ use Joomla\CMS\Router\Route;
  */
 class CheckController extends FormController
 {
-
-    
-    /**
-     * Method to save form data and redirect to next view
-     * 
-     * @since 1.0
-     */
-    public function storeFormAndNext()
-    {
-        //redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=check', false));
-    }
-
-    /**
-     * Method to save form data and redirect to next view
-     * 
-     * @since 1.0
-     */
-    public function storeFormAndPrevious()
-    {
-        //redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=parameter', false));
-    }
 }
