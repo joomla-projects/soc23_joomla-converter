@@ -5,7 +5,7 @@
             <field
 			name="userdatamigrate"
 			type="radio"
-			label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_USER_DATA_LABEL"
 			description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
 			default="1"
 			layout="joomla.form.field.radio.switcher"

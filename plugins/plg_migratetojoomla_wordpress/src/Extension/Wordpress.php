@@ -8,7 +8,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-namespace Joomla\Plugin\MigrateToJoomla\MigrateWordpress\Extension;
+namespace Joomla\Plugin\MigrateToJoomla\Wordpress\Extension;
 
 use Hoa\Event\Test\Unit\Event;
 use Joomla\CMS\Plugin\CMSPlugin;
@@ -28,8 +28,8 @@ use Joomla\CMS\Factory;
  * @since  3.2
  */
 
-final class MigrateWordpress extends CMSPlugin implements SubscriberInterface
-{   
+final class Wordpress extends CMSPlugin implements SubscriberInterface
+{
 
     /**
      * Returns an array of events this subscriber will listen to.
@@ -55,10 +55,14 @@ final class MigrateWordpress extends CMSPlugin implements SubscriberInterface
      *
      * @since   4.0.0
      */
-    public function onContentPrepareForm(EventInterface $event )
-    {   
+    public function onContentPrepareForm(EventInterface $event)
+    {
         $form = $event->getArgument('form');
         $formName = $form->getName();
+
+        if ($this->_name !== $event->getArgument('framework')) {
+            return true;
+        }
 
         $allowedForms = [
             'com_migratetojoomla.parameter'
@@ -70,8 +74,7 @@ final class MigrateWordpress extends CMSPlugin implements SubscriberInterface
 
         Form::addFormPath(JPATH_PLUGINS . '/' . $this->_type . '/' . $this->_name . '/forms');
 
-        $form->loadFile('migratewordpress', false);
+        $form->loadFile('wordpress', false);
         return true;
     }
-
 }

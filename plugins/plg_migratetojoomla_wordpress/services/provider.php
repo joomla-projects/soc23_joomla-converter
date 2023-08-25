@@ -16,7 +16,7 @@ use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
-use Joomla\Plugin\MigrateToJoomla\MigrateWordpress\Extension\MigrateWordpress;
+use Joomla\Plugin\MigrateToJoomla\Wordpress\Extension\Wordpress;
 
 return new class() implements ServiceProviderInterface
 {
@@ -35,9 +35,9 @@ return new class() implements ServiceProviderInterface
             PluginInterface::class,
             function (Container $container) {
                 $dispatcher = $container->get(DispatcherInterface::class);
-                $plugin     = new MigrateWordpress(
+                $plugin     = new Wordpress(
                     $dispatcher,
-                    (array) PluginHelper::getPlugin('migratetojoomla', 'migratewordpress')
+                    (array) PluginHelper::getPlugin('migratetojoomla', 'wordpress')
                 );
                 $plugin->setApplication(Factory::getApplication());
 

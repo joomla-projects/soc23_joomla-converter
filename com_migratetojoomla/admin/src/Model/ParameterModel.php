@@ -50,11 +50,15 @@ class ParameterModel extends AdminModel
         // Get the form.
         $form = $this->loadForm('com_migratetojoomla.parameter', 'parameter', ['control' => 'jform', 'load_data' => $loadData]);
 
+        $session = Factory::getSession();
+        $framework = $session->get('framework');
+
         $event = AbstractEvent::create(
             'onContentPrepareFormmigrate',
             [
                 'subject'    => $this,
-                'form'       => $form
+                'form'       => $form,
+                'framework'  => $framework
             ]
         );
         Factory::getApplication()->triggerEvent('onContentPrepareFormmigrate', $event);
