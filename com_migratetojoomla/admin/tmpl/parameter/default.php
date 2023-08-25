@@ -23,8 +23,11 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
     ->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
-$lang = Factory::getLanguage();    
-$lang->load('plg_migratetojoomla_migratewordpress', JPATH_ADMINISTRATOR);
+$framework = Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'];
+
+$lang = Factory::getLanguage();
+$lang->load('plg_migratetojoomla_' . $framework, JPATH_ADMINISTRATOR);
+
 ?>
 <div id="migratetojoomla" class="p-3">
     <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_FRAMEWORK_PARAMETERS') ?></h3>
@@ -32,13 +35,12 @@ $lang->load('plg_migratetojoomla_migratewordpress', JPATH_ADMINISTRATOR);
         <?php echo $this->form->renderField('mediamigratestatus'); ?>
         <?php echo $this->form->renderField('databasemigratestatus'); ?>
 
-        <hr/>
+        <hr />
         <?php foreach ($this->form->getFieldsets('frameworkparams') as $name => $fieldSet) : ?>
             <?php foreach ($this->form->getFieldset($name) as $field) : ?>
                 <?php echo $field->renderField(); ?>
             <?php endforeach; ?>
         <?php endforeach; ?>
-
         <input type="hidden" name="task" value="">
         <?php echo HTMLHelper::_('form.token'); ?>
     </form>

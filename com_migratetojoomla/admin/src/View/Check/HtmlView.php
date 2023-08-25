@@ -38,6 +38,7 @@ class HtmlView extends BaseHtmlView
 	 * @var  bool
 	 */
     public $isdatabaseconnection  = false;
+
     /**
      * Display the Migrate "Migrate To Joomla" view
      *
@@ -50,6 +51,11 @@ class HtmlView extends BaseHtmlView
     {
         // Set ToolBar title
         ToolbarHelper::title(Text::_('COM_MIGRATETOJOOMLA'), 'Migrate To Joomla');
+
+        $session = Factory::getSession();
+
+        $this->ismediaconnection = $session->get('mediaconnectionresult');
+        $this->isdatabaseconnection = $session->get('databaseconnectionresult');
 
         $this->addToolbar();
         $this->onBeforeDisplay();

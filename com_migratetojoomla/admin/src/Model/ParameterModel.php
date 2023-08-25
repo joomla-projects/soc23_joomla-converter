@@ -50,17 +50,16 @@ class ParameterModel extends AdminModel
         // Get the form.
         $form = $this->loadForm('com_migratetojoomla.parameter', 'parameter', ['control' => 'jform', 'load_data' => $loadData]);
 
-        $session = Factory::getSession();
-        $framework = $session->get('framework');
 
         $event = AbstractEvent::create(
             'onContentPrepareFormmigrate',
             [
                 'subject'    => $this,
                 'form'       => $form,
-                'framework'  => $framework
+                'framework'  => Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework']
             ]
         );
+
         Factory::getApplication()->triggerEvent('onContentPrepareFormmigrate', $event);
 
         if (empty($form)) {
@@ -82,8 +81,7 @@ class ParameterModel extends AdminModel
         // Check the session for previously entered form data.
         $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
 
-        // $this->preprocessData('com_migratetojoomla.parameter', $data);
-        $this->preprocessData('com_migratetojoomla.parameter', $data, 'migratetojoomla');
+        $this->preprocessData('com_migratetojoomla.parameter', $data);
         return $data;
     }
 }

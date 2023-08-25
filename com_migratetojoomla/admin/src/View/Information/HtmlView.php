@@ -60,12 +60,6 @@ class HtmlView extends BaseHtmlView
         parent::display($tpl);
     }
 
-    public function alert()
-    {
-        $app   = Factory::getApplication();
-        $app->enqueueMessage("I am here ", 'success');
-    }
-
     /**
      * Setup the Toolbar
      *
