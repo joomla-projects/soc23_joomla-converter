@@ -42,6 +42,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         return [
             'onContentPrepareFormmigrate' => 'onContentPrepareForm',
+            'onContentPrepareDatamigrate' =>'onContentPrepareData'
         ];
     }
 
@@ -58,7 +59,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     public function onContentPrepareForm(EventInterface $event)
     {
         $form = $event->getArgument('form');
-        $formName = $form->getName();
+        $formName = $event->getArgument('formname');
 
         if ($this->_name !== $event->getArgument('framework')) {
             return true;
@@ -75,6 +76,29 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         Form::addFormPath(JPATH_PLUGINS . '/' . $this->_type . '/' . $this->_name . '/forms');
 
         $form->loadFile('wordpress', false);
+        return true;
+    }
+
+    /**
+     * @param   Event  $event  The event we are handling
+     *
+     * @return  void
+     *
+     * @throws  Exception
+     * @since   4.0.0
+     */
+    public function onContentPrepareData(EventInterface $event)
+    {
+        /**
+         * @var   string|null        $context  The context for the data
+         * @var   array|object|null  $data     An object or array containing the data for the form.
+         */
+        $context = $event->getArgument('context');
+        $data = $event->getArgument('data');
+
+        if (!\in_array($context, ['com_migratetojoomla.migrate'])) {
+            return;
+        }
         return true;
     }
 }
