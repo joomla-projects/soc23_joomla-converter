@@ -57,7 +57,7 @@ class ParameterController extends FormController
         $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', array(), 'array');
 
-        $app->setUserState('com_migratetojoomla.parameter', $data);
+        $app->setUserState('com_migratetojoomla.parameter', $data['']);
 
         //redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));

@@ -67,8 +67,6 @@ class ParameterModel extends AdminModel
             return false;
         }
 
-        $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
-
         return $form;
     }
 
@@ -83,19 +81,6 @@ class ParameterModel extends AdminModel
     {
         // Check the session for previously entered form data.
         $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
-
-        // $this->preprocessData('com_migratetojoomla.parameter', $data, 'migratetojoomla');
-        PluginHelper::importPlugin('migratetojoomla');
-        $event = AbstractEvent::create(
-            'onContentPrepareDatamigrate',
-            [
-                'subject'    => $this,
-                'context'    => 'com_migratetojoomla.parameter',
-                'data'       => $data
-            ]
-        );
-
-        Factory::getApplication()->triggerEvent('onContentPrepareDatamigrate', $event);
         return $data;
     }
 }

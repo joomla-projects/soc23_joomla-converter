@@ -3,9 +3,21 @@
     <fields name="frameworkparams">
         <fieldset name="frameworkparams">
             <field
-			name="userdatamigrate"
+			name="userdata"
 			type="radio"
 			label="PLG_MIGRATETOJOOMLA_WORDPRESS_USER_DATA_LABEL"
+			description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
+			default="1"
+			layout="joomla.form.field.radio.switcher"
+			validate="options"
+			>
+			   <option value="1">JYES</option>
+			   <option value="0">JNO</option>
+			</field>
+            <field
+			name="tagsdata"
+			type="radio"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_TAGS_DATA_LABEL"
 			description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
 			default="1"
 			layout="joomla.form.field.radio.switcher"
