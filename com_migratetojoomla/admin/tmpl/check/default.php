@@ -19,13 +19,14 @@ defined('_JEXEC') or die('Restricted Access');
 
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
 $wa = $this->document->getWebAssetManager();
-$wa->useScript('com_migratetojoomla.admin-migratetojoomla')
-    ->useScript('keepalive')
+$wa->useScript('keepalive')
+    ->useScript('com_migratetojoomla.admin-migratetojoomla')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
 $app = Factory::getApplication();
 $session = Factory::getSession();
-$parameterformdata = $session->get('parameterformdata', [])["frameworkparams"];
+$data = $session->get('parameterformdata', []);
+$parameterformdata = $data["frameworkparams"];
 // echo '<pre>';
 // echo var_dump($parameterformdata);
 // die;
@@ -46,7 +47,7 @@ $datafieldskey = array_keys($parameterformdata);
         </h3>
     </div>
 
-    <?php if ( array_key_exists('mediamigrationstatus', $parameterformdata) && $parameterformdata['mediamigratestatus'] === '1') : ?>
+    <?php if ( array_key_exists('mediamigratestatus', $data) && $data['mediamigratestatus'] === "1") : ?>
         <div id="migratetojoomla_status" class="alert alert-<?= $this->ismediaconnection ? 'info' : 'warning' ?>">
             <?php if ($this->ismediaconnection) : ?>
                 <h3 class="alert-heading">
@@ -74,7 +75,7 @@ $datafieldskey = array_keys($parameterformdata);
         </div>
     <?php endif ?>
 
-    <?php if (array_key_exists('databasemigrationstatus', $parameterformdata) && $parameterformdata['databasemigratestatus'] === '1') : ?>
+    <?php if (array_key_exists('databasemigratestatus', $data) && $data['databasemigratestatus'] === "1") : ?>
         <div id="migratetojoomla_status" class="alert alert-<?= $this->isdatabaseconnection ? 'info' : 'warning' ?>">
             <?php if ($this->isdatabaseconnection) : ?>
                 <h3 class="alert-heading">
@@ -115,7 +116,7 @@ $datafieldskey = array_keys($parameterformdata);
                 </thead>
                 <tbody>
                     <?php
-                    $n = count($datafieldskey);
+                    $n = 1;
                     foreach ($datafieldskey as $item) :
                     ?>
                         <?php if ($parameterformdata[$item] == '1') : ?>
@@ -146,7 +147,7 @@ $datafieldskey = array_keys($parameterformdata);
                 </thead>
                 <tbody>
                     <?php
-                    $n = count($datafieldskey);
+                    $n = 1;
                     foreach ($datafieldskey as $item) :
                     ?>
                         <?php if ($parameterformdata[$item] == '0') : ?>

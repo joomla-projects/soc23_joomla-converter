@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
   "name": "com_migratetojoomla",
-  "version": "4.0.0",
+  "version": "1.0",
   "description": "Joomla CMS",
   "license": "GPL-2.0-or-later",
   "assets": [
@@ -10,7 +10,8 @@
       "type": "script",
       "uri": "com_migratetojoomla/admin-migratetojoomla.js",
       "dependencies": [
-        "core"
+        "core",
+        "bootstrap.modal"
       ],
       "attributes": {
         "nomodule": true,
