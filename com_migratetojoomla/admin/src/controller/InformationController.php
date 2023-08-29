@@ -26,6 +26,7 @@ use Joomla\Event\Dispatcher;
 use Joomla\CMS\Event\AbstractEvent;
 use Joomla\Event\DispatcherAwareTrait;
 use Joomla\Plugin\Editors\TinyMCE\PluginTraits\DisplayTrait;
+use stdClass;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -130,7 +131,7 @@ class InformationController extends FormController
         // );
         // $this->getDispatcher()->dispatch('testMediaConnection' , $event);  
         // MediaDownload::testMediaConnection($data);
-        $response = $this->testMediaConnection($data , $msgshow);
+        $response = $this->testMediaConnection($data, $msgshow);
 
         $session = Factory::getSession();
         $session->set('mediaconnectionresult', $response);
@@ -225,14 +226,15 @@ class InformationController extends FormController
      */
     public function importUsers($data = [])
     {
-        $app   = Factory::getApplication();
         // Get the database connection
         $db = $this->db;
-        $jdb = Factory::getDbo();
+
         // Specify the table name
         $tableName = rtrim($data['dbtableprefix'], '_') . '_users';
         $config['dbo'] = $this->db;
         $tablePrefix = Factory::getConfig()->get('dbprefix');
+
+        // load data from framework table
         $query = $db->getQuery(true)
             ->select('*')
             ->from($db->quoteName($tableName));
@@ -240,76 +242,19 @@ class InformationController extends FormController
         $db->setQuery($query);
         $results = $db->loadAssocList();
 
-        // $data = array();
-
-        // $app->enqueueMessage('user start', 'success');
-        $query = $jdb->getQuery(true)
-            ->select('*')
-            ->from($jdb->quoteName($tablePrefix . '_users'));
-        $results2 = $jdb->loadAssocList();
-
-        echo $tablePrefix;
-        foreach ($results2 as $row) {
-            echo "<pre>";
-            echo var_dump($row);
-            echo "<br/>";
-        }
-        die;
-        $count = 1;
-
         foreach ($results as $row) {
-            // $data = array(
-            //     $jdb->quoteName('id')             => $row['id'],
-            //     $jdb->quoteName('name')           => $row['display_name'],
-            //     $jdb->quoteName('username')       => $row['user_login'],
-            //     $jdb->quoteName('email')          => $row['user_email'],
-            //     $jdb->quoteName('registeredDate') => $row['user_registered'],
-            //     $jdb->quoteName('activation')     => $row['user_activation_key'],
-            //     $jdb->quoteName('requireReset')   => 1
-            // );
-            // print_r($row);
-            // echo '<pre>';
-            // var_dump($row);
-            // die;
-            $c = array(
-                $row['ID'], $row['display_name'], $row['user_login'],
-                $row['user_email'], $row['user_registered'], $row['user_activation_key'], 1
-            );
-            $dateTimeObject = new \DateTime($row['user_registered']);
-            // echo "<pre>";
-            // echo var_dump($row['user_registered']);
-            // echo var_dump($dateTimeObject);
-            // echo var_dump(Factory::getDate($row['user_registered'])->toSql());
-            // echo var_dump($row);
-            die;
-            $dateTimeObject = new \DateTime($row['user_registered']);
-            $query = $jdb->getQuery(true)
-                ->clear()
-                ->insert($jdb->quoteName($tablePrefix . 'users'))
-                ->columns(
-                    $jdb->quoteName('id'),
-                    $jdb->quoteName('name'),
-                    $jdb->quoteName('username'),
-                    $jdb->quoteName('email'),
-                    $jdb->quoteName('registerDate'),
-                    $jdb->quoteName('activation'),
-                    $jdb->quoteName('requireReset')
-                )
-                ->values(
-                    $row['ID'],
-                    $row['display_name'],
-                    $row['user_login'],
-                    $row['user_email'],
-                    $row['user_registered'],
-                    $row['user_activation_key'],
-                    1
-                );
-            // echo $query;
-            // die;
-            $jdb->setQuery($query);
-            $jdb->execute();
-            $app->enqueueMessage(strval($count), 'warning');
-            $count = $count + 1;
+
+            $user = new stdClass();
+            $user->id = $row['ID'];
+            $user->name = $row['display_name'];
+            $user->username = $row['user_login'];
+            $user->email = $row['user_email'];
+            $user->registerDate = $row['user_registered'];
+            $user->activation = $row['user_activation_key'];
+            $user->requireReset = 1;
+            $user->params = '{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}';
+
+            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'users', $user);
         }
     }
 
