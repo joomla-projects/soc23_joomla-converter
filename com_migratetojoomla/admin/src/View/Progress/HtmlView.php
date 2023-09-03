@@ -45,9 +45,17 @@ class HtmlView extends BaseHtmlView
     {
         // Set ToolBar title
         ToolbarHelper::title(Text::_('COM_MIGRATETOJOOMLA'), 'Migrate To Joomla');
+        $doc = Factory::getDocument();
+        
+        $this->createimportdata();
+
+        $doc->addScriptOptions("com_migratetojoomla.importstring", $this->importstring);
+
+        $doc->getWebAssetManager()
+            ->useScript("com_migratetojoomla.admin-migratetojoomla");
 
         $this->addToolbar();
-        $this->createimportdata();
+        
         parent::display($tpl);
     }
 

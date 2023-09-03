@@ -14,9 +14,8 @@
         "bootstrap.modal"
       ],
       "attributes": {
-        "nomodule": true,
-        "defer": true
-      }
+				"defer": true
+			}
     },
     {
       "name": "com_migratetojoomla.migratetojoomla",
