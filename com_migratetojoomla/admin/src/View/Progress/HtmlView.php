@@ -46,8 +46,8 @@ class HtmlView extends BaseHtmlView
         // Set ToolBar title
         ToolbarHelper::title(Text::_('COM_MIGRATETOJOOMLA'), 'Migrate To Joomla');
         $doc = Factory::getDocument();
-        
-        $this->createimportdata();
+
+        $this->createmigratedata();
 
         $doc->addScriptOptions("com_migratetojoomla.importstring", $this->importstring);
 
@@ -55,7 +55,7 @@ class HtmlView extends BaseHtmlView
             ->useScript("com_migratetojoomla.admin-migratetojoomla");
 
         $this->addToolbar();
-        
+
         parent::display($tpl);
     }
 
@@ -84,26 +84,43 @@ class HtmlView extends BaseHtmlView
      * 
      */
 
-    public function createimportdata()
+    public function createmigratedata()
     {
         $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
 
         $isdatabasemigration = $data["databasemigratestatus"];
         $ismediamigration = $data["mediamigratestatus"];
 
-        if ($isdatabasemigration=="1") {
+        if ($isdatabasemigration == "1") {
             $databasetable = $data["frameworkparams"];
 
-            foreach($databasetable as $field=>$value) {
-                if($value =="1") {
-                    array_push($this->importstring , $field);
+            foreach ($databasetable as $field => $value) {
+                if ($value == "1") {
+
+                    $fielddata = array();
+                    if (count($this->importstring) == 0) {
+                        array_push($fielddata, "active");
+                    } else {
+                        array_push($fielddata, "remain");
+                    }
+
+                    array_push($fielddata, $field);
+                    array_push($this->importstring, $fielddata);
                 }
             }
         }
 
-        if($ismediamigration=="1") {
-            array_push($this->importstring , "mediadata");
-        }
+        if ($ismediamigration == "1") {
+            
+            $fielddata = array();
+            if (count($this->importstring) == 0) {
+                array_push($fielddata, "active");
+            } else {
+                array_push($fielddata, "remain");
+            }
 
+            array_push($fielddata, "mediadata");
+            array_push($this->importstring, $fielddata);
+        }
     }
 }
