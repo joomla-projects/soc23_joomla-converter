@@ -17,15 +17,16 @@ use Joomla\CMS\Form\Form;
 use ReflectionClass;
 use Joomla\Event\SubscriberInterface;
 use Joomla\CMS\Factory;
+use stdClass;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
 
 /**
- * MediaDownload Plugin
+ * Wordpress Plugin
  *
- * @since  3.2
+ * @since  1.0
  */
 
 final class Wordpress extends CMSPlugin implements SubscriberInterface
@@ -42,6 +43,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         return [
             'onContentPrepareFormmigrate' => 'onContentPrepareForm',
+            'migratotojoomla_user' =>'importUsers'
         ];
     }
 
@@ -91,4 +93,44 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         return true;
     }
 
+
+    /** 
+     * Method to import user table
+     * 
+     * @since 1.0
+     */
+    public function importUsers(EventInterface $event)
+    {
+        // Get the database connection
+        $db = $event->getArgument('db');
+        $data = $event->getArgument('data');
+
+        // Specify the table name
+        $tableName = rtrim($data['dbtableprefix'], '_') . '_users';
+        $config['dbo'] = $db;
+        $tablePrefix = Factory::getConfig()->get('dbprefix');
+
+        // load data from framework table
+        $query = $db->getQuery(true)
+            ->select('*')
+            ->from($db->quoteName($tableName));
+
+        $db->setQuery($query);
+        $results = $db->loadAssocList();
+
+        foreach ($results as $row) {
+
+            $user = new stdClass();
+            $user->id = $row['ID'];
+            $user->name = $row['display_name'];
+            $user->username = $row['user_login'];
+            $user->email = $row['user_email'];
+            $user->registerDate = $row['user_registered'];
+            $user->activation = $row['user_activation_key'];
+            $user->requireReset = 1;
+            $user->params = '{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}';
+
+            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'users', $user);
+        }
+    }
 }

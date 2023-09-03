@@ -26,6 +26,7 @@ use Joomla\Event\Dispatcher;
 use Joomla\CMS\Event\AbstractEvent;
 use Joomla\Event\DispatcherAwareTrait;
 use Joomla\Plugin\Editors\TinyMCE\PluginTraits\DisplayTrait;
+use Joomla\CMS\Plugin\PluginHelper;
 use stdClass;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -214,48 +215,26 @@ class InformationController extends FormController
         $this->checkToken();
         $data  = $this->input->post->get('jform', array(), 'array');
         $this->checkDatabaseConnection();
-        $this->importUsers($data);
+
+        PluginHelper::importPlugin('migratetojoomla');
+
+        // import users data
+
+        $event = AbstractEvent::create(
+            'migratotojoomla_user',
+            [
+                'subject'    => $this,
+                'formname'   => 'com_migratetojoomla.parameter',
+                'db'       => $this->db,
+                'framework'  => Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework'],
+                'data' => Factory::getApplication()->getUserState('com_migratetojoomla.information')
+            ]
+        );
+
+        Factory::getApplication()->triggerEvent('migratetojoomla_user', $event);
+
         // redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
-    }
-
-    /** 
-     * Method to import user table
-     * 
-     * @since 1.0
-     */
-    public function importUsers($data = [])
-    {
-        // Get the database connection
-        $db = $this->db;
-
-        // Specify the table name
-        $tableName = rtrim($data['dbtableprefix'], '_') . '_users';
-        $config['dbo'] = $this->db;
-        $tablePrefix = Factory::getConfig()->get('dbprefix');
-
-        // load data from framework table
-        $query = $db->getQuery(true)
-            ->select('*')
-            ->from($db->quoteName($tableName));
-
-        $db->setQuery($query);
-        $results = $db->loadAssocList();
-
-        foreach ($results as $row) {
-
-            $user = new stdClass();
-            $user->id = $row['ID'];
-            $user->name = $row['display_name'];
-            $user->username = $row['user_login'];
-            $user->email = $row['user_email'];
-            $user->registerDate = $row['user_registered'];
-            $user->activation = $row['user_activation_key'];
-            $user->requireReset = 1;
-            $user->params = '{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}';
-
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'users', $user);
-        }
     }
 
     /**
