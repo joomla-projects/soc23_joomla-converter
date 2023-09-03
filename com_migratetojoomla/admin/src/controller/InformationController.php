@@ -70,6 +70,15 @@ class InformationController extends FormController
      */
     protected $text_prefix = 'COM_MIGRATETOJOOMLA_INFORMATION';
 
+    public function ajax()
+	{   
+
+        $app   = Factory::getApplication();
+        $app->enqueueMessage("AJAX CALL", 'success');
+
+        return true;
+	}
+
     /**
      * Method to save form data and redirect to next view
      * 
