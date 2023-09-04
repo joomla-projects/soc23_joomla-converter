@@ -76,6 +76,22 @@ class InformationController extends FormController
         $app   = Factory::getApplication();
         $app->enqueueMessage("AJAX CALL", 'success');
 
+		// // Parse the JSON data and reset the action query param to the resulting array
+		// $action_json = $this->input->get('action', '', 'raw');
+		// $action      = json_decode($action_json, false);
+
+		// /** @var BaseModel $model */
+		// $model = $this->getModel($this->getName(), 'Administrator');
+
+		// $model->setState('action', $action);
+
+		// $ret = $model->doAjax();
+
+		// @ob_end_clean();
+		// echo '###' . json_encode($ret) . '###';
+		// flush();
+
+		// $this->app->close();
         return true;
 	}
 

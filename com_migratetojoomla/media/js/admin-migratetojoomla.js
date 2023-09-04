@@ -42,12 +42,10 @@ function addsteps() {
   }
 }
 
-// function changestepstatus
-
 function makeajax() {
   console.log("ajax function here");
   Joomla.request({
-    url: "index.php?option=com_migratetojoomla&view=information&task=ajax",
+    url: 'index.php?option=com_migratetojoomla&view=Progress&task=ajax',
     method: "POST",
     data,
     onSuccess: (response) => {
@@ -57,7 +55,6 @@ function makeajax() {
       alert("There is an error");
     },
   });
-
 }
 
 document.addEventListener("DOMContentLoaded", function () {
