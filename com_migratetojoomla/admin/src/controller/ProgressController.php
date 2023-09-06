@@ -14,6 +14,8 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Event\AbstractEvent;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -26,10 +28,68 @@ use Joomla\CMS\Router\Route;
  */
 class ProgressController extends BaseController
 {
-    public function ajax()
-	{   
+	/**
+	 * @var string  Contain current migration field
+	 * 
+	 * @since 1.0
+	 */
+	public $currentmigration = "";
+
+	public function ajax()
+	{
 		echo 'kaushik Vishwakarma';
 		die;
+		// In ajax post request we get step name example userdata as string for migration of user
 
+		$this->currentmigration = ""; // set ajax response 
+
+		
+
+	}
+
+	 /**
+     * Method to call specific plugin methods
+     * 
+     * @since 1.0
+     */
+	public function callpluginmethod()
+	{
+
+		if ($this->currentmigration == "media") {
+			// calling media plugin method
+			PluginHelper::importPlugin('migratetojoomla', 'mediadownload');
+
+			$event = AbstractEvent::create(
+				'migratetojoomla_mediadownload',
+				[
+					'subject'    => $this,
+					'formname'   => 'com_migratetojoomla.parameter',
+				]
+			);
+
+			Factory::getApplication()->triggerEvent('migratetojoomla_mediadownload', $event);
+		} else {
+			// calling framework specific plugin method for database migration
+
+			$framework = Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework'];
+
+			// import framwork plugin
+
+			PluginHelper::importPlugin('migratetojoomla', $framework);
+
+			$eventsuffix = preg_replace("data", '', $this->currentmigration);
+
+			$eventname = "migratetojoomala_" . $eventsuffix;
+
+			$event = AbstractEvent::create(
+				$eventname,
+				[
+					'subject'    => $this,
+					'formname'   => 'com_migratetojoomla.parameter',
+				]
+			);
+
+			Factory::getApplication()->triggerEvent($eventname, $event);
+		}
 	}
 }

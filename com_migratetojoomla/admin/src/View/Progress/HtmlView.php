@@ -51,6 +51,9 @@ class HtmlView extends BaseHtmlView
 
         $doc->addScriptOptions("com_migratetojoomla.importstring", $this->importstring);
 
+        // Ajax url
+        $doc->addScriptOptions('migratetojoomla.AjaxURL', 'index.php?option=com_migratetojoomla&view=information&task=ajax');
+
         $doc->getWebAssetManager()
             ->useScript("com_migratetojoomla.admin-migratetojoomla");
 
