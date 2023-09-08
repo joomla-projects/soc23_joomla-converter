@@ -47,6 +47,14 @@ class ProgressController extends BaseController
 
 	}
 
+	public function kaushik()
+	{
+		echo 'kaushik Vishwakarma5467788';
+		die;
+		
+
+	}
+
 	 /**
      * Method to call specific plugin methods
      * 

@@ -109,7 +109,7 @@ function makeajax() {
   // console.log($urlstring);
   // $urlstring = `${Joomla.getOptions('system.paths').rootFull}administrator/index.php?option=com_ajax&plugin=guidedtours&group=system&format=json&id=${tourId}`
   Joomla.request({
-    url: "index.php?option=com_migratetojoomla&view=progress&task=kaushik",
+    url: "index.php?option=com_migratetojoomla&view=progress&task=ajax.kaushik",
     method: "POST",
     data,
     onSuccess: (response) => {
