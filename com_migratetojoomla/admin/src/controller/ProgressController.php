@@ -16,6 +16,8 @@ use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Event\AbstractEvent;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Session\Session;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -37,29 +39,33 @@ class ProgressController extends BaseController
 
 	public function ajax()
 	{
-		echo 'kaushik Vishwakarma';
-		die;
-		// In ajax post request we get step name example userdata as string for migration of user
+
+		if (!Session::checkToken('get')) {
+			$this->app->setHeader('status', 403, true);
+			$this->app->sendHeaders();
+			echo Text::_('JINVALID_TOKEN_NOTICE');
+			$this->app->close();
+		}
 
 		$this->currentmigration = ""; // set ajax response 
 
-		
+		$update[] = ['name' => 'kaushik'];
 
+		echo json_encode($update);
+		$this->app->close();
 	}
 
 	public function kaushik()
 	{
 		echo 'kaushik Vishwakarma5467788';
 		die;
-		
-
 	}
 
-	 /**
-     * Method to call specific plugin methods
-     * 
-     * @since 1.0
-     */
+	/**
+	 * Method to call specific plugin methods
+	 * 
+	 * @since 1.0
+	 */
 	public function callpluginmethod()
 	{
 
