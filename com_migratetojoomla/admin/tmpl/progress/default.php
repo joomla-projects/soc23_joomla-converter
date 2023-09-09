@@ -37,19 +37,18 @@ $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter',
     <div class="d-flex justify-content-center">
 
         <button type="button" id="migratetojoomla_startmigrate" class="btn btn-primary mt-5"><?php echo Text::_('COM_MIGRATETOJOOMLA_START_MIGRATE') ?></button>
-        <button type="button" id="migratetojoomla_ajax" class="btn btn-primary mt-5"><?php echo "Make Ajax request" ?></button>
     </div>
 
     <div id="migratetojoomla_progress" style="display:none;">
-    <div id="progresspercent" class="mt-3 text-center h3 " >start</div>
-    <div class="progress mt-1 " >
-        <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="migratetojoomlabar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-    </div>
+        <div id="progresspercent" class="mt-3 text-center h3 ">start</div>
+        <div class="progress mt-1 ">
+            <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="migratetojoomlabar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
     </div>
 
     <!-- log view -->
     <div id="migratetojoomla_log" style="display:none;">
-            
+        <?php echo "this is log view" ?>;
     </div>
 
 </div>
