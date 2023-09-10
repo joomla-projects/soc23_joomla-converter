@@ -18,7 +18,7 @@ use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Event\AbstractEvent;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Session\Session;
-
+use Joomla\Database\DatabaseDriver;
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
@@ -46,19 +46,18 @@ class ProgressController extends BaseController
 			echo Text::_('JINVALID_TOKEN_NOTICE');
 			$this->app->close();
 		}
+		$app = Factory::getApplication();   // equivalent of $app = JFactory::getApplication();
+		$input = $app->input;
+		$fooValues = $input->getArray(array('name' => 'not kdcws'));
 
-		$this->currentmigration = ""; // set ajax response 
 
-		$update[] = ['name' => 'kaushik'];
+		$this->currentmigration = $fooValues['name']; // set ajax response 
 
-		echo json_encode($update);
+		$this->callpluginmethod();
+
+		$update[] = ['name' => $fooValues['name']];
+
 		$this->app->close();
-	}
-
-	public function kaushik()
-	{
-		echo 'kaushik Vishwakarma5467788';
-		die;
 	}
 
 	/**
@@ -69,19 +68,20 @@ class ProgressController extends BaseController
 	public function callpluginmethod()
 	{
 
-		if ($this->currentmigration == "media") {
+		if ($this->currentmigration == "mediadata") {
+
 			// calling media plugin method
 			PluginHelper::importPlugin('migratetojoomla', 'mediadownload');
 
 			$event = AbstractEvent::create(
-				'migratetojoomla_mediadownload',
+				'migratetojoomla_downloadmedia',
 				[
 					'subject'    => $this,
 					'formname'   => 'com_migratetojoomla.parameter',
 				]
 			);
 
-			Factory::getApplication()->triggerEvent('migratetojoomla_mediadownload', $event);
+			Factory::getApplication()->triggerEvent('migratetojoomla_downloadmedia', $event);
 		} else {
 			// calling framework specific plugin method for database migration
 
@@ -91,9 +91,9 @@ class ProgressController extends BaseController
 
 			PluginHelper::importPlugin('migratetojoomla', $framework);
 
-			$eventsuffix = preg_replace("data", '', $this->currentmigration);
+			$eventsuffix = preg_replace('/data/i', '', $this->currentmigration);
 
-			$eventname = "migratetojoomala_" . $eventsuffix;
+			$eventname = "migratetojoomla_" . $eventsuffix;
 
 			$event = AbstractEvent::create(
 				$eventname,

@@ -18,6 +18,7 @@ use ReflectionClass;
 use Joomla\Event\SubscriberInterface;
 use Joomla\CMS\Factory;
 use stdClass;
+use Joomla\Database\DatabaseDriver;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -33,6 +34,13 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 {
 
     /**
+     * @var object Database object
+     * 
+     * @since 1.0
+     */
+    public $db;
+
+    /**
      * Returns an array of events this subscriber will listen to.
      *
      * @return  array
@@ -43,7 +51,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         return [
             'onContentPrepareFormmigrate' => 'onContentPrepareForm',
-            'migratotojoomla_user' =>'importUsers'
+            'migratetojoomla_user' => 'importUsers'
         ];
     }
 
@@ -93,6 +101,38 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         return true;
     }
 
+    /**
+     * Method to set database $db if it is not set
+     * 
+     * @param array form data
+     * @return boolean True on success
+     * 
+     * @since 1.0
+     */
+    public static function setdatabase($instance, $data = [])
+    {
+        if (\is_resource($instance->db)) {
+            return true;
+        }
+
+        $options = [
+            'driver'    => $data['dbdriver'],
+            'host'      => $data['dbhostname'] . ':' . $data['dbport'],
+            'user'      => $data['dbusername'],
+            'password'  => $data['dbpassword'],
+            'database'  => $data['dbname'],
+            'prefix'    => $data['dbtableprefix'],
+        ];
+
+        try {
+            $db = DatabaseDriver::getInstance($options);
+            $db->getVersion();
+            $instance->db = $db;
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
 
     /** 
      * Method to import user table
@@ -100,10 +140,14 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      * @since 1.0
      */
     public function importUsers(EventInterface $event)
-    {
-        // Get the database connection
-        $db = $event->getArgument('db');
-        $data = $event->getArgument('data');
+    {   
+        // echo "kaushik is here";
+        // die;
+        if (!\is_resource($this->db)) {
+            self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+        }
+        $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+        $db = $this->db;
 
         // Specify the table name
         $tableName = rtrim($data['dbtableprefix'], '_') . '_users';

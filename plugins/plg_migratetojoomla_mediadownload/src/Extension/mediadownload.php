@@ -13,8 +13,16 @@ namespace Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
 use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\HttpDownload;
-use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\FilesystemDownload;
+// use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\FilesystemDownload;
 use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\FtpDownload;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Router\Route;
+use Joomla\Event\SubscriberInterface;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
+// use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -25,8 +33,52 @@ use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\FtpDownload;
  *
  * @since  3.2
  */
-final class MediaDownload extends CMSPlugin
+class FilesystemDownload
 {
+    /**
+     * Method to check Enter base url connection
+     * 
+     * @param string Base url of live website
+     * @return boolean True on success
+     * 
+     * @since 1.0
+     */
+    public static function testConnection($path = '')
+    {
+        $app = Factory::getApplication();
+        if (is_dir($path)) {
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
+            return true;
+        }
+        $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_UNSUCCESSFULLY'), 'warning');
+        return false;
+    }
+}
+
+final class MediaDownload extends CMSPlugin implements SubscriberInterface
+{
+    /**
+     * @var object  Media Download object
+     * 
+     * @since 1.0
+     */
+    public  $mediaDownloadManager;
+
+    /**
+     * Returns an array of events this subscriber will listen to.
+     *
+     * @return  array
+     *
+     * @since   4.3.0
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            'migratetojoomla_downloadmedia' => 'downloadMedia',
+            'migratetojoomla_testmediaconnection' => 'testMediaConnection'
+        ];
+    }
+
     /**
      * Method to check connection with respective method
      * 
@@ -35,18 +87,144 @@ final class MediaDownload extends CMSPlugin
      * 
      * @since 1.0
      */
-    public static function testMediaConnection($data = [])
+    public static function testMediaConnection()
     {
+        $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+
         $method = $data['mediaoptions'];
 
+        $response = false;
         if ($method == "http") {
             // Http
-            HttpDownload::testConnection($data['livewebsiteurl']);
+            $response = HttpDownload::testConnection($data['livewebsiteurl']);
         } else if ($method == "fs") {
             // File system
-            FilesystemDownload::testConnection($data['basedir']);
+            $response = FilesystemDownload::testConnection($data['basedir']);
         } else if ($method == "ftp") {
-            FtpDownload::testConnection($data);
+            $response = FtpDownload::testConnection($data);
         }
+
+        $session = Factory::getSession();
+        $session->set('mediaconnectionresult', $response);
+    }
+
+    /**
+     * Method to Download 
+     * 
+     * @param array form data
+     * 
+     * @since  1.0
+     */
+    public  function downloadMedia()
+    {
+        $app   = Factory::getApplication();
+        $data = $app->getUserState('com_migratetojoomla.information', []);
+        $method = $data['mediaoptions'];
+        $source = '';
+
+        switch ($method) {
+            case "fs":
+                $source = $data['basedir'];
+                break;
+            case 'ftp':
+                $this->mediaDownloadManager = new FtpHelper($data);
+                $response = $this->mediaDownloadManager->login();
+                $source = $data['ftpbasedir'];
+                break;
+            case "http":
+            default:
+                $this->mediaDownloadManager = new HttpHelper($data['livewebsiteurl']);
+                $source = $data['livewebsiteurl'];
+                break;
+        }
+
+        $source = PathHelper::addTrailingSlashit($source) . 'wp-content\uploads';
+        $destination = PathHelper::addTrailingSlashit(JPATH_ROOT) . 'images';
+
+        try {
+            if ($method == "fs") {
+                Folder::copy($source, $destination, '', true, false);
+            } else {
+                $this->copy($source, $destination);
+            }
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
+        } catch (\RuntimeException $th) {
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_UNSUCCESSFULLY'), 'danger');
+        }
+    }
+
+    /**
+     * Method to copy a file or a directory
+     *
+     * @param string $source Original file or directory name
+     * @param string $destination Destination file or directory name
+     * @param bool $recursive Recursive copy?
+     * @return bool File copied or not
+     * 
+     * @since  1.0
+     */
+    public function copy($source, $destination)
+    {
+        if ($this->mediaDownloadManager->isDir($source)) {
+            // Directory
+            return $this->copyDir($source, $destination);
+        } else {
+            // File
+            return $this->copyFile($source, $destination);
+        }
+    }
+
+    /**
+     * Method to copy file
+     * 
+     * @param string $source source path
+     * @param string $destination destination path
+     * 
+     * @return boolean True on success
+     * 
+     * @since  1.0
+     */
+    public function copyFile($source, $destination)
+    {
+        $response = false;
+        if (file_exists($destination) && (filesize($destination) > 0)) {
+            // file Already downloaded 
+            return true;
+        }
+
+        $response = $this->mediaDownloadManager->getContent($source, $destination);
+        return $response;
+    }
+
+    /**
+     * Method to make directory and copy it's content
+     * 
+     * @param string $source Source path
+     * @param string $source Destination path
+     * 
+     * @return boolean True on Success
+     * 
+     * @since  1.0
+     */
+    public function copyDir($source, $destination)
+    {
+        $destination = path::clean($destination);
+        $response = true;
+        if (!is_dir($destination)) {
+            mkdir($destination, 0755, true); // Create the directory if not exist
+        }
+        $files = $this->mediaDownloadManager->listDirectory($source);
+
+        if (is_array($files) || is_object($files)) {
+            foreach ($files as $file) {
+                if (preg_match('/^\.+$/', $file)) { // Skip . and ..
+                    continue;
+                }
+                $source_filename = PathHelper::addTrailingSlashit($source) . $file;
+                $dest_filename = PathHelper::addTrailingSlashit($destination) . $file;
+                $response = $this->copy($source_filename, $dest_filename);
+            }
+        }
+        return $response;
     }
 }

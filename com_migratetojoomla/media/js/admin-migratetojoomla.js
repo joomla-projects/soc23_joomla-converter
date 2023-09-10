@@ -8,11 +8,11 @@
 var data = Joomla.getOptions("com_migratetojoomla.importstring");
 
 var timeperdatabaseprocess = 0;
+var mediaprocess = 0;
 var ismediamigrate = false;
 console.log(data);
 function settimer() {
   var totaltask = data.length;
-
   data.forEach((element) => {
     if (element[1] == "mediadata") {
       ismediamigrate = true;
@@ -21,14 +21,22 @@ function settimer() {
 
   var totaldatabasepercentage = 100;
   if (ismediamigrate) {
-    // if media migration selected 30% progress correspond to media progress
-    totaldatabasepercentage -= 30;
+    // if media migration selected mediaprocess% progress correspond to media progress
+    mediaprocess = mediaprocess;
     totaltask -= 1;
+    if (data.length == 1) {
+      mediaprocess = 100;
+    }
   }
 
-  timeperdatabaseprocess = totaldatabasepercentage / totaltask;
+  if (totaltask) {
+    timeperdatabaseprocess = totaldatabasepercentage / totaltask;
+  }
 
-  var initialtime = totaldatabasepercentage % totaltask;
+  var initialtime = 0;
+  if (totaltask) {
+    initialtime = totaldatabasepercentage % totaltask;
+  }
 
   console.log("progress per data : " + timeperdatabaseprocess);
   console.log("total progress bar : " + totaldatabasepercentage);
@@ -40,8 +48,6 @@ function settimer() {
 }
 
 function addsteps() {
-  var data = Joomla.getOptions("com_migratetojoomla.importstring");
-
   var domelement = document.getElementById("migratetojoomla_listgroup");
   // remove previous steps
   domelement.innerHTML = "";
@@ -97,11 +103,11 @@ function updateprogressbar(step) {
 
   // console.log("progress :" + step+ prevpercent);
   if (step == "mediadata") {
-    prevpercent += 30;
+    prevpercent += mediaprocess;
   } else {
     prevpercent += timeperdatabaseprocess;
   }
-  console.log("progress :" + step + prevpercent);
+  console.log("progress :" + prevpercent);
   document
     .getElementById("migratetojoomlabar")
     .setAttribute("style", `width: ${prevpercent}%`);
@@ -134,43 +140,37 @@ const handlemigration = async () => {
   const size = data.length;
 
   console.log("progress per data : " + timeperdatabaseprocess);
-  // console.log("total progress bar")
-  for (var index = 0; index < size; index++) {
-    var element = data[index];
 
+  data.forEach( (element) => {
+    console.log("current element");
+    console.log(element);
     var status = element[0];
     var fieldname = element[1];
 
     // make ajax request
-
-    const r = await Joomla.request({
+    var requestresponse = "";
+    Joomla.request({
       url: `index.php?option=com_migratetojoomla&task=progress.ajax&format=json&name=${fieldname}`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       onSuccess: (response) => {
-        console.log("Success" + JSON.parse(response)[0].name);
-
         // update current field step as success
-        updatesteps("success", JSON.parse(response)[0].name);
+        updatesteps("success", fieldname);
 
         // update progress bar
 
-        updateprogressbar(JSON.parse(response)[0].name);
+        updateprogressbar(fieldname);
       },
       onError: (response) => {
-        console.log("error" + JSON.parse(response)[0].name);
+        // update current field step as success
+        updatesteps("fail", fieldname);
 
-        // update current field step as error
-        updatesteps("fail", index);
+        // update progress bar
 
-        updateprogressbar(JSON.parse(response)[0].name);
+        updateprogressbar(fieldname);
       },
     });
-
-    // endmigration
-    endmigration();
-  }
-
+  });
   // hide start migrate button
   document.getElementById("migratetojoomla_startmigrate").style.display =
     "none";
