@@ -28,14 +28,14 @@ class FilesystemDownload
      * 
      * @since 1.0
      */
-    public static function testConnection($path = '' , $isusertest = 0)
+    public static function testConnection($path = '')
     {
         $app = Factory::getApplication();
         if (is_dir($path)) {
-            $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
             return true;
         }
-        $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_UNSUCCESSFULLY'), 'warning');
+        $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_UNSUCCESSFULLY'), 'warning');
         return false;
     }
 }

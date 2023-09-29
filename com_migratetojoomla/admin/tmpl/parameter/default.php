@@ -8,10 +8,10 @@
  * @license       GNU General Public License version 2 or later; see LICENSE.txt
  */
 
+use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Router\Route;
-use Joomla\CMS\Factory;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');

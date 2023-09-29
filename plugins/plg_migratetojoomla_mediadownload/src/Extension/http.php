@@ -48,7 +48,7 @@ class HttpDownload
      * 
      * @since 1.0
      */
-    public static function testConnection($url = '', $isusertest = 0)
+    public static function testConnection($url = '')
     {
         $app   = Factory::getApplication();
         $headers = [];
@@ -57,18 +57,18 @@ class HttpDownload
             $statusCode = $response->code;
 
             if ($statusCode == 200) {
-                $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_SUCCESSFULLY'), 'success');
+                $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_SUCCESSFULLY'), 'success');
             } else {
-                $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
+                $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
             }
             $instance = new self;
             $isdirectorylist = $instance->listDirectoriesAndFiles($url);
 
             if (empty($isdirectorylist)) {
-                $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_PLEASE_ALLOW_LIST_DIRECTORY'), 'warning');
+                $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_PLEASE_ALLOW_LIST_DIRECTORY'), 'warning');
             }
         } catch (\RuntimeException $exception) {
-            $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_HTTP_CONNECTION_UNSUCCESSFULLY'), 'warning');
         }
     }
 

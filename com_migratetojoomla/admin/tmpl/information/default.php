@@ -11,6 +11,7 @@
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Factory;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
@@ -22,10 +23,12 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
     ->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
+$framework = ucfirst(Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'] . ' ');
 ?>
 <div id="migratetojoomla" class="p-3">
-    <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_FRAMEWORK_INFORMATION') ?></h3>
     <form action="<?php echo Route::_('index.php?option=com_migratetojoomla'); ?>" method="post" name="adminForm" id="adminForm" enctype="multipart/form-data">
+
+        <h3 class="mt-2"><?php echo $framework . Text::_('COM_MIGRATETOJOOMLA_MEDIA_INFORMATION') ?></h3>
 
         <?php echo $this->form->renderField('mediaoptions'); ?>
         <?php echo $this->form->renderField('livewebsiteurl');  ?>
@@ -42,7 +45,7 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
 
         <br>
         <br>
-        <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_WORDPRESS_DATABASE_PARAMETERS') ?></h3>
+        <h3 class="mt-2"><?php echo $framework . Text::_('COM_MIGRATETOJOOMLA_DATABASE_INFORMATION') ?></h3>
         <br>
         <?php echo $this->form->renderField('dbhostname');  ?>
         <?php echo $this->form->renderField('dbdriver');  ?>

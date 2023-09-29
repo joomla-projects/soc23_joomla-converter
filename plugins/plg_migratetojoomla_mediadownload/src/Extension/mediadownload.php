@@ -14,14 +14,13 @@ use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
 use Joomla\CMS\Filesystem\Path;
 use Joomla\CMS\Language\Text;
-use Joomla\Event\EventInterface;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Factory;
 use Joomla\Event\SubscriberInterface;
 
 require_once 'filesystem.php';
 require_once 'ftp.php';
-require_once 'htpp.php';
+require_once 'http.php';
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -59,24 +58,21 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
      * 
      * @since 1.0
      */
-    public static function testMediaConnection(EventInterface $event)
+    public static function testMediaConnection()
     {
         $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-
-        // content 1 if user manually test media connection else 0
-        $isusertest = $event->getArgument('usertest');
 
         $method = $data['mediaoptions'];
 
         $response = false;
         if ($method == "http") {
             // Http
-            $response = HttpDownload::testConnection($data['livewebsiteurl'], $isusertest);
+            $response = HttpDownload::testConnection($data['livewebsiteurl']);
         } else if ($method == "fs") {
             // File system
-            $response = FilesystemDownload::testConnection($data['basedir'], $isusertest);
+            $response = FilesystemDownload::testConnection($data['basedir']);
         } else if ($method == "ftp") {
-            $response = FtpDownload::testConnection($data, $isusertest);
+            $response = FtpDownload::testConnection($data);
         }
 
         $session = Factory::getSession();

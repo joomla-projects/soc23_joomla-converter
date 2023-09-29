@@ -10,7 +10,6 @@ use Joomla\CMS\Router\Route;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
-use Joomla\Component\MigrateToJoomla\Administrator\Controller\InformationController;
 
 /**
  * @package     Joomla.Administrator

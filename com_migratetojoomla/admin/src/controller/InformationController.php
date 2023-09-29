@@ -113,7 +113,7 @@ class InformationController extends FormController
      * 
      * @since 1.0
      */
-    public function checkMediaConnection($msgshow = 1)
+    public function checkMediaConnection()
     {
         $this->checkToken();
 

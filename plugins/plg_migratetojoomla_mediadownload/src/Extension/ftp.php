@@ -55,7 +55,7 @@ class FtpDownload
      * 
      * @since 1.0
      */
-    public static function testConnection($data = [] , $isusertest = 0)
+    public static function testConnection($data = [])
     {
         $instance = new self;
         $instance->options = $data;
@@ -63,9 +63,9 @@ class FtpDownload
         $app = Factory::getApplication();
 
         if ($response) {
-            $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_SUCCESFULLY'), 'success');
+           $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_SUCCESFULLY'), 'success');
         } else {
-            $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_UNSUCCESSFULLY'), 'danger');
+           $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_UNSUCCESSFULLY'), 'danger');
         }
     }
 
