@@ -20,6 +20,7 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 use Joomla\CMS\Filesystem\path;
 use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\MediaDownload;
 use Joomla\Event\Dispatcher;
@@ -41,6 +42,7 @@ use stdClass;
 class InformationController extends FormController
 {
     use DisplayTrait;
+
     /**
      * @var object  Media Download object
      * 
@@ -201,184 +203,4 @@ class InformationController extends FormController
             return false;
         }
     }
-
-    /** Method to import database  
-     * 
-     * @since 1.0
-     */
-    public function importDatabase()
-    {
-        $this->checkToken();
-        $data  = $this->input->post->get('jform', array(), 'array');
-        $this->checkDatabaseConnection();
-
-        PluginHelper::importPlugin('migratetojoomla');
-
-        // import users data
-
-        $event = AbstractEvent::create(
-            'migratetojoomla_user',
-            [
-                'subject'    => $this,
-                'formname'   => 'com_migratetojoomla.parameter',
-                'db'       => $this->db,
-                'framework'  => Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework'],
-                'data' => Factory::getApplication()->getUserState('com_migratetojoomla.information')
-            ]
-        );
-
-        Factory::getApplication()->triggerEvent('migratetojoomla_user', $event);
-
-        // redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
-    }
-
-    /**
-     * Method to Download 
-     * 
-     * @since  1.0
-     */
-    public function download()
-    {
-        $this->checkMediaConnection();
-        $app   = Factory::getApplication();
-        try {
-            $data  = $this->input->post->get('jform', array(), 'array');
-            $load = new self();
-            $load->downloadMedia($data);
-
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
-        } catch (\RuntimeException $th) {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD__MEDIA_UNSUCCESSFULLY'), 'danger');
-        }
-        // redirect in all case
-        $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
-    }
-
-    // /**
-    //  * Method to check connection with respective method
-    //  * 
-    //  * @param array form data
-    //  * @return boolean True on success
-    //  * 
-    //  * @since 1.0
-    //  */
-    // public static function testMediaConnection($data = [], $msgshow = 1)
-    // {
-    //     $method = $data['mediaoptions'];
-
-    //     $result = false;
-    //     if ($method == "http") {
-    //         // Http
-    //         $result = HttpHelper::testConnection($data['livewebsiteurl'], $msgshow);
-    //     } else if ($method == "fs") {
-    //         // File system
-    //         $result = FilesystemHelper::testConnection($data['basedir'], $msgshow);
-    //     } else if ($method == "ftp") {
-    //         $result = FtpHelper::testConnection($data, $msgshow);
-    //     }
-
-    //     return $result;
-    // }
-
-    /**
-     * Method to Download 
-     * 
-     * @param array form data
-     * 
-     * @since  1.0
-     */
-    public  function downloadMedia($data = [])
-    {   
-        $this->checkToken();
-
-        $app   = Factory::getApplication();
-        $data  = $this->input->post->get('jform', array(), 'array');
-
-        $event = AbstractEvent::create(
-            'migratetojoomla_downloadmedia',
-            [
-                'subject'    => $this,
-                'formname'   => 'com_migratetojoomla.parameter',
-            ]
-        );
-
-        Factory::getApplication()->triggerEvent('migratetojoomla_downloadmedia', $event);
-
-    }
-
-    // /**
-    //  * Method to copy a file or a directory
-    //  *
-    //  * @param string $source Original file or directory name
-    //  * @param string $destination Destination file or directory name
-    //  * @param bool $recursive Recursive copy?
-    //  * @return bool File copied or not
-    //  * 
-    //  * @since  1.0
-    //  */
-    // public function copy($source, $destination)
-    // {
-    //     if ($this->mediaDownloadManager->isDir($source)) {
-    //         // Directory
-    //         return $this->copyDir($source, $destination);
-    //     } else {
-    //         // File
-    //         return $this->copyFile($source, $destination);
-    //     }
-    // }
-
-    // /**
-    //  * Method to copy file
-    //  * 
-    //  * @param string $source source path
-    //  * @param string $destination destination path
-    //  * 
-    //  * @return boolean True on success
-    //  * 
-    //  * @since  1.0
-    //  */
-    // public function copyFile($source, $destination)
-    // {
-    //     $response = false;
-    //     if (file_exists($destination) && (filesize($destination) > 0)) {
-    //         // file Already downloaded 
-    //         return true;
-    //     }
-
-    //     $response = $this->mediaDownloadManager->getContent($source, $destination);
-    //     return $response;
-    // }
-
-    // /**
-    //  * Method to make directory and copy it's content
-    //  * 
-    //  * @param string $source Source path
-    //  * @param string $source Destination path
-    //  * 
-    //  * @return boolean True on Success
-    //  * 
-    //  * @since  1.0
-    //  */
-    // public function copyDir($source, $destination)
-    // {
-    //     $destination = path::clean($destination);
-    //     $response = true;
-    //     if (!is_dir($destination)) {
-    //         mkdir($destination, 0755, true); // Create the directory if not exist
-    //     }
-    //     $files = $this->mediaDownloadManager->listDirectory($source);
-
-    //     if (is_array($files) || is_object($files)) {
-    //         foreach ($files as $file) {
-    //             if (preg_match('/^\.+$/', $file)) { // Skip . and ..
-    //                 continue;
-    //             }
-    //             $source_filename = PathHelper::addTrailingSlashit($source) . $file;
-    //             $dest_filename = PathHelper::addTrailingSlashit($destination) . $file;
-    //             $response = $this->copy($source_filename, $dest_filename);
-    //         }
-    //     }
-    //     return $response;
-    // }
 }

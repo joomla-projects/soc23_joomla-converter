@@ -24,19 +24,19 @@ use Joomla\Component\MigrateToJoomla\Administrator\Controller\InformationControl
  * Migrate "Migrate To Joomla" Admin View
  */
 class HtmlView extends BaseHtmlView
-{   
+{
     /**
-	 * Media connection
-	 *
-	 * @var  bool
-	 */
+     * Media connection
+     *
+     * @var  bool
+     */
     public $ismediaconnection = false;
 
     /**
-	 * Database connection
-	 *
-	 * @var  bool
-	 */
+     * Database connection
+     *
+     * @var  bool
+     */
     public $isdatabaseconnection  = false;
 
     /**
@@ -86,14 +86,14 @@ class HtmlView extends BaseHtmlView
     protected function addToolbar(): void
     {
         $toolbar = Toolbar::getInstance();
-      
+
         $toolbar->linkButton('previous')
-			->icon('icon-previous')
-			->text('COM_MIGRATETOJOOMLA_PREVIOUS')
-			->url(Route::_('index.php?option=com_migratetojoomla&view=parameter'));
+            ->icon('icon-previous')
+            ->text('COM_MIGRATETOJOOMLA_PREVIOUS')
+            ->url(Route::_('index.php?option=com_migratetojoomla&view=parameter'));
         $toolbar->linkButton('next')
-			->icon('icon-next')
-			->text('COM_MIGRATETOJOOMLA_NEXT')
-			->url(Route::_('index.php?option=com_migratetojoomla&view=migrate'));
+            ->icon('icon-next')
+            ->text('COM_MIGRATETOJOOMLA_NEXT')
+            ->url(Route::_('index.php?option=com_migratetojoomla&view=progress'));
     }
 }

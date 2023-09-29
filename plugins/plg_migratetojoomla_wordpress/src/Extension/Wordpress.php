@@ -140,9 +140,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      * @since 1.0
      */
     public function importUsers(EventInterface $event)
-    {   
-        // echo "kaushik is here";
-        // die;
+    {
         if (!\is_resource($this->db)) {
             self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
         }

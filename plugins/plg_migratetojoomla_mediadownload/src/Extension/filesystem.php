@@ -23,18 +23,19 @@ class FilesystemDownload
      * Method to check Enter base url connection
      * 
      * @param string Base url of live website
+     * @param boolean test by user of not
      * @return boolean True on success
      * 
      * @since 1.0
      */
-    public static function testConnection($path = '')
+    public static function testConnection($path = '' , $isusertest = 0)
     {
         $app = Factory::getApplication();
         if (is_dir($path)) {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
+            $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
             return true;
         }
-        $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_UNSUCCESSFULLY'), 'warning');
+        $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_UNSUCCESSFULLY'), 'warning');
         return false;
     }
 }

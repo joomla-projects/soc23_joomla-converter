@@ -114,7 +114,7 @@ class HtmlView extends BaseHtmlView
         }
 
         if ($ismediamigration == "1") {
-            
+
             $fielddata = array();
             if (count($this->importstring) == 0) {
                 array_push($fielddata, "active");

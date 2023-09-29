@@ -11,14 +11,12 @@
 namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\MVC\Controller\BaseController;
-use Joomla\CMS\Router\Route;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Event\AbstractEvent;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Session\Session;
-use Joomla\Database\DatabaseDriver;
+
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects

@@ -47,7 +47,7 @@ $datafieldskey = array_keys($parameterformdata);
         </h3>
     </div>
 
-    <?php if ( array_key_exists('mediamigratestatus', $data) && $data['mediamigratestatus'] === "1") : ?>
+    <?php if (array_key_exists('mediamigratestatus', $data) && $data['mediamigratestatus'] === "1") : ?>
         <div id="migratetojoomla_status" class="alert alert-<?= $this->ismediaconnection ? 'info' : 'warning' ?>">
             <?php if ($this->ismediaconnection) : ?>
                 <h3 class="alert-heading">
@@ -133,7 +133,7 @@ $datafieldskey = array_keys($parameterformdata);
                 </tbody>
             </table>
         </div>
-        <div class="col-sm-6">  
+        <div class="col-sm-6">
             <h3 class="alert-heading d-flex justify-content-between p-1">
                 <?= Text::_('COM_MIGRATETOJOOMLA_NO_MIGRATE_DATA_DETAILS') ?>
             </h3>

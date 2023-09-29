@@ -50,11 +50,12 @@ class FtpDownload
      * Method to check Enter base url connection
      * 
      * @param string Base url of live website
+     * @param boolean test by user of not
      * @return boolean True on success
      * 
      * @since 1.0
      */
-    public static function testConnection($data = [])
+    public static function testConnection($data = [] , $isusertest = 0)
     {
         $instance = new self;
         $instance->options = $data;
@@ -62,9 +63,9 @@ class FtpDownload
         $app = Factory::getApplication();
 
         if ($response) {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_SUCCESFULLY'), 'success');
+            $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_SUCCESFULLY'), 'success');
         } else {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_UNSUCCESSFULLY'), 'danger');
+            $isusertest && $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_UNSUCCESSFULLY'), 'danger');
         }
     }
 

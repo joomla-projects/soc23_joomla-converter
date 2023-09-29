@@ -1,5 +1,17 @@
 <?php
 
+namespace Joomla\Component\MigrateToJoomla\Administrator\View\Progress;
+
+defined('_JEXEC') or die;
+
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
+use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
+use Joomla\CMS\Toolbar\Toolbar;
+use Joomla\CMS\Toolbar\ToolbarHelper;
+use Joomla\CMS\Router\Route;
+use Joomla\Component\MigrateToJoomla\Administrator\Model\MigrateModel;
+
 /**
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
@@ -8,47 +20,110 @@
  * @license       GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Router\Route;
-use Joomla\CMS\Factory;
+/**
+ * Migrate "Migrate To Joomla" Admin View
+ */
+class HtmlView extends BaseHtmlView
+{
+    /**
+     * Import Data information
+     * 
+     * @var array 
+     * 
+     * @since 1.0
+     */
+    public $importstring = [];
+    /**
+     * Display the Migrate "Migrate To Joomla" view
+     *
+     * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
+     * @return  void
+     * 
+     * @since  1.0
+     */
+    public function display($tpl = null)
+    {
+        // Set ToolBar title
+        ToolbarHelper::title(Text::_('COM_MIGRATETOJOOMLA'), 'Migrate To Joomla');
+        $doc = Factory::getDocument();
 
-// No direct access to this file
-defined('_JEXEC') or die('Restricted Access');
-/** @var \Joomla\Component\MigrateToJoomla\Administrator\View\Migrate\HtmlView $this */
+        $this->createmigratedata();
 
-/** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
-$wa = $this->document->getWebAssetManager();
+        $doc->addScriptOptions("com_migratetojoomla.importstring", $this->importstring);
 
-$wa->useScript('com_migratetojoomla.admin-migratetojoomla')
-    ->useScript('keepalive')
-    ->useStyle('com_migratetojoomla.migratetojoomla');
+        // Ajax url
+        $doc->addScriptOptions('migratetojoomla.AjaxURL', 'index.php?option=com_migratetojoomla&view=information&task=ajax');
 
-$data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
+        $doc->getWebAssetManager()
+            ->useScript("com_migratetojoomla.admin-migratetojoomla");
 
-?>
-<div id="migratetojoomla" class="p-4">
-    <h3 class="mt-2 mb-4"><?php echo Text::_('COM_MIGRATETOJOOMLA_MIGRATE_PROGRESS') ?></h3>
-    <div id="migratetojoomla_progresscontainer">
-        <ul id="migratetojoomla_listgroup" class="list-group">
-        </ul>
-    </div>
+        $this->addToolbar();
 
-    <div class="d-flex justify-content-center">
+        parent::display($tpl);
+    }
 
-        <button type="button" id="migratetojoomla_startmigrate" class="btn btn-primary mt-5"><?php echo Text::_('COM_MIGRATETOJOOMLA_START_MIGRATE') ?></button>
-    </div>
+    /**
+     * Setup the Toolbar
+     *
+     * @return  void
+     *
+     * @since   1.0
+     */
+    protected function addToolbar(): void
+    {
+        $toolbar = Toolbar::getInstance();
+        $toolbar->linkButton('previous')
+            ->icon('icon-previous')
+            ->text('COM_MIGRATETOJOOMLA_PREVIOUS')
+            ->url(Route::_('index.php?option=com_migratetojoomla&view=check'));
+    }
 
-    <div id="migratetojoomla_progress" style="display:none;">
-        <div id="progresspercent" class="mt-3 text-center h3 ">start</div>
-        <div class="progress mt-1 ">
-            <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="migratetojoomlabar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-        </div>
-    </div>
+    /**
+     * Method to create import information
+     * 
+     * @return  void
+     *
+     * @since   1.0
+     * 
+     */
 
-    <!-- log view -->
-    <div id="migratetojoomla_log" style="display:none;">
-        <?php echo "this is log view" ?>;
-    </div>
+    public function createmigratedata()
+    {
+        $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
 
-</div>
+        $isdatabasemigration = $data["databasemigratestatus"];
+        $ismediamigration = $data["mediamigratestatus"];
+
+        if ($isdatabasemigration == "1") {
+            $databasetable = $data["frameworkparams"];
+
+            foreach ($databasetable as $field => $value) {
+                if ($value == "1") {
+
+                    $fielddata = array();
+                    if (count($this->importstring) == 0) {
+                        array_push($fielddata, "active");
+                    } else {
+                        array_push($fielddata, "remain");
+                    }
+
+                    array_push($fielddata, $field);
+                    array_push($this->importstring, $fielddata);
+                }
+            }
+        }
+
+        if ($ismediamigration == "1") {
+
+            $fielddata = array();
+            if (count($this->importstring) == 0) {
+                array_push($fielddata, "active");
+            } else {
+                array_push($fielddata, "remain");
+            }
+
+            array_push($fielddata, "mediadata");
+            array_push($this->importstring, $fielddata);
+        }
+    }
+}

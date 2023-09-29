@@ -40,8 +40,6 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
 
         <button type="button" id="migratetojoomlamediaconnection" class="btn btn-primary" onclick="Joomla.submitbutton('information.checkMediaConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_CHECK_MEDIA_CONNECTION') ?></button>
 
-        <button type="button" id="migratetojoomladownload" class="btn btn-primary" onclick="Joomla.submitbutton('information.download')"><?php echo Text::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA') ?></button>
-
         <br>
         <br>
         <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_WORDPRESS_DATABASE_PARAMETERS') ?></h3>
@@ -55,7 +53,6 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
         <?php echo $this->form->renderField('dbtableprefix');  ?>
 
         <button type="button" id="migratetojoomladatabaseconnection" class="btn btn-primary" onclick="Joomla.submitbutton('information.checkDatabaseConnection')"><?php echo Text::_('COM_MIGRATETOJOOMLA_TEST_DATABASE_CONNECTION') ?></button>
-        <button type="button" id="migratetoimportdatabase" class="btn btn-primary" onclick="Joomla.submitbutton('information.importDatabase')"><?php echo "import Database" ?></button>
         <input type="hidden" name="task" value="">
         <?php echo HTMLHelper::_('form.token'); ?>
     </form>

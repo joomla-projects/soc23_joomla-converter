@@ -141,7 +141,7 @@ const handlemigration = async () => {
 
   console.log("progress per data : " + timeperdatabaseprocess);
 
-  data.forEach( (element) => {
+  data.forEach((element) => {
     console.log("current element");
     console.log(element);
     var status = element[0];
@@ -170,6 +170,8 @@ const handlemigration = async () => {
         updateprogressbar(fieldname);
       },
     });
+
+    endmigration();
   });
   // hide start migrate button
   document.getElementById("migratetojoomla_startmigrate").style.display =

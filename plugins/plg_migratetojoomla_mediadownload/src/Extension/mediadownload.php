@@ -12,48 +12,20 @@ namespace Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension;
 
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
-use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\HttpDownload;
-// use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\FilesystemDownload;
-use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\FtpDownload;
+use Joomla\CMS\Filesystem\Path;
 use Joomla\CMS\Language\Text;
+use Joomla\Event\EventInterface;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Router\Route;
 use Joomla\Event\SubscriberInterface;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\HttpHelper;
-// use Joomla\Component\MigrateToJoomla\Administrator\Helper\FilesystemHelper;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\FtpHelper;
+
+require_once 'filesystem.php';
+require_once 'ftp.php';
+require_once 'htpp.php';
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
-
-/**
- * MediaDownload Plugin
- *
- * @since  3.2
- */
-class FilesystemDownload
-{
-    /**
-     * Method to check Enter base url connection
-     * 
-     * @param string Base url of live website
-     * @return boolean True on success
-     * 
-     * @since 1.0
-     */
-    public static function testConnection($path = '')
-    {
-        $app = Factory::getApplication();
-        if (is_dir($path)) {
-            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_SUCCESSFULLY'), 'success');
-            return true;
-        }
-        $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FS_CONNECTION_UNSUCCESSFULLY'), 'warning');
-        return false;
-    }
-}
 
 final class MediaDownload extends CMSPlugin implements SubscriberInterface
 {
@@ -87,21 +59,24 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
      * 
      * @since 1.0
      */
-    public static function testMediaConnection()
+    public static function testMediaConnection(EventInterface $event)
     {
         $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+
+        // content 1 if user manually test media connection else 0
+        $isusertest = $event->getArgument('usertest');
 
         $method = $data['mediaoptions'];
 
         $response = false;
         if ($method == "http") {
             // Http
-            $response = HttpDownload::testConnection($data['livewebsiteurl']);
+            $response = HttpDownload::testConnection($data['livewebsiteurl'], $isusertest);
         } else if ($method == "fs") {
             // File system
-            $response = FilesystemDownload::testConnection($data['basedir']);
+            $response = FilesystemDownload::testConnection($data['basedir'], $isusertest);
         } else if ($method == "ftp") {
-            $response = FtpDownload::testConnection($data);
+            $response = FtpDownload::testConnection($data, $isusertest);
         }
 
         $session = Factory::getSession();
@@ -127,13 +102,13 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
                 $source = $data['basedir'];
                 break;
             case 'ftp':
-                $this->mediaDownloadManager = new FtpHelper($data);
+                $this->mediaDownloadManager = new FtpDownload($data);
                 $response = $this->mediaDownloadManager->login();
                 $source = $data['ftpbasedir'];
                 break;
             case "http":
             default:
-                $this->mediaDownloadManager = new HttpHelper($data['livewebsiteurl']);
+                $this->mediaDownloadManager = new HttpDownload($data['livewebsiteurl']);
                 $source = $data['livewebsiteurl'];
                 break;
         }
@@ -208,7 +183,7 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
      */
     public function copyDir($source, $destination)
     {
-        $destination = path::clean($destination);
+        $destination = PathHelper::clean($destination);
         $response = true;
         if (!is_dir($destination)) {
             mkdir($destination, 0755, true); // Create the directory if not exist
