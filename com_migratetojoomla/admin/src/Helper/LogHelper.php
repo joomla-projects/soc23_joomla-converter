@@ -40,7 +40,6 @@ class LogHelper
 
         $file = @fopen($logfilepath, 'a');
         fwrite($file, $content . PHP_EOL);
-        fwrite($file, $content . PHP_EOL);
         fclose($file);
     }
 

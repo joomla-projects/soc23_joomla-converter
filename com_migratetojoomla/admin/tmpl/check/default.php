@@ -12,6 +12,7 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Factory;
+use Joomla\Component\Privacy\Administrator\Export\Field;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
@@ -24,16 +25,21 @@ $wa->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
 $app = Factory::getApplication();
-$session = Factory::getSession();
-$data = $session->get('parameterformdata', []);
+
+$data = $app->getUserState('com_migratetojoomla.parameter', []);;
+
 $parameterformdata = $data["frameworkparams"];
-// echo '<pre>';
-// echo var_dump($parameterformdata);
-// die;
 $framework = $app->getUserState('com_migratetojoomla.migrate', [])['framework'];
 
 $datafieldskey = array_keys($parameterformdata);
 
+// no database migration then change status of database table to 0
+
+if ($data['databasemigratestatus'] == '0') {
+    foreach ($parameterformdata as $key => $field) {
+        $parameterformdata[$key] = '0';
+    }
+}
 ?>
 <div id="migratetojoomla" class="p-3">
     <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_CHECK_INFORMATION') ?></h3>
@@ -165,6 +171,4 @@ $datafieldskey = array_keys($parameterformdata);
             </table>
         </div>
     </div>
-
-
 </div>
