@@ -12,6 +12,7 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Controller\BaseController;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Event\AbstractEvent;
 use Joomla\CMS\Language\Text;

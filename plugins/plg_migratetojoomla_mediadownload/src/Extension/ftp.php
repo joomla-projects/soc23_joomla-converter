@@ -63,9 +63,9 @@ class FtpDownload
         $app = Factory::getApplication();
 
         if ($response) {
-           $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_SUCCESFULLY'), 'success');
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_SUCCESFULLY'), 'success');
         } else {
-           $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_UNSUCCESSFULLY'), 'danger');
+            $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_UNSUCCESSFULLY'), 'danger');
         }
     }
 

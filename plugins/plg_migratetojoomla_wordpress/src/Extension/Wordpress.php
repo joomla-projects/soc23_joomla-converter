@@ -17,8 +17,11 @@ use Joomla\CMS\Form\Form;
 use ReflectionClass;
 use Joomla\Event\SubscriberInterface;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 use stdClass;
 use Joomla\Database\DatabaseDriver;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
+use PgSql\Lob;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -129,7 +132,9 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $db->getVersion();
             $instance->db = $db;
             return true;
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $th) {
+            LogHelper::writeLog(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
+            LogHelper::writeLog($th, 'normal');
             return false;
         }
     }
@@ -141,38 +146,53 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function importUsers(EventInterface $event)
     {
-        if (!\is_resource($this->db)) {
-            self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
-        }
-        $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-        $db = $this->db;
+        $totalusers = 0;
+        $successcount  = 0;
+        try {
 
-        // Specify the table name
-        $tableName = rtrim($data['dbtableprefix'], '_') . '_users';
-        $config['dbo'] = $db;
-        $tablePrefix = Factory::getConfig()->get('dbprefix');
+            if (!\is_resource($this->db)) {
+                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            }
+            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+            $db = $this->db;
 
-        // load data from framework table
-        $query = $db->getQuery(true)
-            ->select('*')
-            ->from($db->quoteName($tableName));
+            // Specify the table name
+            $tableName = rtrim($data['dbtableprefix'], '_') . '_users';
+            $config['dbo'] = $db;
+            $tablePrefix = Factory::getConfig()->get('dbprefix');
 
-        $db->setQuery($query);
-        $results = $db->loadAssocList();
+            // load data from framework table
+            $query = $db->getQuery(true)
+                ->select('*')
+                ->from($db->quoteName($tableName));
 
-        foreach ($results as $row) {
+            $db->setQuery($query);
+            $results = $db->loadAssocList();
 
-            $user = new stdClass();
-            $user->id = $row['ID'];
-            $user->name = $row['display_name'];
-            $user->username = $row['user_login'];
-            $user->email = $row['user_email'];
-            $user->registerDate = $row['user_registered'];
-            $user->activation = $row['user_activation_key'];
-            $user->requireReset = 1;
-            $user->params = '{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}';
+            $totalusers = count($results);
+            foreach ($results as $row) {
 
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'users', $user);
+                $user = new stdClass();
+                $user->id = $row['ID'];
+                $user->name = $row['display_name'];
+                $user->username = $row['user_login'];
+                $user->email = $row['user_email'];
+                $user->registerDate = $row['user_registered'];
+                $user->activation = $row['user_activation_key'];
+                $user->requireReset = 1;
+                $user->params = '{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}';
+
+                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'users', $user);
+
+                $successcount = $successcount + 1;
+            }
+
+            $contentTowrite = 'User Imported Successfully = ' . $successcount;
+            LogHelper::writeLog($contentTowrite, 'success');
+        } catch (\RuntimeException $th) {
+            LogHelper::writeLog('User Imported Successfully = ' . $successcount, 'success');
+            LogHelper::writeLog('User Imported Unsuccessfully = ' . $totalusers - $successcount, 'error');
+            LogHelper::writeLog($th, 'normal');
         }
     }
 }

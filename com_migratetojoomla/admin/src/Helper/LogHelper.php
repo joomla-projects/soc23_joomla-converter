@@ -22,10 +22,10 @@ class LogHelper
      * Method to write in log file
      * 
      * @param string content to write
-     * 
+     * @param string Is content is success , error or message(normal)
      * @since 1.0
      */
-    public static function writeLog($content = "")
+    public static function writeLog($content = "", $type = "normal")
     {
         if (empty($content)) {
             return;
@@ -38,8 +38,11 @@ class LogHelper
         $logfilename = $selectedframework . '-to-Joomla.log';
         $logfilepath = JPATH_COMPONENT_ADMINISTRATOR . '/logs/' . $logfilename;
 
+        $contentToWrite =  '{' . $type . '}' . $content  . '{' . 'contentend' . '}' . PHP_EOL;
         $file = @fopen($logfilepath, 'a');
-        fwrite($file, $content . PHP_EOL);
+        $currentDateTime = date('Y-m-d H:i:s');
+        fwrite($file, 'Timestamp : '.$currentDateTime);
+        fwrite($file, $contentToWrite);
         fclose($file);
     }
 

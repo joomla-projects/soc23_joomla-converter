@@ -36,6 +36,7 @@ class ParameterController extends FormController
         $this->checkToken();
         $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', array(), 'array');
+
         $app->setUserState('com_migratetojoomla.parameter', $data);
 
         //redirect in all case
@@ -52,6 +53,10 @@ class ParameterController extends FormController
         $this->checkToken();
         $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', array(), 'array');
+
+        $session = Factory::getSession();
+        $session->set('parameterformdata', $data);
+
         $app->setUserState('com_migratetojoomla.parameter', $data);
 
         //redirect in all case

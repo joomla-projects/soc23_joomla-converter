@@ -9,6 +9,8 @@
  */
 
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Router\Route;
 use Joomla\CMS\Factory;
 
 // No direct access to this file
@@ -47,6 +49,9 @@ $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter',
     <!-- log view -->
     <div id="migratetojoomla_log" style="display:none;">
         <?php echo "this is log view" ?>;
+        <textarea class="form-control" rows="20" id="migratetojoomlalog">
+
+        </textarea>
     </div>
 
 </div>
