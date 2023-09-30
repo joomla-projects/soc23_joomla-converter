@@ -24,6 +24,17 @@
 			   <option value="1">JYES</option>
 			   <option value="0">JNO</option>
 			</field>
+            <field
+			name="categorydata"
+			type="radio"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_CATEGORY_DATA_LABEL"
+			default="1"
+			layout="joomla.form.field.radio.switcher"
+			validate="options"
+			>
+			   <option value="1">JYES</option>
+			   <option value="0">JNO</option>
+			</field>
         </fieldset>
     </fields>
 </form>

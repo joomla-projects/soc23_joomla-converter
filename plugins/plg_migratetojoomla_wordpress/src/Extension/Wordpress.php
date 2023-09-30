@@ -53,7 +53,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         return [
             'onContentPrepareFormmigrate' => 'onContentPrepareForm',
             'migratetojoomla_user' => 'importUsers',
-            'migratetojoomla_tags' => 'importTags'
+            'migratetojoomla_tags' => 'importTags',
+            'migratetojoomla_category' => 'importCategory',
         ];
     }
 
@@ -282,6 +283,140 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         } catch (\RuntimeException $th) {
             LogHelper::writeLog('Tags Imported Successfully = ' . $successcount, 'success');
             LogHelper::writeLog('Tags Imported Unsuccessfully = ' . $totalusers - $successcount, 'error');
+            LogHelper::writeLog($th, 'normal');
+        }
+    }
+
+    /** 
+     * Method to import category table
+     * 
+     * @since 1.0
+     */
+    public function importCategory()
+    {
+        $totalusers = 0;
+        $successcount  = 0;
+
+        // current login user
+        $user = Factory::getApplication()->getIdentity();
+        $userid = $user->id;
+
+        // datetime
+        $date = (string)Factory::getDate();
+
+        try {
+
+            if (!\is_resource($this->db)) {
+                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            }
+            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+            $db = $this->db;
+
+            // Specify the table name
+            $tabletermtaxonomy = rtrim($data['dbtableprefix'], '_') . '_term_taxonomy';
+            $tableterms = rtrim($data['dbtableprefix'], '_') . '_terms';
+            $config['dbo'] = $db;
+            $tablePrefix = Factory::getConfig()->get('dbprefix');
+
+            // load data from framework table
+            $query = $db->getQuery(true)
+                ->select('*')
+                ->from($db->quoteName($tabletermtaxonomy, 'b'))
+                ->join('LEFT', $db->quoteName($tableterms, 'a'), $db->quoteName('a.term_id') . '=' . $db->quoteName('b.term_id'))
+                ->where($db->quoteName('b.taxonomy') . '=' . $db->q('category'));
+
+            $db->setQuery($query);
+            $results = $db->loadAssocList();
+
+            $patharray = [];
+            $levelarray = [];
+
+            LogHelper::writeLog('No of results' . '  ' . count($results), 'success');
+            // manupulate data to find parentcategory path and level
+
+            foreach ($results as $row) {
+
+                if ($row['parent'] != 0) {
+                    // It is a child category
+
+                    $parrentsarray = [];
+                    $currentelement = $row;
+                    $iteration = 0;
+                    while ($currentelement['parent'] != 0 && $iteration < count($results)) {
+                        array_push($parrentsarray, $currentelement['name']);
+                        $iteration = $iteration + 1;
+
+                        // finding parent row and assign it as currentelement for next iteration
+
+                        foreach ($results as $rowtemp) {
+                            if ($rowtemp['term_id'] == $currentelement['parent']) {
+                                $currentelement = $rowtemp;
+                                break;
+                            }
+                        }
+                    }
+
+                    // pushing currentelement in parent array
+                    array_push($parrentsarray, $currentelement['name']);
+                    // reverse array element
+
+                    $reverseparent = array_reverse($parrentsarray);
+
+                    $path = implode('/', $reverseparent);
+
+                    array_push($patharray, $path);
+                    array_push($levelarray, count($parrentsarray));
+                } else {
+                    // It is not a child category
+                    array_push($patharray, $row['name']);
+                    array_push($levelarray, 1);
+                }
+            }
+
+            $totalusers = count($results);
+            $count  = 0;
+            foreach ($results as $row) {
+
+                $category = new stdClass();
+                $category->id = $row['term_id'];
+                $category->asset_id = 0;
+                $category->parent_id = $row['parent'];
+                $category->lft = 0;
+                $category->rgt = 0;
+                $category->level = $levelarray[$count];
+                $category->path = $patharray[$count];
+                $category->extension = 'com_content';
+                $category->title = $row['name'];
+                $category->alias = $row['slug'];
+                $category->note = "";
+                $category->description = $row['description'];
+                $category->published = 0;
+                $category->check_out = NULL;
+                $category->check_out_time = NULL;
+                $category->access = 0;
+                $category->params = '{}';
+                $category->metadesc = '';
+                $category->metakey = '';
+                $category->metadata = '{}';
+                $category->created_user_id = $userid;
+                $category->created_time = $date;
+                $category->modified_user_id = $userid;
+                $category->modified_time = $date;
+                $category->hits = 0;
+                $category->language = '*';
+                $category->version = 1;
+
+                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'categories', $category);
+
+                $count = $count + 1;
+                $successcount = $successcount + 1;
+            }
+
+            $contentTowrite = 'Category Imported Successfully = ' . $successcount;
+            LogHelper::writeLog($contentTowrite, 'success');
+        } catch (\RuntimeException $th) {
+            LogHelper::writeLog('Category Imported Successfully = ' . $successcount, 'success');
+            LogHelper::writeLog('Category Imported Unsuccessfully = ' . $totalusers - $successcount, 'error');
             LogHelper::writeLog($th, 'normal');
         }
     }
