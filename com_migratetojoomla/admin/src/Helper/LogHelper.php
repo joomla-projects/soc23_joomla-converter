@@ -40,7 +40,7 @@ class LogHelper
 
         $contentToWrite =  '{' . $type . '}' . $content  . '{' . 'contentend' . '}' . PHP_EOL;
         $file = @fopen($logfilepath, 'a');
-        $currentDateTime = date('Y-m-d H:i:s');
+        $currentDateTime = date('Y-m-d H:i:s').PHP_EOL;
         fwrite($file, 'Timestamp : '.$currentDateTime);
         fwrite($file, $contentToWrite);
         fclose($file);
@@ -57,11 +57,6 @@ class LogHelper
 
         $logfilename = $selectedframework . '-to-Joomla.log';
         $logfilepath = JPATH_COMPONENT_ADMINISTRATOR . '/logs/' . $logfilename;
-
-        $app   = Factory::getApplication();
-        $app->enqueueMessage("log file path start", 'success');
-        $app->enqueueMessage($logfilepath, 'success');
-        $app->enqueueMessage("log file path end", 'success');
         if (!file_exists($logfilepath)) {
             $file = @fopen($logfilepath, 'w');
             fclose($file);

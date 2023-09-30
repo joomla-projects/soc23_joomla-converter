@@ -10,7 +10,6 @@
 
 namespace Joomla\Plugin\MigrateToJoomla\Wordpress\Extension;
 
-use Hoa\Event\Test\Unit\Event;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Event\EventInterface;
 use Joomla\CMS\Form\Form;
@@ -21,7 +20,6 @@ use Joomla\CMS\Language\Text;
 use stdClass;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
-use PgSql\Lob;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -54,7 +52,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         return [
             'onContentPrepareFormmigrate' => 'onContentPrepareForm',
-            'migratetojoomla_user' => 'importUsers'
+            'migratetojoomla_user' => 'importUsers',
+            'migratetojoomla_tags' => 'importTags'
         ];
     }
 
@@ -144,7 +143,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      * 
      * @since 1.0
      */
-    public function importUsers(EventInterface $event)
+    public function importUsers()
     {
         $totalusers = 0;
         $successcount  = 0;
@@ -192,6 +191,97 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         } catch (\RuntimeException $th) {
             LogHelper::writeLog('User Imported Successfully = ' . $successcount, 'success');
             LogHelper::writeLog('User Imported Unsuccessfully = ' . $totalusers - $successcount, 'error');
+            LogHelper::writeLog($th, 'normal');
+        }
+    }
+
+    /** 
+     * Method to import tag table
+     * 
+     * @since 1.0
+     */
+    public function importTags()
+    {
+        $totalusers = 0;
+        $successcount  = 0;
+
+        // current login user
+        $user = Factory::getApplication()->getIdentity();
+        $userid = $user->id;
+
+        // datetime
+
+        $date = (string)Factory::getDate();
+
+        try {
+
+            if (!\is_resource($this->db)) {
+                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            }
+            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+            $db = $this->db;
+
+            // Specify the table name
+            $tabletermtaxonomy = rtrim($data['dbtableprefix'], '_') . '_term_taxonomy';
+            $tableterms = rtrim($data['dbtableprefix'], '_') . '_terms';
+            $config['dbo'] = $db;
+            $tablePrefix = Factory::getConfig()->get('dbprefix');
+
+            // load data from framework table
+            $query = $db->getQuery(true)
+                ->select('*')
+                ->from($db->quoteName($tabletermtaxonomy, 'b'))
+                ->join('LEFT', $db->quoteName($tableterms, 'a'), $db->quoteName('a.term_id') . '=' . $db->quoteName('b.term_id'))
+                ->where($db->quoteName('b.taxonomy') . '=' . $db->q('post_tag'));
+
+            $db->setQuery($query);
+            $results = $db->loadAssocList();
+
+            $totalusers = count($results);
+            foreach ($results as $row) {
+
+                $tag = new stdClass();
+                $tag->id = $row['term_id'];
+                $tag->parent_id = 0;
+                $tag->lft = 0;
+                $tag->rgt = 0;
+                $tag->level = 0;
+                $tag->path = $row['name'];
+                $tag->title = $row['name'];
+                $tag->alias = $row['slug'];
+                $tag->note = "";
+                $tag->description = $row['description'];
+                $tag->published = 0;
+                $tag->check_out = NULL;
+                $tag->check_out_time = NULL;
+                $tag->access = 0;
+                $tag->params = '{}';
+                $tag->metadesc = '';
+                $tag->metakey = '';
+                $tag->metadata = '{}';
+                $tag->created_user_id = $userid;
+                $tag->created_time = $date;
+                $tag->created_by_alias = '';
+                $tag->modified_user_id = $userid;
+                $tag->modified_time = $date;
+                $tag->images = '{}';
+                $tag->urls = '{}';
+                $tag->hits = 0;
+                $tag->language = '*';
+                $tag->version = 1;
+                $tag->publish_up = $date;
+                $tag->publish_down = NULL;
+
+                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'tags', $tag);
+
+                $successcount = $successcount + 1;
+            }
+
+            $contentTowrite = 'Tags Imported Successfully = ' . $successcount;
+            LogHelper::writeLog($contentTowrite, 'success');
+        } catch (\RuntimeException $th) {
+            LogHelper::writeLog('Tags Imported Successfully = ' . $successcount, 'success');
+            LogHelper::writeLog('Tags Imported Unsuccessfully = ' . $totalusers - $successcount, 'error');
             LogHelper::writeLog($th, 'normal');
         }
     }
