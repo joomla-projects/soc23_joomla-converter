@@ -148,6 +148,10 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         $totalusers = 0;
         $successcount  = 0;
+
+        // user group
+        $usergroupinfo = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
+
         try {
 
             if (!\is_resource($this->db)) {
@@ -183,6 +187,13 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $user->params = '{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}';
 
                 $jdb = Factory::getDbo()->insertObject($tablePrefix . 'users', $user);
+
+                // inserting in user_usergroup_map
+                $usergroup = new stdClass();
+                $usergroup->user_id = $row['ID'];
+                $usergroup->group_id = $usergroupinfo;
+
+                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'user_usergroup_map', $usergroup);
 
                 $successcount = $successcount + 1;
             }
@@ -238,7 +249,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $db->setQuery($query);
             $results = $db->loadAssocList();
 
-            $totalusers = count($results);
+            $totalcount = count($results);
             foreach ($results as $row) {
 
                 $tag = new stdClass();
@@ -282,7 +293,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             LogHelper::writeLog($contentTowrite, 'success');
         } catch (\RuntimeException $th) {
             LogHelper::writeLog('Tags Imported Successfully = ' . $successcount, 'success');
-            LogHelper::writeLog('Tags Imported Unsuccessfully = ' . $totalusers - $successcount, 'error');
+            LogHelper::writeLog('Tags Imported Unsuccessfully = ' . $totalcount - $successcount, 'error');
             LogHelper::writeLog($th, 'normal');
         }
     }
@@ -373,7 +384,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 }
             }
 
-            $totalusers = count($results);
+            $totalcount = count($results);
             $count  = 0;
             foreach ($results as $row) {
 
@@ -416,7 +427,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             LogHelper::writeLog($contentTowrite, 'success');
         } catch (\RuntimeException $th) {
             LogHelper::writeLog('Category Imported Successfully = ' . $successcount, 'success');
-            LogHelper::writeLog('Category Imported Unsuccessfully = ' . $totalusers - $successcount, 'error');
+            LogHelper::writeLog('Category Imported Unsuccessfully = ' . $totalcount - $successcount, 'error');
             LogHelper::writeLog($th, 'normal');
         }
     }

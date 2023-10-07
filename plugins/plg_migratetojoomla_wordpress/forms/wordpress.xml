@@ -13,6 +13,24 @@
 			   <option value="1">JYES</option>
 			   <option value="0">JNO</option>
 			</field>
+			<field
+			name="usergroup"
+			type="list"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_USER_MODE_DATA_LABEL"
+			description="PLG_MIGRATETOJOOMLA_WORDPRESS_USER_MODE_DATA_DESCRIPTION"
+			validate="options"
+			default="1"
+			>
+				<option value="1">PLG_MIGRATETOJOOMLA_WORDPRESS_PUBLIC</option>
+				<option value="2">PLG_MIGRATETOJOOMLA_WORDPRESS_REGISTERED</option>
+				<option value="3">PLG_MIGRATETOJOOMLA_WORDPRESS_AUTHOR</option>
+				<option value="4">PLG_MIGRATETOJOOMLA_WORDPRESS_EDITOR</option>
+				<option value="5">PLG_MIGRATETOJOOMLA_WORDPRESS_PUBLISHER</option>
+				<option value="6">PLG_MIGRATETOJOOMLA_WORDPRESS_MANAGER</option>
+				<option value="7">PLG_MIGRATETOJOOMLA_WORDPRESS_ADMINISTRATOR</option>
+				<option value="8">PLG_MIGRATETOJOOMLA_WORDPRESS_SUPERUSERS</option>
+				<option value="9">PLG_MIGRATETOJOOMLA_WORDPRESS_GUEST</option>
+		   </field>
             <field
 			name="tagsdata"
 			type="radio"
