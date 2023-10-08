@@ -55,6 +55,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             'migratetojoomla_user' => 'importUsers',
             'migratetojoomla_tags' => 'importTags',
             'migratetojoomla_category' => 'importCategory',
+            'migratetojoomla_menu' => 'importMenu',
+            'migratetojoomla_menuitem' => 'importMenuItem'
         ];
     }
 
@@ -431,4 +433,61 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             LogHelper::writeLog($th, 'normal');
         }
     }
-}
+
+    /** 
+     * Method to import Menu
+     * 
+     * @since 1.0
+     */
+    public function importMenu()
+    {
+        $successcount  = 0;
+
+        try {
+
+            if (!\is_resource($this->db)) {
+                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            }
+            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+            $db = $this->db;
+
+            // Specify the table name
+            $tabletermtaxonomy = rtrim($data['dbtableprefix'], '_') . '_term_taxonomy';
+            $tableterms = rtrim($data['dbtableprefix'], '_') . '_terms';
+            $config['dbo'] = $db;
+            $tablePrefix = Factory::getConfig()->get('dbprefix');
+
+            // load data from framework table
+            $query = $db->getQuery(true)
+                ->select('*')
+                ->from($db->quoteName($tabletermtaxonomy, 'b'))
+                ->join('LEFT', $db->quoteName($tableterms, 'a'), $db->quoteName('a.term_id') . '=' . $db->quoteName('b.term_id'))
+                ->where($db->quoteName('b.taxonomy') . '=' . $db->q('nav_menu'));
+
+            $db->setQuery($query);
+            $results = $db->loadAssocList();
+
+            $totalcount = count($results);
+            foreach ($results as $row) {
+
+                $menu = new stdClass();
+                $menu->id = $row['term_id'];
+                $menu->asset_id = 0;
+                $menu->menu_type = $row['slug'];
+                $menu->title = $row['name'];
+                $menu->description = $row['description'];
+                $menu->client_id = 0;
+
+                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'menu_types', $menu);
+
+                $successcount = $successcount + 1;
+            }
+
+            $contentTowrite = 'Menu Imported Successfully = ' . $successcount;
+            LogHelper::writeLog($contentTowrite, 'success');
+        } catch (\RuntimeException $th) {
+            LogHelper::writeLog('Menu Imported Successfully = ' . $successcount, 'success');
+            LogHelper::writeLog('Menu Imported Unsuccessfully = ' . $totalcount - $successcount, 'error');
+            LogHelper::writeLog($th, 'normal');
+        }
+    }
