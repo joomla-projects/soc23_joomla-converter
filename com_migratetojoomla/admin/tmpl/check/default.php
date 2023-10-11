@@ -13,7 +13,8 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Factory;
 use Joomla\Component\Privacy\Administrator\Export\Field;
-
+use Joomla\CMS\Event\AbstractEvent;
+use Joomla\CMS\Plugin\PluginHelper;
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
 /** @var \Joomla\Component\MigrateToJoomla\Administrator\View\check\HtmlView $this */
@@ -32,6 +33,20 @@ $parameterformdata = $data["frameworkparams"];
 $framework = $app->getUserState('com_migratetojoomla.migrate', [])['framework'];
 
 $datafieldskey = array_keys($parameterformdata);
+
+// call createmigratedata plugin method to remove unwanted fields
+PluginHelper::importPlugin('migratetojoomla', $framework);
+
+$eventname = "migratetojoomla_createdisplaydata";
+$event = AbstractEvent::create(
+    $eventname,
+    [
+        'subject'    => $this,
+        'data'       => $datafieldskey
+    ]
+);
+Factory::getApplication()->triggerEvent($eventname, $event);
+$importstring = Factory::getSession()->get('migratetojoomla.displayimportstring', []);
 
 // no database migration then change status of database table to 0
 
@@ -125,7 +140,7 @@ if ($data['databasemigratestatus'] == '0') {
                     $n = 1;
                     foreach ($datafieldskey as $item) :
                     ?>
-                        <?php if ($parameterformdata[$item] == '1') : ?>
+                        <?php if (in_array($item, $importstring) && $parameterformdata[$item] == '1') : ?>
                             <tr>
                                 <th scope="row"><?php echo $n;
                                                 $n += 1; ?></th>
@@ -156,7 +171,7 @@ if ($data['databasemigratestatus'] == '0') {
                     $n = 1;
                     foreach ($datafieldskey as $item) :
                     ?>
-                        <?php if ($parameterformdata[$item] == '0') : ?>
+                        <?php if (in_array($item, $importstring) && $parameterformdata[$item] == '0') : ?>
                             <tr>
                                 <th scope="row"><?php echo $n;
                                                 $n += 1; ?></th>

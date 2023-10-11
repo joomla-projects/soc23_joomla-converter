@@ -16,7 +16,9 @@ use Joomla\CMS\Form\Form;
 use ReflectionClass;
 use Joomla\Event\SubscriberInterface;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Helper\TagsHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Table\Table;
 use stdClass;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
@@ -52,12 +54,13 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         return [
             'onContentPrepareFormmigrate' => 'onContentPrepareForm',
+            'migratetojoomla_createdisplaydata' => 'createDisplayData',
             'migratetojoomla_user' => 'importUsers',
             'migratetojoomla_tags' => 'importTags',
             'migratetojoomla_category' => 'importCategory',
             'migratetojoomla_menu' => 'importMenu',
             'migratetojoomla_menuitem' => 'importMenuItem',
-            'migratetojoomla_post' => 'importPost'
+            'migratetojoomla_postsandpages' => 'importPostsAndPages'
         ];
     }
 
@@ -105,6 +108,30 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         }
 
         return true;
+    }
+
+    /**
+     * Method to remove unwanted element from importstrings
+     * 
+     * @since   4.0.0
+     */
+    public static function createDisplayData(EventInterface $event)
+    {
+        $importstring = $event->getArgument('data');
+
+        $targetvalues = ["usergroup", "postfeatureimage"];
+
+        foreach ($targetvalues as $value) {
+            $key = array_search($value, $importstring);
+            // Check if the value exists in the array
+            if ($key !== false) {
+                // Remove the element with the given key
+                unset($importstring[$key]);
+            }
+        }
+
+        // set data into session
+        Factory::getSession()->set('migratetojoomla.displayimportstring', $importstring);
     }
 
     /**
