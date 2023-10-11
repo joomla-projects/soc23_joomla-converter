@@ -56,7 +56,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             'migratetojoomla_tags' => 'importTags',
             'migratetojoomla_category' => 'importCategory',
             'migratetojoomla_menu' => 'importMenu',
-            'migratetojoomla_menuitem' => 'importMenuItem'
+            'migratetojoomla_menuitem' => 'importMenuItem',
+            'migratetojoomla_post' => 'importPost'
         ];
     }
 
@@ -491,3 +492,160 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             LogHelper::writeLog($th, 'normal');
         }
     }
+
+    /** 
+     * Method to import Menu Items
+     * 
+     * @since 1.0
+     */
+    public function importMenuItem()
+    {
+        $successcount  = 0;
+
+        try {
+
+            if (!\is_resource($this->db)) {
+                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            }
+            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+            $db = $this->db;
+
+            $databaseprefix = rtrim($data['dbtableprefix'], '_');
+            // Specify the table name
+            $tableposts = $databaseprefix . '_posts';
+            $tablepostmeta = $databaseprefix . '_postmeta';
+            $tabletermtaxonomy = $databaseprefix . '_term_taxonomy';
+            $tableterms = $databaseprefix . '_terms';
+            $tabletermrelationship = $databaseprefix . '_term_relationships';
+
+            $config['dbo'] = $db;
+            $tablePrefix = Factory::getConfig()->get('dbprefix');
+
+            $query = $db->getQuery(true)
+                ->select('DISTINCT ID , post_title , post_parent , menu_order , post_date , e.name')
+                ->from($db->quoteName($tableposts, 'a'))
+                ->join('LEFT', $db->quoteName($tablepostmeta, 'b'), $db->quoteName('a.ID') . '=' . $db->quoteName('b.post_id'))
+                ->join('LEFT', $db->quoteName($tabletermrelationship, 'c'), $db->quoteName('a.ID') . '=' . $db->quoteName('c.object_id'))
+                ->join('LEFT', $db->quoteName($tabletermtaxonomy, 'd'), $db->quoteName('c.term_taxonomy_id') . '=' . $db->quoteName('d.term_taxonomy_id'))
+                ->join('LEFT', $db->quoteName($tableterms, 'e'), $db->quoteName('d.term_id') . '=' . $db->quoteName('e.term_id'))
+                ->where($db->quoteName('a.post_type') . '=' . $db->q('nav_menu_item') . 'AND' . $db->quoteName('b.meta_value') . '=' . $db->q('category') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('post_tag') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('page') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('custom') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('post'));
+
+            $db->setQuery($query);
+            $results = $db->loadAssocList();
+
+            $totalcount = count($results);
+            foreach ($results as $row) {
+
+                // load taxonomy id
+                $query = $db->getQuery(true)
+                    ->select('meta_value')
+                    ->from($db->quoteName($tablepostmeta, 'a'))
+                    ->where($db->quoteName('a.post_id') . '=' . $db->q($row['ID']), 'AND')
+                    ->where($db->quoteName('a.meta_key') . '=' . $db->q('_menu_item_object_id'));
+                $db->setQuery($query);
+                $result = $db->loadAssocList();
+                // $taxonomyid = $result[0]['meta_value'];
+                $taxonomyid = intval($result[0]['meta_value']);
+
+                // Is category or tag or page or post or customLink
+                $query = $db->getQuery(true)
+                    ->select($db->quoteName('meta_value'))
+                    ->from($db->quoteName($tablepostmeta, 'a'))
+                    ->where($db->quoteName('a.post_id') . '=' . $db->q($row['ID']), 'AND')
+                    ->where($db->quoteName('a.meta_key') . '=' . $db->q('_menu_item_object'));
+                $db->setQuery($query);
+                $resultload = $db->loadAssocList();
+                $taxonomytype = $resultload[0]['meta_value'];
+
+                // load taxonomy title information
+
+                if ($taxonomytype == "category" || $taxonomytype == "post_tag") {
+                    LogHelper::writeLog('logfilecategory  ' . $taxonomyid . gettype($taxonomyid));
+
+                    $query = $db->getQuery(true)
+                        ->select($db->quoteName('name'))
+                        ->from($db->quoteName($tableterms, 'a'))
+                        ->where($db->quoteName('a.term_id') . '=' . $taxonomyid);
+                    $db->setQuery($query);
+                    $taxonomyinfo = $db->loadAssocList();
+                    $menuitemtitle = (empty($row['post_title'])) ? $taxonomyinfo[0]['name'] : $row['post_title'];
+                } else {
+                    $query = $db->getQuery(true)
+                        ->select($db->quoteName('post_title'))
+                        ->from($db->quoteName($tableposts, 'a'))
+                        ->where($db->quoteName('a.ID') . '=' . $db->q($taxonomyid));
+                    $db->setQuery($query);
+                    $taxonomyinfo = $db->loadAssocList();
+                    $menuitemtitle = (empty($row['post_title'])) ? $taxonomyinfo['post_title'] : $row['post_title'];
+                }
+
+                // set menu item Link
+                switch ($taxonomytype) {
+                    case "post_tag":
+                        $menuitemlink = 'index.php?option=com_tags&view=tag&id[0]={' . $taxonomyid . '}';
+                        break;
+                    case "category":
+                        $menuitemlink = 'index.php?option=com_content&view=category&id={' . $taxonomyid . '}';
+                        break;
+                    case "page":
+                        $menuitemlink =  'index.php?option=com_content&view=article&id={' . $taxonomyid . '}';
+                        break;
+                    case "post":
+                        $menuitemlink =  'index.php?option=com_content&view=article&id={' . $taxonomyid . '}';
+                        break;
+                    case "custom":
+                        $query = $db->getQuery(true)
+                            ->select($db->quoteName('meta_value'))
+                            ->from($db->quoteName($tablepostmeta, 'a'))
+                            ->where($db->quoteName('a.post_id') . '=' . $db->q($row['ID']), 'AND')
+                            ->where($db->quoteName('a.meta_key') . '=' . $db->q('_menu_item_url'));
+                        $db->setQuery($query);
+                        $menuitemlink = ($db->loadAssocList())[0]['meta_value'];
+                        break;
+                    default:
+                        $menuitemlink = " ";
+                        break;
+                }
+
+                $menuitem = new stdClass();
+                $menuitem->id = $row['ID'] + 200;
+                $menuitem->menutype = $row['name'];
+                $menuitem->title = $menuitemtitle;
+                $menuitem->alias = strtolower($menuitemtitle);
+                $menuitem->note = '';
+                $menuitem->path = strtolower($menuitemtitle);
+                $menuitem->link = $menuitemlink;
+                $menuitem->type = 'component';
+                $menuitem->published = 1;
+                $menuitem->parent_id = $row['post_parent'];
+                $menuitem->level = $row['menu_order'];
+                $menuitem->component_id = 19;
+                $menuitem->checked_out = NULL;
+                $menuitem->checked_out_time = NULL;
+                $menuitem->browserNav = 0;
+                $menuitem->access = 0;
+                $menuitem->img = '';
+                $menuitem->template_style_id = 0;
+                $menuitem->params = '{}';
+                $menuitem->lft = 0;
+                $menuitem->rgt = 0;
+                $menuitem->home = 0;
+                $menuitem->language = '*';
+                $menuitem->client_id = 0;
+                $menuitem->publish_up = $row['post_date'];
+                $menuitem->publish_down = NULL;
+
+                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'menu', $menuitem);
+
+                $successcount = $successcount + 1;
+            }
+
+            $contentTowrite = 'Menuitem Imported Successfully = ' . $successcount;
+            LogHelper::writeLog($contentTowrite, 'success');
+        } catch (\RuntimeException $th) {
+            LogHelper::writeLog('Menuitem Imported Successfully = ' . $successcount, 'success');
+            LogHelper::writeLog('Menuitem Imported Unsuccessfully = ' . $totalcount - $successcount, 'error');
+            LogHelper::writeLog($th, 'normal');
+        }
+    }
+}
