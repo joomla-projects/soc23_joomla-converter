@@ -29,10 +29,10 @@ $app = Factory::getApplication();
 
 $data = $app->getUserState('com_migratetojoomla.parameter', []);;
 
-$parameterformdata = $data["frameworkparams"];
-$framework = $app->getUserState('com_migratetojoomla.migrate', [])['framework'];
+$parameterformdata = @$data["frameworkparams"];
+$framework = @$app->getUserState('com_migratetojoomla.migrate', [])['framework'];
 
-$datafieldskey = array_keys($parameterformdata);
+$datafieldskey =  is_null($parameterformdata)?[]:array_keys($parameterformdata);
 
 // call createmigratedata plugin method to remove unwanted fields
 PluginHelper::importPlugin('migratetojoomla', $framework);
@@ -50,7 +50,7 @@ $importstring = Factory::getSession()->get('migratetojoomla.displayimportstring'
 
 // no database migration then change status of database table to 0
 
-if ($data['databasemigratestatus'] == '0') {
+if (@$data['databasemigratestatus'] == '0') {
     foreach ($parameterformdata as $key => $field) {
         $parameterformdata[$key] = '0';
     }

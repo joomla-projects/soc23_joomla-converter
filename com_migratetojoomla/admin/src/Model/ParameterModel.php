@@ -56,7 +56,7 @@ class ParameterModel extends AdminModel
                 'subject'    => $this,
                 'formname'   => 'com_migratetojoomla.parameter',
                 'form'       => $form,
-                'framework'  => Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework']
+                'framework'  => @Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework']
             ]
         );
 

@@ -23,7 +23,7 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
     ->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
-$framework = Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'];
+$framework = @Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'];
 
 $lang = Factory::getLanguage();
 $lang->load('plg_migratetojoomla_' . $framework, JPATH_ADMINISTRATOR);

@@ -5,8 +5,10 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\View\Progress;
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Event\AbstractEvent;
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
+use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 use Joomla\CMS\Router\Route;
@@ -90,9 +92,9 @@ class HtmlView extends BaseHtmlView
     {
         $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
 
-        $isdatabasemigration = $data["databasemigratestatus"];
-        $ismediamigration = $data["mediamigratestatus"];
-
+        @$isdatabasemigration = $data["databasemigratestatus"];
+        @$ismediamigration = $data["mediamigratestatus"];
+        $displayimportstring = [];
         if ($isdatabasemigration == "1") {
             $databasetable = $data["frameworkparams"];
 

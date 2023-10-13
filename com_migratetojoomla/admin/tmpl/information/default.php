@@ -23,7 +23,7 @@ $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
     ->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
-$framework = ucfirst(Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'] . ' ');
+$framework = @ucfirst(Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'] . ' ');
 ?>
 <div id="migratetojoomla" class="p-3">
     <form action="<?php echo Route::_('index.php?option=com_migratetojoomla'); ?>" method="post" name="adminForm" id="adminForm" enctype="multipart/form-data">
