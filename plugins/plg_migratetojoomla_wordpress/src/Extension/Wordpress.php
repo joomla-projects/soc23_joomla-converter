@@ -724,7 +724,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             foreach ($results as $row) {
 
                 $articleid = $row['ID'];
-                $articletype = $row['post-type'];
+                $articletype = $row['post_type'];
 
                 // getting all categories associate with item
                 $query  = $db->getQuery(true)
@@ -753,7 +753,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                     ->select('meta_value')
                     ->from($db->quoteName($tablepostmeta, 'a'))
                     ->where($db->quoteName('a.post_id') . '=' . $row['ID'], 'AND')
-                    ->where($db->quoteName('b.meta_key') . '=' . $db->q('_thumbnail_id'));
+                    ->where($db->quoteName('a.meta_key') . '=' . $db->q('_thumbnail_id'));
                 $db->setQuery($query);
                 $tempresult =  $db->loadAssocList();
 
@@ -766,11 +766,11 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $imageinfo = NULL;
                 $imageurl = NULL;
                 $articleimage = '{"image_intro":"","image_intro_alt":"","float_intro":"","image_intro_caption":"","image_fulltext":"","image_fulltext_alt":"","float_fulltext":"","image_fulltext_caption":""}';
-                if (!isNull($imageid)) {
+                if (!is_null($imageid)) {
                     $query = $db->getQuery(true)
                         ->select('post_title , post_content, post_excerpt, post_name , guid')
                         ->from($db->quoteName($tableposts, 'a'))
-                        ->where($db->quoteName('a.post_id') . '=' . $imageid);
+                        ->where($db->quoteName('a.ID') . '=' . $imageid);
                     $db->setQuery($query);
                     $imageinfo =  $db->loadAssocList();
                     $url = $imageinfo[0]['guid'];
@@ -784,7 +784,6 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                             $imageurl = JPATH_ROOT . $result;
                         }
                     }
-
                     switch ($imagemigrateway) {
                         case 'introonly':
                             $articleimage = '{"image_intro":' . $imageurl . ',"image_intro_alt":' . $imageinfo['post_title'] . ',"float_intro":"","image_intro_caption":' . $imageinfo['post_excerpt'] . '}';
@@ -805,15 +804,21 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                     $articlecategoryId = $allcategories[0]['term_id'];
                 }
 
+                // state of article
+                $articlestate = 1; // for post publish and future
+                if ($row['post_status'] == 'draft' || $row['post_status'] == 'pending') {
+                    $articlestate = 0;
+                }
+
                 // article import
                 $article = new stdClass();
-                $article->id = $articleid;
+                $article->id = $articleid + 100;
                 $article->asset_id = 0;
                 $article->title = $row['post_title'];
                 $article->alias = $row['post_name'];
-                $article->introtext = $row['post_exerpt'];
+                $article->introtext = empty($row['post_exerpt']) ? '' : $row['post_exerpt'];
                 $article->fulltext = $row['post_content'];
-                $article->state = 1;
+                $article->state = $articlestate;
                 $article->catid = $articlecategoryId;
                 $article->created = $row['post_date'];
                 $article->created_by = $row['post_author'];
@@ -822,7 +827,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $article->modified_by = $userid;
                 $article->checked_out = NULL;
                 $article->checked_out_time = NULL;
-                $article->publish_up = $date;
+                $article->publish_up = $articlestate ? $date : NULL;
                 $article->publish_down = NULL;
                 $article->images = $articleimage;
                 $article->urls = "";
@@ -839,18 +844,17 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $article->note = "";
 
                 $jdb = Factory::getDbo()->insertObject($tablePrefix . 'content', $article);
-
                 // tag map all item associate tags
                 foreach ($alltags as $tag) {
                     $tagmap = new stdClass();
                     $tagmap->type_alias = "com_content.article";
                     $tagmap->core_content_id = 6;
-                    $tagmap->content_item_id = $articleid;
-                    $tagmap->tag_id = $tag['term_id'];
+                    $tagmap->content_item_id = $articleid + 100;
+                    $tagmap->tag_id = $tag['term_id'] + 100;
                     $tagmap->tag_time = $date;
                     $tagmap->type_id = 1;
 
-                    $jdb = Factory::getDbo()->insertObject($tablePrefix . 'contentitemtag_map', $tagmap);
+                    $jdb = Factory::getDbo()->insertObject($tablePrefix . 'contentitem_tag_map', $tagmap);
                 }
 
                 // more that one category convert into tags
@@ -868,88 +872,97 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                             continue;
                         }
 
-                        $tag = new stdClass();
-                        $tag->id = $category['term_id']; // will change in future to avoid duplicate key error (when id map implemented)
-                        $tag->parent_id = 0;
-                        $tag->lft = 0;
-                        $tag->rgt = 0;
-                        $tag->level = 0;
-                        $tag->path = $category['name'];
-                        $tag->title = $category['name'];
-                        $tag->alias = $category['slug'];
-                        $tag->note = "";
-                        $tag->description = $category['description'];
-                        $tag->published = 0;
-                        $tag->check_out = NULL;
-                        $tag->check_out_time = NULL;
-                        $tag->access = 0;
-                        $tag->params = '{}';
-                        $tag->metadesc = '';
-                        $tag->metakey = '';
-                        $tag->metadata = '{}';
-                        $tag->created_user_id = $userid;
-                        $tag->created_time = $date;
-                        $tag->created_by_alias = '';
-                        $tag->modified_user_id = $userid;
-                        $tag->modified_time = $date;
-                        $tag->images = '{}';
-                        $tag->urls = '{}';
-                        $tag->hits = 0;
-                        $tag->language = '*';
-                        $tag->version = 1;
-                        $tag->publish_up = $date;
-                        $tag->publish_down = NULL;
+                        // one category can associate with multiple pages and post so to avoid duplicate key error checking whether it already exist or not
+                        $joomladb = Factory::getDbo();
+                        $query = $joomladb->getQuery(true)
+                            ->select('id')
+                            ->from($joomladb->quoteName($tablePrefix . 'tags'))
+                            ->where($joomladb->quoteName('id') . '=' . $category['term_id'] + 300);
+                        $joomladb->setQuery($query);
+                        $tempdata =  $joomladb->loadAssocList();
+
+                        if (count($tempdata) == 0) {
+
+                            $tag = new stdClass();
+                            $tag->id = $category['term_id'] + 300; // will change in future to avoid duplicate key error (when id map implemented)
+                            $tag->parent_id = 0;
+                            $tag->lft = 0;
+                            $tag->rgt = 0;
+                            $tag->level = 0;
+                            $tag->path = $category['name'];
+                            $tag->title = $category['name'];
+                            $tag->alias = $category['slug'];
+                            $tag->note = "";
+                            $tag->description = $category['description'];
+                            $tag->published = 0;
+                            $tag->check_out = NULL;
+                            $tag->check_out_time = NULL;
+                            $tag->access = 0;
+                            $tag->params = '{}';
+                            $tag->metadesc = '';
+                            $tag->metakey = '';
+                            $tag->metadata = '{}';
+                            $tag->created_user_id = $userid;
+                            $tag->created_time = $date;
+                            $tag->created_by_alias = '';
+                            $tag->modified_user_id = $userid;
+                            $tag->modified_time = $date;
+                            $tag->images = '{}';
+                            $tag->urls = '{}';
+                            $tag->hits = 0;
+                            $tag->language = '*';
+                            $tag->version = 1;
+                            $tag->publish_up = $date;
+                            $tag->publish_down = NULL;
 
 
-                        $jdb = Factory::getDbo()->insertObject($tablePrefix . 'tags', $tag);
-
+                            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'tags', $tag);
+                        }
                         $tagmap = new stdClass();
                         $tagmap->type_alias = "com_content.article";
                         $tagmap->core_content_id = 6;
-                        $tagmap->content_item_id = $articleid;
-                        $tagmap->tag_id = $category['term_id'];
+                        $tagmap->content_item_id = $articleid + 100;
+                        $tagmap->tag_id = $category['term_id'] + 300;
                         $tagmap->tag_time = $date;
                         $tagmap->type_id = 1;
 
-                        $jdb = Factory::getDbo()->insertObject($tablePrefix . 'contentitemtag_map', $tagmap);
+                        $jdb = Factory::getDbo()->insertObject($tablePrefix . 'contentitem_tag_map', $tagmap);
                     }
                 }
+                // if item is page then create a menuitem pointing to that article
+                if ($articletype == "page") {
+
+                    $menuitem = new stdClass();
+                    $menuitem->id = $row['ID'] + 500;
+                    $menuitem->menutype = $row['post_name'];
+                    $menuitem->title = $row['post_title'];
+                    $menuitem->alias = strtolower($row['post_title']);
+                    $menuitem->note = '';
+                    $menuitem->path = strtolower($row['post_title']);
+                    $menuitem->link = 'index.php?option=com_content&view=article&id={' . $articleid . '}';;
+                    $menuitem->type = 'component';
+                    $menuitem->published = 1;
+                    $menuitem->parent_id = $row['post_parent'];
+                    $menuitem->level = $row['menu_order'];
+                    $menuitem->component_id = 19;
+                    $menuitem->checked_out = NULL;
+                    $menuitem->checked_out_time = NULL;
+                    $menuitem->browserNav = 0;
+                    $menuitem->access = 0;
+                    $menuitem->img = '';
+                    $menuitem->template_style_id = 0;
+                    $menuitem->params = '{}';
+                    $menuitem->lft = 0;
+                    $menuitem->rgt = 0;
+                    $menuitem->home = 0;
+                    $menuitem->language = '*';
+                    $menuitem->client_id = 0;
+                    $menuitem->publish_up = $row['post_date'];
+                    $menuitem->publish_down = NULL;
+
+                    $jdb = Factory::getDbo()->insertObject($tablePrefix . 'menu', $menuitem);
+                }
                 $successcount = $successcount + 1;
-            }
-
-            // if item is page then create a menuitem pointing to that article
-
-            if ($articletype == "page") {
-
-                $menuitem = new stdClass();
-                $menuitem->id = $row['ID'];
-                $menuitem->menutype = $row['name'];
-                $menuitem->title = $row['post_title'];
-                $menuitem->alias = strtolower($row['post_title']);
-                $menuitem->note = '';
-                $menuitem->path = strtolower($row['post_title']);
-                $menuitem->link = 'index.php?option=com_content&view=article&id={' . $articleid . '}';;
-                $menuitem->type = 'component';
-                $menuitem->published = 1;
-                $menuitem->parent_id = $row['post_parent'];
-                $menuitem->level = $row['menu_order'];
-                $menuitem->component_id = 19;
-                $menuitem->checked_out = NULL;
-                $menuitem->checked_out_time = NULL;
-                $menuitem->browserNav = 0;
-                $menuitem->access = 0;
-                $menuitem->img = '';
-                $menuitem->template_style_id = 0;
-                $menuitem->params = '{}';
-                $menuitem->lft = 0;
-                $menuitem->rgt = 0;
-                $menuitem->home = 0;
-                $menuitem->language = '*';
-                $menuitem->client_id = 0;
-                $menuitem->publish_up = $row['post_date'];
-                $menuitem->publish_down = NULL;
-
-                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'menu', $menuitem);
             }
 
             $contentTowrite = 'Article Imported Successfully = ' . $totalcount;
