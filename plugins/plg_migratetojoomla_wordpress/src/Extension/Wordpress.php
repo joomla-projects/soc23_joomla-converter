@@ -635,7 +635,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 }
 
                 $menuitem = new stdClass();
-                $menuitem->id = $row['ID'] + 200;
+                $menuitem->id = $row['ID'];
                 $menuitem->menutype = $row['name'];
                 $menuitem->title = $menuitemtitle;
                 $menuitem->alias = strtolower($menuitemtitle);
@@ -672,6 +672,291 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         } catch (\RuntimeException $th) {
             LogHelper::writeLog('Menuitem Imported Successfully = ' . $successcount, 'success');
             LogHelper::writeLog('Menuitem Imported Unsuccessfully = ' . $totalcount - $successcount, 'error');
+            LogHelper::writeLog($th, 'normal');
+        }
+    }
+
+    /** 
+     * Method to import post and pages
+     * 
+     * @since 1.0
+     */
+    public function importPostsAndPages()
+    {
+        $successcount  = 0;
+
+        try {
+            if (!\is_resource($this->db)) {
+                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            }
+            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+
+            $imagemigrateway = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', [])['postfeatureimage'];
+            // datetime
+
+            $date = (string)Factory::getDate();
+            $db = $this->db;
+            // current login user
+            $user = Factory::getApplication()->getIdentity();
+            $userid = $user->id;
+
+            $databaseprefix = rtrim($data['dbtableprefix'], '_');
+            // Specify the table name
+            $tableposts = $databaseprefix . '_posts';
+            $tablepostmeta = $databaseprefix . '_postmeta';
+            $tabletermtaxonomy = $databaseprefix . '_term_taxonomy';
+            $tableterms = $databaseprefix . '_terms';
+            $tabletermrelationship = $databaseprefix . '_term_relationships';
+
+            $config['dbo'] = $db;
+            $tablePrefix = Factory::getConfig()->get('dbprefix');
+
+            $query = $db->getQuery(true)
+                ->select('*')
+                ->from($db->quoteName($tableposts, 'a'))
+                ->where('a.post_status !="trash" AND a.post_status!="inherit" AND a.post_status!="auto-draft"
+                AND (a.post_type = "post" OR a.post_type ="page")');
+
+            $db->setQuery($query);
+            $results = $db->loadAssocList();
+
+            $totalcount = count($results);
+            foreach ($results as $row) {
+
+                $articleid = $row['ID'];
+                $articletype = $row['post-type'];
+
+                // getting all categories associate with item
+                $query  = $db->getQuery(true)
+                    ->select('*')
+                    ->from($db->quoteName($tabletermrelationship, 'a'))
+                    ->join('LEFT', $db->quoteName($tabletermtaxonomy, 'b'), $db->quoteName('a.term_taxonomy_id') . '=' . $db->quoteName('b.term_taxonomy_id'))
+                    ->join('LEFT', $db->quoteName($tableterms, 'c'), $db->quoteName('b.term_id') . '=' . $db->quoteName('c.term_id'))
+                    ->where($db->quoteName('a.object_id') . '=' . $row['ID'], 'AND')
+                    ->where($db->quoteName('b.taxonomy') . '=' . $db->q('category'));
+                $db->setQuery($query);
+                $allcategories =  $db->loadAssocList();
+
+                // getting all tags associate with item
+                $query  = $db->getQuery(true)
+                    ->select('*')
+                    ->from($db->quoteName($tabletermrelationship, 'a'))
+                    ->join('LEFT', $db->quoteName($tabletermtaxonomy, 'b'), $db->quoteName('a.term_taxonomy_id') . '=' . $db->quoteName('b.term_taxonomy_id'))
+                    ->join('LEFT', $db->quoteName($tableterms, 'c'), $db->quoteName('b.term_id') . '=' . $db->quoteName('c.term_id'))
+                    ->where($db->quoteName('a.object_id') . '=' . $row['ID'], 'AND')
+                    ->where($db->quoteName('b.taxonomy') . '=' . $db->q('post_tag'));
+                $db->setQuery($query);
+                $alltags =  $db->loadAssocList();
+
+                // getting id of featured image
+                $query = $db->getQuery(true)
+                    ->select('meta_value')
+                    ->from($db->quoteName($tablepostmeta, 'a'))
+                    ->where($db->quoteName('a.post_id') . '=' . $row['ID'], 'AND')
+                    ->where($db->quoteName('b.meta_key') . '=' . $db->q('_thumbnail_id'));
+                $db->setQuery($query);
+                $tempresult =  $db->loadAssocList();
+
+                $imageid = NULL;
+                if (count($tempresult) > 0) {
+                    $imageid = $tempresult[0]['meta_value'];
+                }
+
+                // changing media url and images field of article in format of joomla path
+                $imageinfo = NULL;
+                $imageurl = NULL;
+                $articleimage = '{"image_intro":"","image_intro_alt":"","float_intro":"","image_intro_caption":"","image_fulltext":"","image_fulltext_alt":"","float_fulltext":"","image_fulltext_caption":""}';
+                if (!isNull($imageid)) {
+                    $query = $db->getQuery(true)
+                        ->select('post_title , post_content, post_excerpt, post_name , guid')
+                        ->from($db->quoteName($tableposts, 'a'))
+                        ->where($db->quoteName('a.post_id') . '=' . $imageid);
+                    $db->setQuery($query);
+                    $imageinfo =  $db->loadAssocList();
+                    $url = $imageinfo[0]['guid'];
+                    if (!empty($url)) {
+
+                        $position = strpos($url, "uploads");
+
+                        if ($position !== false) {
+                            // Remove the characters before the continuous part
+                            $result = substr($url, $position + strlen("uploads"));
+                            $imageurl = JPATH_ROOT . $result;
+                        }
+                    }
+
+                    switch ($imagemigrateway) {
+                        case 'introonly':
+                            $articleimage = '{"image_intro":' . $imageurl . ',"image_intro_alt":' . $imageinfo['post_title'] . ',"float_intro":"","image_intro_caption":' . $imageinfo['post_excerpt'] . '}';
+                            break;
+                        case 'fullonly':
+                            $articleimage = '{"image_fulltext":' . $imageurl . ',"image_fulltext_alt":' . $imageinfo['post_title'] . ',"float_fulltext":"","image_fulltext_caption":' . $imageinfo['post_content'] . '}';
+                            break;
+
+                        default:
+                            $articleimage = '{"image_intro":' . $imageurl . ',"image_intro_alt":' . $imageinfo['post_title'] . ',"float_intro":"","image_intro_caption":' . $imageinfo['post_excerpt'] . ',"image_fulltext":' . $imageurl . ',"image_fulltext_alt":' . $imageinfo['post_title'] . ',"float_fulltext":"","image_fulltext_caption":' . $imageinfo['post_content'] . '}';
+                            break;
+                    }
+                }
+
+                $articlecategoryId = 0;
+
+                if (count($allcategories) == 1) {
+                    $articlecategoryId = $allcategories[0]['term_id'];
+                }
+
+                // article import
+                $article = new stdClass();
+                $article->id = $articleid;
+                $article->asset_id = 0;
+                $article->title = $row['post_title'];
+                $article->alias = $row['post_name'];
+                $article->introtext = $row['post_exerpt'];
+                $article->fulltext = $row['post_content'];
+                $article->state = 1;
+                $article->catid = $articlecategoryId;
+                $article->created = $row['post_date'];
+                $article->created_by = $row['post_author'];
+                $article->created_by_alias = "";
+                $article->modified = $date;
+                $article->modified_by = $userid;
+                $article->checked_out = NULL;
+                $article->checked_out_time = NULL;
+                $article->publish_up = $date;
+                $article->publish_down = NULL;
+                $article->images = $articleimage;
+                $article->urls = "";
+                $article->attribs = "";
+                $article->version = 1;
+                $article->ordering = 0;
+                $article->metakey = NULL;
+                $article->metadesc = "";
+                $article->access = 0;
+                $article->hits = 0;
+                $article->metadata = 0;
+                $article->featured = 0;
+                $article->language = '*';
+                $article->note = "";
+
+                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'content', $article);
+
+                // tag map all item associate tags
+                foreach ($alltags as $tag) {
+                    $tagmap = new stdClass();
+                    $tagmap->type_alias = "com_content.article";
+                    $tagmap->core_content_id = 6;
+                    $tagmap->content_item_id = $articleid;
+                    $tagmap->tag_id = $tag['term_id'];
+                    $tagmap->tag_time = $date;
+                    $tagmap->type_id = 1;
+
+                    $jdb = Factory::getDbo()->insertObject($tablePrefix . 'contentitemtag_map', $tagmap);
+                }
+
+                // more that one category convert into tags
+                if (count($allcategories) > 1) {
+
+                    foreach ($allcategories as $category) {
+
+                        // one category can associate with multiple item so check whether it's already in tag table before import
+                        $tagTable  = Table::getInstance('Tag', 'TagsTable');
+                        $th = new TagsHelper();
+                        $tagnames = $th->getTagNames(array($category['term_id']));
+
+                        if (!empty($tagnames)) {
+                            // skip below process if category always available as tag
+                            continue;
+                        }
+
+                        $tag = new stdClass();
+                        $tag->id = $category['term_id']; // will change in future to avoid duplicate key error (when id map implemented)
+                        $tag->parent_id = 0;
+                        $tag->lft = 0;
+                        $tag->rgt = 0;
+                        $tag->level = 0;
+                        $tag->path = $category['name'];
+                        $tag->title = $category['name'];
+                        $tag->alias = $category['slug'];
+                        $tag->note = "";
+                        $tag->description = $category['description'];
+                        $tag->published = 0;
+                        $tag->check_out = NULL;
+                        $tag->check_out_time = NULL;
+                        $tag->access = 0;
+                        $tag->params = '{}';
+                        $tag->metadesc = '';
+                        $tag->metakey = '';
+                        $tag->metadata = '{}';
+                        $tag->created_user_id = $userid;
+                        $tag->created_time = $date;
+                        $tag->created_by_alias = '';
+                        $tag->modified_user_id = $userid;
+                        $tag->modified_time = $date;
+                        $tag->images = '{}';
+                        $tag->urls = '{}';
+                        $tag->hits = 0;
+                        $tag->language = '*';
+                        $tag->version = 1;
+                        $tag->publish_up = $date;
+                        $tag->publish_down = NULL;
+
+
+                        $jdb = Factory::getDbo()->insertObject($tablePrefix . 'tags', $tag);
+
+                        $tagmap = new stdClass();
+                        $tagmap->type_alias = "com_content.article";
+                        $tagmap->core_content_id = 6;
+                        $tagmap->content_item_id = $articleid;
+                        $tagmap->tag_id = $category['term_id'];
+                        $tagmap->tag_time = $date;
+                        $tagmap->type_id = 1;
+
+                        $jdb = Factory::getDbo()->insertObject($tablePrefix . 'contentitemtag_map', $tagmap);
+                    }
+                }
+                $successcount = $successcount + 1;
+            }
+
+            // if item is page then create a menuitem pointing to that article
+
+            if ($articletype == "page") {
+
+                $menuitem = new stdClass();
+                $menuitem->id = $row['ID'];
+                $menuitem->menutype = $row['name'];
+                $menuitem->title = $row['post_title'];
+                $menuitem->alias = strtolower($row['post_title']);
+                $menuitem->note = '';
+                $menuitem->path = strtolower($row['post_title']);
+                $menuitem->link = 'index.php?option=com_content&view=article&id={' . $articleid . '}';;
+                $menuitem->type = 'component';
+                $menuitem->published = 1;
+                $menuitem->parent_id = $row['post_parent'];
+                $menuitem->level = $row['menu_order'];
+                $menuitem->component_id = 19;
+                $menuitem->checked_out = NULL;
+                $menuitem->checked_out_time = NULL;
+                $menuitem->browserNav = 0;
+                $menuitem->access = 0;
+                $menuitem->img = '';
+                $menuitem->template_style_id = 0;
+                $menuitem->params = '{}';
+                $menuitem->lft = 0;
+                $menuitem->rgt = 0;
+                $menuitem->home = 0;
+                $menuitem->language = '*';
+                $menuitem->client_id = 0;
+                $menuitem->publish_up = $row['post_date'];
+                $menuitem->publish_down = NULL;
+
+                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'menu', $menuitem);
+            }
+
+            $contentTowrite = 'Article Imported Successfully = ' . $totalcount;
+            LogHelper::writeLog($contentTowrite, 'success');
+        } catch (\RuntimeException $th) {
+            LogHelper::writeLog('Article Imported Successfully = ' . $successcount, 'success');
+            LogHelper::writeLog('Article Imported Unsuccessfully = ' . $totalcount - $successcount, 'error');
             LogHelper::writeLog($th, 'normal');
         }
     }

@@ -3,9 +3,9 @@
     <fields name="frameworkparams">
         <fieldset name="frameworkparams">
 			<field
-			name="postdata"
+			name="postsandpagesdata"
 			type="radio"
-			label="PLG_MIGRATETOJOOMLA_WORDPRESS_POST_DATA_LABEL"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_POST_AND_PAGES_DATA_LABEL"
 			default="1"
 			layout="joomla.form.field.radio.switcher"
 			validate="options"
@@ -19,23 +19,12 @@
 			label="PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_LABEL"
 			description="PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_DESCRIPTION"
 			validate="options"
-			default="1"
+			default="both"
 			>
-				<option value="1">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_BOTH_FULL_INTRO</option>
-				<option value="2">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_FULL</option>
-				<option value="3">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_FULL</option>
+				<option value="both">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_BOTH_FULL_INTRO</option>
+				<option value="fullonly">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_FULL</option>
+				<option value="introonly">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_INTRO</option>
 		   </field>
-			<field
-			name="pagedata"
-			type="radio"
-			label="PLG_MIGRATETOJOOMLA_WORDPRESS_PAGE_DATA_LABEL"
-			default="1"
-			layout="joomla.form.field.radio.switcher"
-			validate="options"
-			>
-			   <option value="1">JYES</option>
-			   <option value="0">JNO</option>
-			</field>
             <field
 			name="userdata"
 			type="radio"

@@ -49,7 +49,6 @@ class ProgressController extends BaseController
 		$input = $app->input;
 		$fooValues = $input->getArray(array('name' => 'not kdcws'));
 
-
 		$this->currentmigration = $fooValues['name']; // set ajax response 
 
 		$this->callpluginmethod();

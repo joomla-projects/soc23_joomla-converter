@@ -32,5 +32,4 @@ class DisplayController extends BaseController
      * @var string
      */
     protected $default_view = 'migrate';
-
 }

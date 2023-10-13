@@ -99,7 +99,8 @@
 		description="COM_MIGRATETOJOOMLA_DATABASE_USERNAME_DESC"/>
 	<field
 		name="dbpassword"
-		type="password"
+		type="text"
+		default=""
 		label="COM_MIGRATETOJOOMLA_DATABASE_PASSWORD_LABEL"
 		description="COM_MIGRATETOJOOMLA_DATABASE_PASSWORD_DESC"/>
 	<field
