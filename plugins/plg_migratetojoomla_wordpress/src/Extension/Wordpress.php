@@ -22,6 +22,7 @@ use Joomla\CMS\Table\Table;
 use stdClass;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
+use phpDocumentor\Reflection\Types\Self_;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -41,6 +42,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      * 
      * @since 1.0
      */
+
     public $db;
 
     /**
@@ -54,6 +56,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         return [
             'onContentPrepareFormmigrate' => 'onContentPrepareForm',
+            'migratetojoomla_storemaxprimarykey' => 'storeMaxPrimaryKey',
             'migratetojoomla_createdisplaydata' => 'createDisplayData',
             'migratetojoomla_user' => 'importUsers',
             'migratetojoomla_tags' => 'importTags',
@@ -65,14 +68,55 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     }
 
     /**
+     * Method to store max primary key of Joomla Table
+     * 
+     * @since   1.0
+     */
+    public static function storeMaxPrimaryKey()
+    {
+        Factory::getSession()->clear('migratetojoomla.maxkey');
+        $tables = [
+            'users',
+            'tags',
+            'categories',
+            'menu_types',
+            'menu',
+            'content'
+        ];
+        $maxKey = [];
+        $tablePrefix = Factory::getConfig()->get('dbprefix');
+        $jdb = Factory::getDbo();
+        foreach ($tables as $table) {
+            $tableName = $tablePrefix . $table;
+            $query = $jdb->getQuery(true)
+                ->select('MAX(' . $jdb->quoteName('id') . ')')
+                ->from($jdb->quoteName($tableName));
+
+            $jdb->setQuery($query);
+            $result = $jdb->loadAssocList();
+
+            foreach ($result[0] as $key => $value) {
+                $maxKey[$table] = $value + 1;
+            }
+        }
+        // // foreach ($maxKey as $row) {
+        //    foreach ($maxKey as $key => $value) {
+        //         LogHelper::writeLog("from key".$key."   : ".$value , "success");
+        //    }
+        // // }
+        // how update session value as if user want again import than max value of key must update to avoid duplicate key
+        Factory::getSession()->set('migratetojoomla.maxkey', $maxKey);
+    }
+
+    /**
      * The form event.
      *
-     * @param   Form      $form  The form
+     * @param   EventInterface    $event  
      * @param   stdClass  $data  The data
      *
      * @return   boolean
      *
-     * @since   4.0.0
+     * @since   1.0
      */
     public function onContentPrepareForm(EventInterface $event)
     {
@@ -176,12 +220,13 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function importUsers()
     {
+        self::storeMaxPrimaryKey();
         $totalusers = 0;
         $successcount  = 0;
 
         // user group
         $usergroupinfo = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
-
+        $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
         try {
 
             if (!\is_resource($this->db)) {
@@ -205,9 +250,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
             $totalusers = count($results);
             foreach ($results as $row) {
-
                 $user = new stdClass();
-                $user->id = $row['ID'];
+                $user->id = $row['ID'] + $maxKey['users'];
                 $user->name = $row['display_name'];
                 $user->username = $row['user_login'];
                 $user->email = $row['user_email'];
@@ -220,7 +264,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
                 // inserting in user_usergroup_map
                 $usergroup = new stdClass();
-                $usergroup->user_id = $row['ID'];
+                $usergroup->user_id = $row['ID'] + $maxKey['users'];
                 $usergroup->group_id = $usergroupinfo;
 
                 $jdb = Factory::getDbo()->insertObject($tablePrefix . 'user_usergroup_map', $usergroup);

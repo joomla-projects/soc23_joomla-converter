@@ -50,8 +50,22 @@ class HtmlView extends BaseHtmlView
 
         $this->createmigratedata();
 
-        $doc->addScriptOptions("com_migratetojoomla.importstring", Factory::getSession()->get('migratetojoomla.displayimportstring', []));
+        // calling plugin storemaxkey method
+        $framework = @Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'];
 
+        PluginHelper::importPlugin('migratetojoomla', $framework);
+
+        $event = AbstractEvent::create(
+            'migratetojoomla_storemaxprimarykey',
+            [
+                'subject'    => $this
+            ]
+        );
+
+        Factory::getApplication()->triggerEvent('migratetojoomla_storemaxprimarykey', $event);
+        $doc->addScriptOptions("com_migratetojoomla.importstring", $this->importstring);
+
+        $doc->addScriptOptions('com_migratetojoomla.displayimportstring', Factory::getSession()->get('migratetojoomla.displayimportstring', []));
         // Ajax url
         $doc->addScriptOptions('migratetojoomla.AjaxURL', 'index.php?option=com_migratetojoomla&view=information&task=ajax');
 
