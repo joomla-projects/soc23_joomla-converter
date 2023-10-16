@@ -8,10 +8,8 @@
  * @license       GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Router\Route;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
@@ -29,8 +27,8 @@ $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter',
 ?>
 <div id="migratetojoomla" class="p-4">
     <h3 class="mt-2 mb-4"><?php echo Text::_('COM_MIGRATETOJOOMLA_MIGRATE_PROGRESS') ?></h3>
-    
-    <div id="migratetojoomla_progress">
+
+    <div id="migratetojoomla_progress" style="display:none;">
         <div class="row">
             <div class="col-2 col-md-3 col-sm-12">
                 <!-- <button type="button" class="btn btn-primary" id="migratetojoomla_progressstatus" style="width:100%;" disabled>start</button> -->
@@ -64,10 +62,8 @@ $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter',
 
     <!-- log view -->
     <div id="migratetojoomla_log" style="display:none;">
-        <?php echo "this is log view" ?>;
-        <textarea class="form-control" rows="20" id="migratetojoomlalog">
-
+        <h3 class="text-center bg-primary text-white p-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_LOG_OF_MIGRATION') ?></h3>
+        <textarea class="form-control" rows="15" id="migratetojoomlalog" disabled>
         </textarea>
     </div>
-
 </div>

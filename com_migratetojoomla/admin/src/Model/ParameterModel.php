@@ -10,10 +10,10 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Model;
 
+use Joomla\CMS\Event\AbstractEvent;
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\AdminModel;
 use Joomla\CMS\Plugin\PluginHelper;
-use Joomla\CMS\Event\AbstractEvent;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -43,13 +43,12 @@ class ParameterModel extends AdminModel
      * @since   1.0
      */
     public function getForm($data = [], $loadData = true)
-    {   
+    {
         $framework = @Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework'];
-        PluginHelper::importPlugin('migratetojoomla' , $framework);
-
-        // // Get the form.
+        // Get the form.
         $form = $this->loadForm('com_migratetojoomla.parameter', 'parameter', ['control' => 'jform', 'load_data' => $loadData]);
 
+        PluginHelper::importPlugin('migratetojoomla');
 
         $event = AbstractEvent::create(
             'onContentPrepareFormmigrate',

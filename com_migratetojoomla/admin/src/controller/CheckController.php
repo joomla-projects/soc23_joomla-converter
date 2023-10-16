@@ -10,10 +10,6 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
-use Joomla\CMS\Factory;
-use Joomla\CMS\MVC\Controller\FormController;
-use Joomla\CMS\Router\Route;
-
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
@@ -23,6 +19,6 @@ use Joomla\CMS\Router\Route;
  *
  * @since  1.0
  */
-class CheckController extends FormController
+class CheckController 
 {
 }

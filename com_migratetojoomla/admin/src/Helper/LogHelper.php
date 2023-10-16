@@ -11,6 +11,7 @@
 namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -46,12 +47,15 @@ class LogHelper
         fclose($file);
     }
 
+    /** Method to write log into session
+     * 
+     * @since 1.0
+     */
     public static function writeSessionLog($status = NULL, $field = NULL)
     {
         if (is_null($status) || is_null($field)) {
             return;
         }
-        self::writeLog("Line no 54", "success");
         $session = Factory::getApplication()->getSession()->get('migratetojoomla.log', []);
 
         $fieldValue = ["success" => 0, "error" => 0];
@@ -61,7 +65,6 @@ class LogHelper
 
         if ($status == "success") {
             $fieldValue["success"]  = $fieldValue["success"] + 1;
-            self::writeLog("Line no 61  : " . $fieldValue["success"], "success");
         } else if ($status == "error") {
             $fieldValue["error"] = $fieldValue["error"] + 1;
         }
@@ -71,16 +74,27 @@ class LogHelper
         Factory::getApplication()->getSession()->set('migratetojoomla.log', $session);
     }
 
+    /** Method to write log file from session
+     * 
+     * @since 1.0
+     */
     public static function writeLogFileOfSession()
     {
         $session = Factory::getApplication()->getSession()->get('migratetojoomla.log', []);
+        $logsession = ['success' => [], 'error' => []];
         self::writeLog("Migration Report........", "success");
         foreach ($session as $field => $value) {
-            self::writeLog($field . "s Imported Successfully  = " . $value["success"], "success");
-            self::writeLog($field . "s Imported Unsuccessfully  = " . $value["error"], "error");
+            $statementsuccess = $field . "s" . Text::_('COM_MIGRATETOJOOMLA_IMPORT_SUCCESSFULLY') . " = " . $value["success"];
+            $statementunsuccess = $field . "s " . Text::_('COM_MIGRATETOJOOMLA_IMPORT_UNSUCCESSFULLY') . " = " . $value["error"];
+            self::writeLog($field . $statementsuccess, "success");
+            self::writeLog($field . $statementunsuccess, "error");
+            array_push($logsession['success'], $statementsuccess);
+            array_push($logsession['error'], $statementunsuccess);
         }
         Factory::getApplication()->getSession()->clear('migratetojoomla.log');
+        Factory::getApplication()->getSession()->set('migratetojoomla.logwrite', $logsession);
     }
+
     /** Method to check log file exist or not and create if not exist
      * 
      * @since 1.0
@@ -91,7 +105,15 @@ class LogHelper
         $selectedframework = Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'];
 
         $logfilename = $selectedframework . '-to-Joomla.log';
-        $logfilepath = JPATH_COMPONENT_ADMINISTRATOR . '/logs/' . $logfilename;
+        $logfolderpath = JPATH_COMPONENT_ADMINISTRATOR . '/logs';
+        $logfilepath =  $logfolderpath . $logfilename;
+        if (!file_exists($logfolderpath)) {
+            if (!mkdir($logfolderpath, 0777, true)) {
+                $app   = Factory::getApplication();
+                $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_LOG_FILE_CREATED_UNSUCCESSFULLY'), 'success');
+                return;
+            }
+        }
         if (!file_exists($logfilepath)) {
             $file = @fopen($logfilepath, 'w');
             fclose($file);

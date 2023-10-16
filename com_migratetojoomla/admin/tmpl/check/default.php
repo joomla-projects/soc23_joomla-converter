@@ -8,13 +8,11 @@
  * @license       GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Router\Route;
-use Joomla\CMS\Factory;
-use Joomla\Component\Privacy\Administrator\Export\Field;
 use Joomla\CMS\Event\AbstractEvent;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\PluginHelper;
+
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
 /** @var \Joomla\Component\MigrateToJoomla\Administrator\View\check\HtmlView $this */
@@ -22,7 +20,6 @@ defined('_JEXEC') or die('Restricted Access');
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
 $wa = $this->document->getWebAssetManager();
 $wa->useScript('keepalive')
-    ->useScript('com_migratetojoomla.admin-migratetojoomla')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
 $app = Factory::getApplication();
@@ -32,7 +29,7 @@ $data = $app->getUserState('com_migratetojoomla.parameter', []);;
 $parameterformdata = @$data["frameworkparams"];
 $framework = @$app->getUserState('com_migratetojoomla.migrate', [])['framework'];
 
-$datafieldskey =  is_null($parameterformdata)?[]:array_keys($parameterformdata);
+$datafieldskey =  is_null($parameterformdata) ? [] : array_keys($parameterformdata);
 
 // call createmigratedata plugin method to remove unwanted fields
 PluginHelper::importPlugin('migratetojoomla', $framework);

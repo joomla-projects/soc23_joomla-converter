@@ -4,13 +4,12 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\View\Migrate;
 
 defined('_JEXEC') or die;
 
-use Joomla\CMS\Language\Text;
+use Joomla\Component\MigrateToJoomla\Administrator\Model\MigrateModel;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
-use Joomla\CMS\Router\Route;
-use Joomla\Component\MigrateToJoomla\Administrator\Model\MigrateModel;
 
 /**
  * @package     Joomla.Administrator

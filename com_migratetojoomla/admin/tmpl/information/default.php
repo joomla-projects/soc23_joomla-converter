@@ -8,10 +8,10 @@
  * @license       GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Router\Route;
 use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
@@ -19,8 +19,7 @@ defined('_JEXEC') or die('Restricted Access');
 
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
 $wa = $this->document->getWebAssetManager();
-$wa->useScript('com_migratetojoomla.admin-migratetojoomla')
-    ->useScript('keepalive')
+$wa->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
 $framework = @ucfirst(Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'] . ' ');

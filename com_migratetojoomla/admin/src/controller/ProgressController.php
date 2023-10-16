@@ -10,13 +10,13 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
-use Joomla\CMS\Factory;
-use Joomla\CMS\MVC\Controller\BaseController;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
-use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Event\AbstractEvent;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Controller\BaseController;
+use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Session\Session;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -54,8 +54,9 @@ class ProgressController extends BaseController
 
 		$default[] = [];
 
+		$response = Factory::getSession()->get('migratetojoomla.ajaxresponse', $default);
 		// echo json_encode($update);
-		echo json_encode(Factory::getSession()->get('migratetojoomla.ajaxresponse', $default));
+		echo json_encode($response);
 		$this->app->close();
 	}
 
@@ -71,7 +72,7 @@ class ProgressController extends BaseController
 			return;
 		}
 
-		if($field == "end") {
+		if ($field == "end") {
 			LogHelper::writeLogFileOfSession();
 		}
 		if ($field == "media") {

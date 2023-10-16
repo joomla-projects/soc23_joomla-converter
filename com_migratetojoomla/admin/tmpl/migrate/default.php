@@ -8,7 +8,6 @@
  * @license       GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-use Joomla\CMS\Language\Text;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Router\Route;
 
@@ -18,8 +17,7 @@ defined('_JEXEC') or die('Restricted Access');
 
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
 $wa = $this->document->getWebAssetManager();
-$wa->useScript('com_migratetojoomla.admin-migratetojoomla')
-    ->useScript('keepalive')
+$wa->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
 ?>
