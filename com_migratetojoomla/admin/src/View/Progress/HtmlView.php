@@ -50,6 +50,12 @@ class HtmlView extends BaseHtmlView
 
         $this->createmigratedata();
 
+        $temp = $this->importstring;
+        $output = [];
+        foreach ($temp as $key => $value) {
+            array_push($output, str_replace("data", "", $value[1]));
+        }
+        Factory::getApplication()->getSession()->set('migratetojoomla.arrayimportstring', $output);
         // calling plugin storemaxkey method
         $framework = @Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'];
 
@@ -63,9 +69,23 @@ class HtmlView extends BaseHtmlView
         );
 
         Factory::getApplication()->triggerEvent('migratetojoomla_storemaxprimarykey', $event);
+
+
+        $event = AbstractEvent::create(
+            'migratetojoomla_storeprimarykey',
+            [
+                'subject'    => $this
+            ]
+        );
+
+        Factory::getApplication()->triggerEvent('migratetojoomla_storeprimarykey', $event);
+
+
         $doc->addScriptOptions("com_migratetojoomla.importstring", $this->importstring);
+        $doc->addScriptOptions("com_migratetojoomla.arrayimportstring", $output);
 
         $doc->addScriptOptions('com_migratetojoomla.displayimportstring', Factory::getSession()->get('migratetojoomla.displayimportstring', []));
+        $doc->addScriptOptions('com_migratetojoomla.keys', Factory::getSession()->get('migratetojoomla.tablekeys', []));
         // Ajax url
         $doc->addScriptOptions('migratetojoomla.AjaxURL', 'index.php?option=com_migratetojoomla&view=information&task=ajax');
 

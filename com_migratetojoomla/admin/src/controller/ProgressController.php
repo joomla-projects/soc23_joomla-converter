@@ -34,11 +34,11 @@ class ProgressController extends BaseController
 	 * 
 	 * @since 1.0
 	 */
-	public $currentmigration = "";
 
 	public function ajax()
 	{
 
+		LogHelper::writeLog("ajax user call", "success");
 		if (!Session::checkToken('get')) {
 			$this->app->setHeader('status', 403, true);
 			$this->app->sendHeaders();
@@ -47,14 +47,15 @@ class ProgressController extends BaseController
 		}
 		$app = Factory::getApplication();   // equivalent of $app = JFactory::getApplication();
 		$input = $app->input;
-		$fooValues = $input->getArray(array('name' => 'not kdcws'));
+		$field = $input->getArray(array('name' => ''))['name'];
+		$key = $input->getArray(array('key' => ''))['key'];
 
-		$this->currentmigration = $fooValues['name']; // set ajax response 
+		$this->callpluginmethod($field, $key);
 
-		$this->callpluginmethod();
+		$default[] = [];
 
-		$update[] = ['name' => $fooValues['name']];
-
+		// echo json_encode($update);
+		echo json_encode(Factory::getSession()->get('migratetojoomla.ajaxresponse', $default));
 		$this->app->close();
 	}
 
@@ -63,10 +64,17 @@ class ProgressController extends BaseController
 	 * 
 	 * @since 1.0
 	 */
-	public function callpluginmethod()
+	public function callpluginmethod($field = '', $key = NULL)
 	{
+		// LogHelper::writeLog("plugin call method for : " . $field." : ".$key, "success");
+		if (empty($field) || is_null($key)) {
+			return;
+		}
 
-		if ($this->currentmigration == "mediadata") {
+		if($field == "end") {
+			LogHelper::writeLogFileOfSession();
+		}
+		if ($field == "media") {
 
 			// calling media plugin method
 			PluginHelper::importPlugin('migratetojoomla', 'mediadownload');
@@ -89,15 +97,17 @@ class ProgressController extends BaseController
 
 			PluginHelper::importPlugin('migratetojoomla', $framework);
 
-			$eventsuffix = preg_replace('/data/i', '', $this->currentmigration);
+			// $eventsuffix = preg_replace('/data/i', '', $field);
 
-			$eventname = "migratetojoomla_" . $eventsuffix;
+			$eventname = "migratetojoomla_" . $field;
 
 			$event = AbstractEvent::create(
 				$eventname,
 				[
 					'subject'    => $this,
 					'formname'   => 'com_migratetojoomla.parameter',
+					'key'  => $key,
+					'field' => $field
 				]
 			);
 

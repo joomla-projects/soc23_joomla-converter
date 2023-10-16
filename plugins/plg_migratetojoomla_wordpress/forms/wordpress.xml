@@ -3,7 +3,7 @@
     <fields name="frameworkparams">
         <fieldset name="frameworkparams">
 			<field
-			name="postsandpagesdata"
+			name="postsandpagedata"
 			type="radio"
 			label="PLG_MIGRATETOJOOMLA_WORDPRESS_POST_AND_PAGES_DATA_LABEL"
 			default="1"
@@ -55,7 +55,7 @@
 				<option value="9">PLG_MIGRATETOJOOMLA_WORDPRESS_GUEST</option>
 		   </field>
             <field
-			name="tagsdata"
+			name="tagdata"
 			type="radio"
 			label="PLG_MIGRATETOJOOMLA_WORDPRESS_TAGS_DATA_LABEL"
 			default="1"

@@ -40,12 +40,47 @@ class LogHelper
 
         $contentToWrite =  '{' . $type . '}' . $content  . '{' . 'contentend' . '}' . PHP_EOL;
         $file = @fopen($logfilepath, 'a');
-        $currentDateTime = date('Y-m-d H:i:s').PHP_EOL;
-        fwrite($file, 'Timestamp : '.$currentDateTime);
+        $currentDateTime = date('Y-m-d H:i:s') . PHP_EOL;
+        fwrite($file, 'Timestamp : ' . $currentDateTime);
         fwrite($file, $contentToWrite);
         fclose($file);
     }
 
+    public static function writeSessionLog($status = NULL, $field = NULL)
+    {
+        if (is_null($status) || is_null($field)) {
+            return;
+        }
+        self::writeLog("Line no 54", "success");
+        $session = Factory::getApplication()->getSession()->get('migratetojoomla.log', []);
+
+        $fieldValue = ["success" => 0, "error" => 0];
+        if (array_key_exists($field, $session)) {
+            $fieldValue = $session[$field];
+        }
+
+        if ($status == "success") {
+            $fieldValue["success"]  = $fieldValue["success"] + 1;
+            self::writeLog("Line no 61  : " . $fieldValue["success"], "success");
+        } else if ($status == "error") {
+            $fieldValue["error"] = $fieldValue["error"] + 1;
+        }
+
+        $session[$field] = $fieldValue;
+
+        Factory::getApplication()->getSession()->set('migratetojoomla.log', $session);
+    }
+
+    public static function writeLogFileOfSession()
+    {
+        $session = Factory::getApplication()->getSession()->get('migratetojoomla.log', []);
+        self::writeLog("Migration Report........", "success");
+        foreach ($session as $field => $value) {
+            self::writeLog($field . "s Imported Successfully  = " . $value["success"], "success");
+            self::writeLog($field . "s Imported Unsuccessfully  = " . $value["error"], "error");
+        }
+        Factory::getApplication()->getSession()->clear('migratetojoomla.log');
+    }
     /** Method to check log file exist or not and create if not exist
      * 
      * @since 1.0

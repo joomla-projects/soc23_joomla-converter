@@ -43,10 +43,11 @@ class ParameterModel extends AdminModel
      * @since   1.0
      */
     public function getForm($data = [], $loadData = true)
-    {
-        PluginHelper::importPlugin('migratetojoomla');
+    {   
+        $framework = @Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework'];
+        PluginHelper::importPlugin('migratetojoomla' , $framework);
 
-        // Get the form.
+        // // Get the form.
         $form = $this->loadForm('com_migratetojoomla.parameter', 'parameter', ['control' => 'jform', 'load_data' => $loadData]);
 
 
@@ -56,7 +57,7 @@ class ParameterModel extends AdminModel
                 'subject'    => $this,
                 'formname'   => 'com_migratetojoomla.parameter',
                 'form'       => $form,
-                'framework'  => @Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework']
+                'framework'  => $framework
             ]
         );
 
