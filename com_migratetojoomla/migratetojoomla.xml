@@ -17,7 +17,6 @@
             <folder>src</folder>
             <folder>tmpl</folder>
             <folder>forms</folder>
-            <folder>logs</folder>
             <file>access.xml</file>
             <file>config.xml</file>
         </files>
