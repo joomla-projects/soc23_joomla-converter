@@ -17,7 +17,6 @@ use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Router\Route;
 use Joomla\Database\DatabaseDriver;
-use Joomla\Plugin\Editors\TinyMCE\PluginTraits\DisplayTrait;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -30,8 +29,6 @@ use Joomla\Plugin\Editors\TinyMCE\PluginTraits\DisplayTrait;
  */
 class InformationController extends FormController
 {
-    use DisplayTrait;
-
     /**
      * @var object  Media Download object
      * 
@@ -83,7 +80,7 @@ class InformationController extends FormController
      * 
      * @since 1.0
      */
-    public function storeFormAndNext()
+    public function storeFormAndNextInformation()
     {
         $this->checkToken();
         $app   = Factory::getApplication();
@@ -92,7 +89,6 @@ class InformationController extends FormController
         $this->checkMediaConnection(0);
         $this->checkDatabaseConnection(0);
         $app->setUserState('com_migratetojoomla.information', $data);
-
         // redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=parameter', false));
     }

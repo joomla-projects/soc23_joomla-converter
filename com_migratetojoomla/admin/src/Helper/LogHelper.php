@@ -84,10 +84,10 @@ class LogHelper
         $logsession = ['success' => [], 'error' => []];
         self::writeLog("Migration Report........", "success");
         foreach ($session as $field => $value) {
-            $statementsuccess = $field . "s" . Text::_('COM_MIGRATETOJOOMLA_IMPORT_SUCCESSFULLY') . " = " . $value["success"];
-            $statementunsuccess = $field . "s " . Text::_('COM_MIGRATETOJOOMLA_IMPORT_UNSUCCESSFULLY') . " = " . $value["error"];
-            self::writeLog($field . $statementsuccess, "success");
-            self::writeLog($field . $statementunsuccess, "error");
+            $statementsuccess = ucwords($field) . "s " . Text::_('COM_MIGRATETOJOOMLA_IMPORT_SUCCESSFULLY') . " = " . $value["success"];
+            $statementunsuccess = ucwords($field) . "s " . Text::_('COM_MIGRATETOJOOMLA_IMPORT_UNSUCCESSFULLY') . " = " . $value["error"];
+            self::writeLog($statementsuccess, "success");
+            self::writeLog($statementunsuccess, "error");
             array_push($logsession['success'], $statementsuccess);
             array_push($logsession['error'], $statementunsuccess);
         }

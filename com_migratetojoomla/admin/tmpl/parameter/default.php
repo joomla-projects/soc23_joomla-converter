@@ -29,7 +29,7 @@ $lang->load('plg_migratetojoomla_' . $framework, JPATH_ADMINISTRATOR);
 
 ?>
 <div id="migratetojoomla" class="p-3">
-    <h3 class="mt-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_FRAMEWORK_PARAMETERS') ?></h3>
+    <h3 class="mt-2"><?php echo @ucfirst($framework) . ' ' . Text::_('COM_MIGRATETOJOOMLA_FRAMEWORK_PARAMETERS') ?></h3>
     <form action="<?php echo Route::_('index.php?option=com_migratetojoomla'); ?>" method="post" name="adminForm" id="adminForm" enctype="multipart/form-data">
         <?php echo $this->form->renderField('mediamigratestatus'); ?>
         <?php echo $this->form->renderField('databasemigratestatus'); ?>

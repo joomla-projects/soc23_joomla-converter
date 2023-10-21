@@ -62,8 +62,9 @@ $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter',
 
     <!-- log view -->
     <div id="migratetojoomla_log" style="display:none;">
-        <h3 class="text-center bg-primary text-white p-2"><?php echo Text::_('COM_MIGRATETOJOOMLA_LOG_OF_MIGRATION') ?></h3>
-        <textarea class="form-control" rows="15" id="migratetojoomlalog" disabled>
-        </textarea>
+        <h3 class="bg-success p-2 text-center rounded text-break"><?php echo Text::_('COM_MIGRATETOJOOMLA_MIGRATION_SUCCESSFULLY_MESSAGE') ?></h3>
+        <div class="d-flex justify-content-center mt-3">
+            <a href="index.php?option=com_migratetojoomla&view=log"><button type="button" id="migratetojoomlamediaconnection" class="btn btn-primary"><?php echo Text::_('COM_MIGRATETOJOOMLA_VIEW_LOG') ?></button></a>
+        </div>
     </div>
 </div>

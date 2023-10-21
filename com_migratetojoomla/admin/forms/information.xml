@@ -10,8 +10,8 @@
 		validate="options"
 	>
 		<option value="fs">COM_MIGRATETOJOOMLA_FS</option>
-		<option value="http">COM_MIGRATETOJOOMLA_HTTP</option>
-		<option value="ftp">COM_MIGRATETOJOOMLA_FTP</option>
+		<!-- <option value="http">COM_MIGRATETOJOOMLA_HTTP</option>
+		<option value="ftp">COM_MIGRATETOJOOMLA_FTP</option> -->
 	</field>
 	<field
 		name="livewebsiteurl"

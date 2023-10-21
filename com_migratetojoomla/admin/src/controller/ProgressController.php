@@ -37,25 +37,23 @@ class ProgressController extends BaseController
 
 	public function ajax()
 	{
-
-		LogHelper::writeLog("ajax user call", "success");
 		if (!Session::checkToken('get')) {
 			$this->app->setHeader('status', 403, true);
 			$this->app->sendHeaders();
 			echo Text::_('JINVALID_TOKEN_NOTICE');
 			$this->app->close();
 		}
-		$app = Factory::getApplication();   // equivalent of $app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$input = $app->input;
 		$field = $input->getArray(array('name' => ''))['name'];
 		$key = $input->getArray(array('key' => ''))['key'];
 
-		$this->callpluginmethod($field, $key);
+		$this->callPluginMethod($field, $key);
 
 		$default[] = [];
 
 		$response = Factory::getSession()->get('migratetojoomla.ajaxresponse', $default);
-		// echo json_encode($update);
+
 		echo json_encode($response);
 		$this->app->close();
 	}
@@ -65,9 +63,8 @@ class ProgressController extends BaseController
 	 * 
 	 * @since 1.0
 	 */
-	public function callpluginmethod($field = '', $key = NULL)
+	public function callPluginMethod($field = '', $key = NULL)
 	{
-		// LogHelper::writeLog("plugin call method for : " . $field." : ".$key, "success");
 		if (empty($field) || is_null($key)) {
 			return;
 		}
@@ -97,8 +94,6 @@ class ProgressController extends BaseController
 			// import framwork plugin
 
 			PluginHelper::importPlugin('migratetojoomla', $framework);
-
-			// $eventsuffix = preg_replace('/data/i', '', $field);
 
 			$eventname = "migratetojoomla_" . $field;
 

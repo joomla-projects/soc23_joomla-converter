@@ -118,69 +118,37 @@ if (@$data['databasemigratestatus'] == '0') {
             </h3>
         </div>
     <?php endif ?>
-
-    <div class="row">
-        <div class="col-sm-6">
-            <h3 class="alert-heading d-flex justify-content-between p-1">
-                <?= Text::_('COM_MIGRATETOJOOMLA_MIGRATE_DATA_DETAILS') ?>
-            </h3>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th scope="col"><?= Text::_('COM_MIGRATETOJOOMLA_SR_NO') ?></th>
-                        <th scope="col"><?= Text::_('COM_MIGRATETOJOOMLA_DATA_NAME') ?></th>
-                        <th scope="col"><?= Text::_('COM_MIGRATETOJOOMLA_WILL_MIGRATE') ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $n = 1;
-                    foreach ($datafieldskey as $item) :
-                    ?>
+    <div>
+        <div>
+            <h2 class="alert-heading text-center p-2 font-weight-bold">
+                <?= Text::_('COM_MIGRATETOJOOMLA_MIGRATION_INFORMATION') ?>
+            </h2>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <?php
+                foreach ($datafieldskey as $item) :
+                ?>
+                    <ul class="list-group">
                         <?php if (in_array($item, $importstring) && $parameterformdata[$item] == '1') : ?>
-                            <tr>
-                                <th scope="row"><?php echo $n;
-                                                $n += 1; ?></th>
-                                <td><?php echo $item; ?></td>
-                                <td>
-                                    <?php echo "Yes" ?>
-                                </td>
-                            </tr>
+                            <li class="list-group-item bg-success text-white m-1"><?php echo ucfirst($item) . " " . TEXT::_('COM_MIGRATETOJOOMLA_WILL_MIGRATE') ?></li>
                         <?php endif ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-        <div class="col-sm-6">
-            <h3 class="alert-heading d-flex justify-content-between p-1">
-                <?= Text::_('COM_MIGRATETOJOOMLA_NO_MIGRATE_DATA_DETAILS') ?>
-            </h3>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th scope="col"><?= Text::_('COM_MIGRATETOJOOMLA_SR_NO') ?></th>
-                        <th scope="col"><?= Text::_('COM_MIGRATETOJOOMLA_DATA_NAME') ?></th>
-                        <th scope="col"><?= Text::_('COM_MIGRATETOJOOMLA_WILL_MIGRATE') ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $n = 1;
-                    foreach ($datafieldskey as $item) :
-                    ?>
+                    </ul>
+                <?php endforeach; ?>
+            </div>
+            <div class="col-sm-6">
+                <?php
+                foreach ($datafieldskey as $item) :
+                ?>
+                    <ul class="list-group">
                         <?php if (in_array($item, $importstring) && $parameterformdata[$item] == '0') : ?>
-                            <tr>
-                                <th scope="row"><?php echo $n;
-                                                $n += 1; ?></th>
-                                <td><?php echo $item; ?></td>
-                                <td>
-                                    <?php echo "No" ?>
-                                </td>
-                            </tr>
+                            <li class="list-group-item bg-danger text-white m-1"><?php echo ucfirst($item) . " " . TEXT::_('COM_MIGRATETOJOOMLA_WILL_NOT_MIGRATE') ?></li>
                         <?php endif ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </ul>
+                <?php endforeach; ?>
+            </div>
         </div>
+
+
     </div>
 </div>

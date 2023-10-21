@@ -173,7 +173,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             'user' => $db->getQuery(true)->select($db->quoteName("ID"))->from($db->quoteName($tableusers)),
             'tag' => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy))->where($db->quoteName('taxonomy') . '=' . $db->q('post_tag')),
             "category" => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy))->where($db->quoteName('taxonomy') . '=' . $db->q('category')),
-            "menu" => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy))->where($db->quoteName('taxonomy') . '=' . $db->q('nav_menu')),
+            "menu" => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy)),
             "menuitem" => $db->getQuery(true)
                 ->select('DISTINCT ID')
                 ->from($db->quoteName($tableposts, 'a'))
@@ -628,7 +628,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             LogHelper::writeSessionLog("success", $field);
             $update[] = ['status' => "success"];
         } catch (\RuntimeException $th) {
-            LogHelper::writeLog('Menu  Imported Unsuccessfully with id = ' . $key, 'error');
+            LogHelper::writeLog('Menu Imported Unsuccessfully with id = ' . $key, 'error');
             LogHelper::writeLog($th, 'normal');
             LogHelper::writeSessionLog("error", $field);
             $update[] = ['status' => "error"];
