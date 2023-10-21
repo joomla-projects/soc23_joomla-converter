@@ -1,1 +1,0 @@
-# soc23_joomla-converter
