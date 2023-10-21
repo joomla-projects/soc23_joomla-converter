@@ -1,12 +1,13 @@
 <?php
 
-namespace Joomla\Component\MigrateToJoomla\Administrator\View\Log;
+namespace Joomla\Component\MigrateToJoomla\Administrator\View\Information;
 
 defined('_JEXEC') or die;
 
+use Joomla\Component\MigrateToJoomla\Administrator\Model\InformationModel;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
-use Joomla\CMS\Router\Route;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
@@ -23,8 +24,16 @@ use Joomla\CMS\Toolbar\ToolbarHelper;
  */
 class HtmlView extends BaseHtmlView
 {
+
     /**
-     * Display the Migrate "Migrate To Joomla" view
+     * The Form object
+     *
+     * @var  \Joomla\CMS\Form\Form
+     */
+    protected $form;
+
+    /**
+     * Display the information "Migrate To Joomla" view
      *
      * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
      * @return  void
@@ -33,10 +42,20 @@ class HtmlView extends BaseHtmlView
      */
     public function display($tpl = null)
     {
+        // Get Form
+        // $this->form  = $this->get('Form');
+        /** @var InformationModel $model */
+        $model       = $this->getModel();
+        $this->form  = $model->getForm();
+
+        if (!$this->form) {
+            Factory::getApplication()->enqueueMessage('This is a warning message', 'warning');
+        }
         // Set ToolBar title
-        ToolbarHelper::title(Text::_('COM_MIGRATETOJOOMLA'), 'right-left');
+        ToolbarHelper::title(Text::_('COM_MIGRATETOJOOMLA'), 'Migrate To Joomla');
 
         $this->addToolbar();
+
         parent::display($tpl);
     }
 
@@ -50,10 +69,13 @@ class HtmlView extends BaseHtmlView
     protected function addToolbar(): void
     {
         $toolbar = Toolbar::getInstance();
-
-        $toolbar->linkButton('previous')
-            ->icon('icon-previous')
-            ->text('COM_MIGRATETOJOOMLA_PREVIOUS')
-            ->url(Route::_('index.php?option=com_migratetojoomla&view=progress'));
+        $toolbar->customButton('previous')
+            ->html('<joomla-toolbar-button><button onclick="Joomla.submitbutton(\'information.storeFormAndPrevious\')" '
+                . 'class="btn btn-primary"><span class="icon-previous" aria-hidden="true"></span>'
+                . Text::_('COM_MIGRATETOJOOMLA_PREVIOUS') . '</button></joomla-toolbar-button>');
+        $toolbar->customButton('next')
+            ->html('<joomla-toolbar-button><button onclick="Joomla.submitbutton(\'information.storeFormAndNext\')" '
+                . 'class="btn btn-primary"><span class="icon-next" aria-hidden="true"></span>'
+                . Text::_('COM_MIGRATETOJOOMLA_NEXT') . '</button></joomla-toolbar-button>');
     }
 }

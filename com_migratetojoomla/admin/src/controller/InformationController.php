@@ -80,7 +80,7 @@ class InformationController extends FormController
      * 
      * @since 1.0
      */
-    public function storeFormAndNextInformation()
+    public function storeFormAndNext()
     {
         $this->checkToken();
         $app   = Factory::getApplication();

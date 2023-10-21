@@ -157,9 +157,6 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
         $importstring = Factory::getApplication()->getSession()->get('migratetojoomla.arrayimportstring', []);
 
-        foreach ($importstring as $key => $value) {
-            Loghelper::writelog("Import string : " . $key . "   :   " . $value, "success");
-        }
         // Specify the table name
         $tablePrefix = rtrim($data['dbtableprefix'], '_');
         $tableusers = $tablePrefix . '_users';
@@ -289,9 +286,6 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         $key = $event->getArgument('key');
         $field = $event->getArgument('field');
         $update[] = [];
-        // user group
-        $usergroupinfo = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', [])["frameworkparams"]["usergroup"];
-        LogHelper::writeLog("User group :  " . $usergroupinfo, "success");
         $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
         try {
 
@@ -302,14 +296,15 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $db = $this->db;
 
             // Specify the table name
-            $tableName = rtrim($data['dbtableprefix'], '_') . '_users';
+            $tableUsers = rtrim($data['dbtableprefix'], '_') . '_users';
+            $tableUsersMeta = rtrim($data['dbtableprefix'], '_') . '_usermeta';
             $config['dbo'] = $db;
             $tablePrefix = Factory::getConfig()->get('dbprefix');
 
             // load data from framework table
             $query = $db->getQuery(true)
                 ->select('*')
-                ->from($db->quoteName($tableName))
+                ->from($db->quoteName($tableUsers))
                 ->where($db->quoteName('ID') . '=' . $key);
 
             $db->setQuery($query);
@@ -328,10 +323,34 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
             $jdb = Factory::getDbo()->insertObject($tablePrefix . 'users', $user);
 
+            // load user group
+            $query = $db->getQuery(true)
+                ->select('meta_value')
+                ->from($db->quoteName($tableUsersMeta, 'a'))
+                ->where($db->quoteName('a.user_id') . '=' . $key, 'AND')
+                ->where($db->quoteName('a.meta_key') . '=' . $db->q('wp_capabilities'));
+            $db->setQuery($query);
+            $result = $db->loadAssocList();
+
+            $grouprow = $result[0]['meta_value'];
+
+            $groupId = 1;
+
+            if (preg_match("/administrator/", $grouprow)) {
+                $groupId = 7;
+            } else if (preg_match("/author/", $grouprow)) {
+                $groupId = 3;
+            } else if (preg_match("/editor/", $grouprow)) {
+                $groupId = 4;
+            } else {
+                $groupId = 1; // default as public
+            }
+            LogHelper::writeLog("GroupID:   " . $groupId, "success");
+
             // inserting in user_usergroup_map
             $usergroup = new stdClass();
             $usergroup->user_id = $row['ID'] + $maxKey['users'];
-            $usergroup->group_id = intval($usergroupinfo);
+            $usergroup->group_id = $groupId;
 
             $jdb = Factory::getDbo()->insertObject($tablePrefix . 'user_usergroup_map', $usergroup);
 
@@ -341,9 +360,9 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $update[] = ['status' => "success"];
         } catch (\RuntimeException $th) {
             LogHelper::writeLog('User Imported Unsuccessfully with id = ' . $key, 'error');
-            LogHelper::writeLog($th, 'normal');
             LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "success"];
+            $update[] = ['status' => "error"];
+            LogHelper::writeLog($th, 'normal');
         }
         Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
     }
@@ -691,7 +710,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 ->where($db->quoteName('a.meta_key') . '=' . $db->q('_menu_item_object_id'));
             $db->setQuery($query);
             $result = $db->loadAssocList();
-            // $taxonomyid = $result[0]['meta_value'];
+
             $taxonomyid = intval($result[0]['meta_value']);
 
             // Is category or tag or page or post or customLink
@@ -816,8 +835,9 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
             }
             $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-
-            $imagemigrateway = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', [])['postfeatureimage'];
+            $dataparameter = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
+            // $imagemigrateway = 1;
+            $imagemigrateway = @$dataparameter['postfeatureimage'];
             // datetime
             $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
 
@@ -899,7 +919,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                     ->where($db->quoteName('a.ID') . '=' . $imageid);
                 $db->setQuery($query);
                 $imageinfo =  $db->loadAssocList();
-                $url = $imageinfo[0]['guid'];
+                $imageinfo = $imageinfo[0];
+                $url = $imageinfo['guid'];
                 if (!empty($url)) {
 
                     $position = strpos($url, "uploads");
@@ -910,15 +931,18 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                         $imageurl = JPATH_ROOT . $result;
                     }
                 }
+
                 switch ($imagemigrateway) {
-                    case 'introonly':
+                    case "introonly":
                         $articleimage = '{"image_intro":' . $imageurl . ',"image_intro_alt":' . $imageinfo['post_title'] . ',"float_intro":"","image_intro_caption":' . $imageinfo['post_excerpt'] . '}';
                         break;
-                    case 'fullonly':
+
+                    case "fullonly":
                         $articleimage = '{"image_fulltext":' . $imageurl . ',"image_fulltext_alt":' . $imageinfo['post_title'] . ',"float_fulltext":"","image_fulltext_caption":' . $imageinfo['post_content'] . '}';
                         break;
 
                     default:
+                        LogHelper::writeLog($imageinfo['post_title'], "success");
                         $articleimage = '{"image_intro":' . $imageurl . ',"image_intro_alt":' . $imageinfo['post_title'] . ',"float_intro":"","image_intro_caption":' . $imageinfo['post_excerpt'] . ',"image_fulltext":' . $imageurl . ',"image_fulltext_alt":' . $imageinfo['post_title'] . ',"float_fulltext":"","image_fulltext_caption":' . $imageinfo['post_content'] . '}';
                         break;
                 }
@@ -1095,9 +1119,9 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $update[] = ['status' => "success"];
         } catch (\RuntimeException $th) {
             LogHelper::writeLog($articletype . ' Imported Unsuccessfully with id = ' . $key, 'error');
-            LogHelper::writeLog($th, 'normal');
             LogHelper::writeSessionLog("error", $field);
             $update[] = ['status' => "error"];
+            LogHelper::writeLog($th, 'normal');
         }
         Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
     }
