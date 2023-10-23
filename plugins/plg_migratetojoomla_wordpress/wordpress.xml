@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="migratetojoomla" method="upgrade">
+	<name>PLG_MIGRATETOJOOMLA_WORDPRESS</name>
+    <author>Joomla! Project</author>
+	<creationDate>2023</creationDate>
+	<copyright>(C) 2013 Open Source Matters, Inc.</copyright>
+	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+	<authorEmail>admin@joomla.org</authorEmail>
+	<authorUrl>www.joomla.org</authorUrl>
+	<version>1.0</version>
+    <description>COM_MIGRATETOJOOMLA_XML_DESCRIPTION</description>
+    <namespace path="src">Joomla\Plugin\MigrateToJoomla\Wordpress</namespace>
+	<files>
+		<folder>forms</folder>
+		<folder plugin="wordpress">services</folder>
+		<folder>src</folder>
+	</files>
+	<languages folder="admin">
+        <language tag="en-GB">language/en-GB/plg_migratetojoomla_wordpress.ini</language>
+        <language tag="en-GB">language/en-GB/plg_migratetojoomla_wordpress.sys.ini</language>
+	</languages>
+</extension>
