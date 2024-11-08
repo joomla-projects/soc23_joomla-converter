@@ -4,7 +4,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
  *
- * @copyright   (C) 2020 Open Source Matters, Inc. <https://www.joomla.org>
+ * @copyright   (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -25,13 +25,13 @@ use Psr\Container\ContainerInterface;
  *
  * @since  1.0
  */
-class MigrateToJoomlaComponent extends MVCComponent implements 
+class MigrateToJoomlaComponent extends MVCComponent implements
     RouterServiceInterface,
     BootableExtensionInterface
 {
     use RouterServiceTrait;
 
-        /**
+    /**
      * Booting the extension. This is the function to set up the environment of the extension like
      * registering new class loaders, etc.
      *
@@ -44,7 +44,5 @@ class MigrateToJoomlaComponent extends MVCComponent implements
      *
      * @since 4.3.0
      */
-    public function boot(ContainerInterface $container)
-    {
-    }
+    public function boot(ContainerInterface $container) {}
 }

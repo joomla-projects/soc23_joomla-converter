@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>	
+<?xml version="1.0" encoding="utf-8"?>
 <form>
-    <fields name="frameworkparams">
-        <fieldset name="frameworkparams">
+	<fields name="frameworkparams">
+		<fieldset name="frameworkparams">
 			<field
 				name="postsandpagedata"
 				type="radio"
@@ -10,8 +10,8 @@
 				layout="joomla.form.field.radio.switcher"
 				validate="options"
 			>
-			   <option value="1">JYES</option>
-			   <option value="0">JNO</option>
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
 			</field>
 			<field
 				name="postfeatureimage"
@@ -24,8 +24,8 @@
 				<option value="both">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_BOTH_FULL_INTRO</option>
 				<option value="fullonly">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_FULL</option>
 				<option value="introonly">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_INTRO</option>
-		   </field>
-            <field
+			</field>
+			<field
 				name="userdata"
 				type="radio"
 				label="PLG_MIGRATETOJOOMLA_WORDPRESS_USER_DATA_LABEL"
@@ -33,10 +33,10 @@
 				layout="joomla.form.field.radio.switcher"
 				validate="options"
 			>
-			   <option value="1">JYES</option>
-			   <option value="0">JNO</option>
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
 			</field>
-            <field
+			<field
 				name="tagdata"
 				type="radio"
 				label="PLG_MIGRATETOJOOMLA_WORDPRESS_TAGS_DATA_LABEL"
@@ -44,10 +44,10 @@
 				layout="joomla.form.field.radio.switcher"
 				validate="options"
 			>
-			   <option value="1">JYES</option>
-			   <option value="0">JNO</option>
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
 			</field>
-            <field
+			<field
 				name="categorydata"
 				type="radio"
 				label="PLG_MIGRATETOJOOMLA_WORDPRESS_CATEGORY_DATA_LABEL"
@@ -55,10 +55,10 @@
 				layout="joomla.form.field.radio.switcher"
 				validate="options"
 			>
-			   <option value="1">JYES</option>
-			   <option value="0">JNO</option>
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
 			</field>
-            <field
+			<field
 				name="menudata"
 				type="radio"
 				label="PLG_MIGRATETOJOOMLA_WORDPRESS_MENU_DATA_LABEL"
@@ -66,10 +66,10 @@
 				layout="joomla.form.field.radio.switcher"
 				validate="options"
 			>
-			   <option value="1">JYES</option>
-			   <option value="0">JNO</option>
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
 			</field>
-            <field
+			<field
 				name="menuitemdata"
 				type="radio"
 				label="PLG_MIGRATETOJOOMLA_WORDPRESS_MENUITEM_DATA_LABEL"
@@ -77,9 +77,9 @@
 				layout="joomla.form.field.radio.switcher"
 				validate="options"
 			>
-			   <option value="1">JYES</option>
-			   <option value="0">JNO</option>
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
 			</field>
-        </fieldset>
-    </fields>
+		</fieldset>
+	</fields>
 </form>
