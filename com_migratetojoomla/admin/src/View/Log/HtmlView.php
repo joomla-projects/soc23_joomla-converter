@@ -14,12 +14,12 @@ use Joomla\CMS\Toolbar\ToolbarHelper;
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
  *
- * @copyright     (C) 2023 Open Source Matters, Inc. <https://www.joomla.org>
+ * @copyright     (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license       GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 /**
- * Migrate "Migrate To Joomla" Admin View
+ * Migrate "Migrate To Joomla" Log View
  */
 class HtmlView extends BaseHtmlView
 {

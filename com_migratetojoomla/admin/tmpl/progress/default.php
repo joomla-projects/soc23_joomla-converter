@@ -4,7 +4,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
  *
- * @copyright     (C) 2023 Open Source Matters, Inc. <https://www.joomla.org>
+ * @copyright     (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license       GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -13,7 +13,7 @@ use Joomla\CMS\Language\Text;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
-/** @var \Joomla\Component\MigrateToJoomla\Administrator\View\Migrate\HtmlView $this */
+/** @var \Joomla\Component\MigrateToJoomla\Administrator\View\Progress\HtmlView $this */
 
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
 $wa = $this->document->getWebAssetManager();

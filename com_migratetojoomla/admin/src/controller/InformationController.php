@@ -4,7 +4,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
  *
- * @copyright   (C) 2006 Open Source Matters, Inc. <https://www.joomla.org>
+ * @copyright   (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -59,7 +59,7 @@ class InformationController extends FormController
     protected $text_prefix = 'COM_MIGRATETOJOOMLA_INFORMATION';
 
     /**
-     * Method to save form data and redirect to next view
+     * Method to save form data
      * 
      * @since 1.0
      */
@@ -71,7 +71,6 @@ class InformationController extends FormController
 
         $app->setUserState('com_migratetojoomla.information', $data);
 
-        // redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=migrate', false));
     }
 
@@ -89,7 +88,7 @@ class InformationController extends FormController
         $this->checkMediaConnection(0);
         $this->checkDatabaseConnection(0);
         $app->setUserState('com_migratetojoomla.information', $data);
-        // redirect in all case
+
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=parameter', false));
     }
 
@@ -120,15 +119,13 @@ class InformationController extends FormController
 
         Factory::getApplication()->triggerEvent('migratetojoomla_testmediaconnection', $event);
 
-        // Store data in session
         $app->setUserState('com_migratetojoomla.information', $data);
 
-        // redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
 
     /**
-     * Controller funciton to check Database connection
+     * Method to check Database connection
      * 
      * @since 1.0
      */
@@ -149,15 +146,13 @@ class InformationController extends FormController
             $session->set('databaseconnectionresult', false);
         }
 
-        // Store data in session
         $app->setUserState('com_migratetojoomla.information', $data);
 
-        // redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
 
     /**
-     * Method to set database $db if it is not set
+     * Method to set database
      * 
      * @param array form data
      * @return boolean True on success

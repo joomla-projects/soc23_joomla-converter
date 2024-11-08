@@ -4,33 +4,31 @@
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
  *
- * @copyright   (C) 2013 Open Source Matters, Inc. <https://www.joomla.org>
+ * @copyright   (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Model;
 
-use Joomla\CMS\Event\AbstractEvent;
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\AdminModel;
-use Joomla\CMS\Plugin\PluginHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
 
 /**
- * Migratetojoomla Component Parameter Model
+ * Migratetojoomla Component migrate Model
  *
  * @since  1.0
  */
-class ParameterModel extends AdminModel
+class MigrateModel extends AdminModel
 {
     /**
      * @var    string  The type alias for this content type.
      * @since  1.0
      */
-    public $typeAlias = 'com_migratetojoomla.parameter';
+    public $typeAlias = 'com_migratetojoomla.migrate';
 
     /**
      * Method to get the form.
@@ -44,23 +42,9 @@ class ParameterModel extends AdminModel
      */
     public function getForm($data = [], $loadData = true)
     {
-        $framework = @Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework'];
+
         // Get the form.
-        $form = $this->loadForm('com_migratetojoomla.parameter', 'parameter', ['control' => 'jform', 'load_data' => $loadData]);
-
-        PluginHelper::importPlugin('migratetojoomla');
-
-        $event = AbstractEvent::create(
-            'onContentPrepareFormmigrate',
-            [
-                'subject'    => $this,
-                'formname'   => 'com_migratetojoomla.parameter',
-                'form'       => $form,
-                'framework'  => $framework
-            ]
-        );
-
-        Factory::getApplication()->triggerEvent('onContentPrepareFormmigrate', $event);
+        $form = $this->loadForm('com_migratetojoomla.migrate', 'migrate', ['control' => 'jform', 'load_data' => $loadData]);
 
         if (empty($form)) {
             return false;
@@ -79,7 +63,10 @@ class ParameterModel extends AdminModel
     protected function loadFormData()
     {
         // Check the session for previously entered form data.
-        $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
+        $data = Factory::getApplication()->getUserState('com_migratetojoomla.migrate', []);
+
+        $this->preprocessData('com_migratetojoomla.migrate', $data);
+
         return $data;
     }
 }

@@ -4,7 +4,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
  *
- * @copyright   (C) 2006 Open Source Matters, Inc. <https://www.joomla.org>
+ * @copyright   (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -27,7 +27,7 @@ class ParameterController extends FormController
 {
 
     /**
-     * Method to save form data and redirect to next view
+     * Method to save form data
      * 
      * @since 1.0
      */
@@ -39,12 +39,11 @@ class ParameterController extends FormController
 
         $app->setUserState('com_migratetojoomla.parameter', $data);
 
-        //redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=check', false));
     }
 
     /**
-     * Method to save form data and redirect to next view
+     * Method to save form data
      * 
      * @since 1.0
      */
@@ -59,7 +58,6 @@ class ParameterController extends FormController
 
         $app->setUserState('com_migratetojoomla.parameter', $data);
 
-        //redirect in all case
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
 }
