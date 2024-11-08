@@ -56,7 +56,7 @@
 		label="COM_MIGRATETOJOOMLA_FTP_PROTOCOL_LABEL"
 		class="form-select"
 		default="ftp"
-		showon="mediaoption:ftp"
+		showon="mediaoptions:ftp"
 		validate="options"
 		description="COM_MIGRATETOJOOMLA_FTP_PROTOCOL_DESC"
 	>
