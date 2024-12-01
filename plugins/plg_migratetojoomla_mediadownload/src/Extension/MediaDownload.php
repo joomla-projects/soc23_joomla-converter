@@ -10,13 +10,13 @@
 
 namespace Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension;
 
-use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Factory;
-use Joomla\Event\SubscriberInterface;
+use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
+use Joomla\Event\SubscriberInterface;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
