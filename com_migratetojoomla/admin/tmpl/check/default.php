@@ -15,7 +15,7 @@ use Joomla\CMS\Plugin\PluginHelper;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
-/** @var \Joomla\Component\MigrateToJoomla\Administrator\View\check\HtmlView $this */
+/** @var \Joomla\Component\MigrateToJoomla\Administrator\View\Check\HtmlView $this */
 
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
 $wa = $this->document->getWebAssetManager();

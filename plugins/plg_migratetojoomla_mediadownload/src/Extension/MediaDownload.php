@@ -10,17 +10,13 @@
 
 namespace Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension;
 
-use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Factory;
-use Joomla\Event\SubscriberInterface;
+use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
-
-require_once 'filesystem.php';
-require_once 'ftp.php';
-require_once 'http.php';
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
+use Joomla\Event\SubscriberInterface;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -30,7 +26,7 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
 {
     /**
      * @var object  Media Download object
-     * 
+     *
      * @since 1.0
      */
     public  $mediaDownloadManager;
@@ -52,10 +48,10 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
 
     /**
      * Method to check connection with respective method
-     * 
+     *
      * @param array form data
      * @return boolean True on success
-     * 
+     *
      * @since 1.0
      */
     public static function testMediaConnection()
@@ -80,10 +76,10 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
     }
 
     /**
-     * Method to Download 
-     * 
+     * Method to Download
+     *
      * @param array form data
-     * 
+     *
      * @since  1.0
      */
     public  function downloadMedia()
@@ -132,7 +128,7 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
      * @param string $destination Destination file or directory name
      * @param bool $recursive Recursive copy?
      * @return bool File copied or not
-     * 
+     *
      * @since  1.0
      */
     public function copy($source, $destination)
@@ -148,19 +144,19 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
 
     /**
      * Method to copy file
-     * 
+     *
      * @param string $source source path
      * @param string $destination destination path
-     * 
+     *
      * @return boolean True on success
-     * 
+     *
      * @since  1.0
      */
     public function copyFile($source, $destination)
     {
         $response = false;
         if (file_exists($destination) && (filesize($destination) > 0)) {
-            // file Already downloaded 
+            // file Already downloaded
             return true;
         }
 
@@ -170,12 +166,12 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
 
     /**
      * Method to make directory and copy it's content
-     * 
+     *
      * @param string $source Source path
      * @param string $source Destination path
-     * 
+     *
      * @return boolean True on Success
-     * 
+     *
      * @since  1.0
      */
     public function copyDir($source, $destination)
