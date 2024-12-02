@@ -16,7 +16,7 @@ defined('_JEXEC') or die('Restricted Access');
 /** @var \Joomla\Component\MigrateToJoomla\Administrator\View\Progress\HtmlView $this */
 
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
-$wa = $this->document->getWebAssetManager();
+$wa = $this->getDocument()->getWebAssetManager();
 
 $wa->useScript('com_migratetojoomla.admin-migratetojoomla')
     ->useScript('keepalive')

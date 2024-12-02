@@ -33,9 +33,8 @@ class LogController extends FormController
     public function download()
     {
         $this->checkToken();
-        $app = Factory::getApplication();
 
-        $logFileName = @trim((Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'] . '')) . '-to-Joomla-migrate.txt';
+        $logFileName = @trim(($this->app->getUserState('com_migratetojoomla.migrate', [])['framework'] . '')) . '-to-Joomla-migrate.txt';
 
         $headWithFileName = "Content-Disposition: attachment; filename=$logFileName";
 
@@ -49,7 +48,7 @@ class LogController extends FormController
 
         flush();
 
-        $app->close();
+        $this->app->close();
     }
 
     /**
@@ -59,16 +58,15 @@ class LogController extends FormController
      */
     public function echoRawLog()
     {
-        $logfolder   = JPATH_ADMINISTRATOR . '\components\com_migratetojoomla\logs\\';
-        $logfileName = @trim((Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'] . '')) . '-to-Joomla.log';
+        $logfolder   = JPATH_ADMINISTRATOR . '/components/com_migratetojoomla/logs/';
+        $logfileName = @trim(($this->app->getUserState('com_migratetojoomla.migrate', [])['framework'] . '')) . '-to-Joomla.log';
 
         $logFile = $logfolder . $logfileName;
 
         $file = @fopen($logFile, 'r');
 
         if ($file === false) {
-            $app   = Factory::getApplication();
-            $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_ERROR_WHILE_DOWNLOAD_LOG'), 'danger');
+            $this->app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_ERROR_WHILE_DOWNLOAD_LOG'), 'danger');
             return;
         }
 

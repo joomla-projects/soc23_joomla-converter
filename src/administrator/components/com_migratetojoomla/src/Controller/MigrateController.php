@@ -33,13 +33,12 @@ class MigrateController extends FormController
     public function storeFormAndNext()
     {
         $this->checkToken();
-        $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', [], 'array');
 
-        $session = Factory::getSession();
+        $session = $this->app->getSession();
         $session->set('framework', $data['framework']);
 
-        $app->setUserState('com_migratetojoomla.migrate', $data);
+        $this->app->setUserState('com_migratetojoomla.migrate', $data);
 
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
