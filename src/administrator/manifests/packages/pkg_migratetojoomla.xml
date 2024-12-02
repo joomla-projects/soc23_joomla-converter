@@ -14,11 +14,11 @@
     <blockChildUninstall>true</blockChildUninstall>
     <files>
         <file type="component" id="com_migratetojoomla">com_migratetojoomla.zip</file>
-        <file type="plugin" group="migratetojoomla" id="migratetojoomla">plugins/plg_migratetojoomla_mediadownload.zip</file>
-        <file type="plugin" group="migratetojoomla" id="migratetojoomla">plugins/plg_migratetojoomla_wordpress.zip</file>
+        <file type="plugin" group="migratetojoomla" id="migratetojoomla">plg_migratetojoomla_mediadownload.zip</file>
+        <file type="plugin" group="migratetojoomla" id="migratetojoomla">plg_migratetojoomla_wordpress.zip</file>
     </files>
     <languages folder="languages">
-        <language tag="en-GB">en-GB/pkg_migratetojoomla.ini</language>
-        <language tag="en-GB">en-GB/pkg_migratetojoomla.sys.ini</language>
+        <language tag="en-GB">administrator/language/en-GB/pkg_migratetojoomla.ini</language>
+        <language tag="en-GB">administrator/language/en-GB/pkg_migratetojoomla.sys.ini</language>
     </languages>
 </extension>

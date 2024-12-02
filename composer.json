@@ -1,0 +1,18 @@
+{
+    "name"       : "joomla-projects/migratetojoomla",
+    "description": "The Open Source PHP Framework for creating complex Joomla extensions",
+    "license"    : "GPL-2.0+",
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        }
+    },
+    "require"    : {
+        "php": ">=8.2.0"
+    },
+    "require-dev": {
+        "joomla-projects/jorobo": "^0.11.0",
+        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan-deprecation-rules": "^2.0"
+    }
+}
