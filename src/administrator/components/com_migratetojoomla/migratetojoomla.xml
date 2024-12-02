@@ -12,20 +12,17 @@
     <namespace path="src">Joomla\Component\MigrateToJoomla</namespace>
     <administration>
         <menu link="index.php?option=com_migratetojoomla">MigrateToJoomla</menu>
-        <files folder="admin">
+        <files folder="administrator/components/com_migratetojoomla">
             <folder>services</folder>
             <folder>src</folder>
+            <folder>language</folder>
             <folder>tmpl</folder>
             <folder>forms</folder>
             <file>access.xml</file>
             <file>config.xml</file>
         </files>
-        <languages folder="admin">
-            <language tag="en-GB">language/en-GB/com_migratetojoomla.ini</language>
-            <language tag="en-GB">language/en-GB/com_migratetojoomla.sys.ini</language>
-        </languages>
     </administration>
-    <media destination="com_migratetojoomla" folder="media">
+    <media destination="com_migratetojoomla" folder="media/com_migratetojoomla">
         <folder>js</folder>
         <folder>css</folder>
         <file>joomla.asset.json</file>
