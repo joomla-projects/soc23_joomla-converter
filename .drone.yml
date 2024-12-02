@@ -1,0 +1,44 @@
+---
+kind: pipeline
+name: default
+
+steps:
+  - name: composer
+    image: joomlaprojects/docker-images:php8.2
+    volumes:
+      - name: composer-cache
+        path: /tmp/composer-cache
+    commands:
+      - composer install --no-progress
+
+  - name: phpcs
+    image: joomlaprojects/docker-images:php8.2
+    depends_on: [ composer ]
+    commands:
+      - echo $(date)
+      - ./vendor/bin/php-cs-fixer fix -vvv --dry-run --diff
+      - ./vendor/bin/phpcs --extensions=php -p --standard=ruleset.xml src/
+      - echo $(date)
+
+  - name: phpstan
+    image: joomlaprojects/docker-images:php8.2
+    depends_on: [ composer ]
+    failure: ignore
+    commands:
+      - mkdir cms
+      - cd cms
+      - curl https://joomla.org/latest -L --output joomla.zip
+      - unzip joomla.zip
+      - cd ..
+      - ./vendor/bin/phpstan
+
+volumes:
+  - name: composer-cache
+    host:
+      path: /tmp/composer-cache
+
+---
+kind: signature
+hmac: cb20512429a66d09a11852d6fb4634b5c201311295a9456b877ceceaee273b52
+
+...
