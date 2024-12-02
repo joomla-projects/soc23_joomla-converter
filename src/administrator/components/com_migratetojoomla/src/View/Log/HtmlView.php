@@ -2,7 +2,9 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\View\Log;
 
-defined('_JEXEC') or die;
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
@@ -28,7 +30,7 @@ class HtmlView extends BaseHtmlView
      *
      * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
      * @return  void
-     * 
+     *
      * @since  1.0
      */
     public function display($tpl = null)

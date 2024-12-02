@@ -2,7 +2,9 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\View\Progress;
 
-defined('_JEXEC') or die;
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 use Joomla\CMS\Event\AbstractEvent;
 use Joomla\CMS\Factory;
@@ -28,9 +30,9 @@ class HtmlView extends BaseHtmlView
 {
     /**
      * Import Data information
-     * 
-     * @var array 
-     * 
+     *
+     * @var array
+     *
      * @since 1.0
      */
     public $importstring = [];
@@ -39,7 +41,7 @@ class HtmlView extends BaseHtmlView
      *
      * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
      * @return  void
-     * 
+     *
      * @since  1.0
      */
     public function display($tpl = null)
@@ -50,7 +52,7 @@ class HtmlView extends BaseHtmlView
 
         $this->createmigratedata();
 
-        $temp = $this->importstring;
+        $temp   = $this->importstring;
         $output = [];
         foreach ($temp as $key => $value) {
             array_push($output, str_replace("data", "", $value[1]));
@@ -64,7 +66,7 @@ class HtmlView extends BaseHtmlView
         $event = AbstractEvent::create(
             'migratetojoomla_storemaxprimarykey',
             [
-                'subject'    => $this
+                'subject' => $this,
             ]
         );
 
@@ -74,7 +76,7 @@ class HtmlView extends BaseHtmlView
         $event = AbstractEvent::create(
             'migratetojoomla_storeprimarykey',
             [
-                'subject'    => $this
+                'subject' => $this,
             ]
         );
 
@@ -115,11 +117,11 @@ class HtmlView extends BaseHtmlView
 
     /**
      * Method to create import information
-     * 
+     *
      * @return  void
      *
      * @since   1.0
-     * 
+     *
      */
 
     public function createmigratedata()
@@ -127,16 +129,15 @@ class HtmlView extends BaseHtmlView
         $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
 
         @$isdatabasemigration = $data["databasemigratestatus"];
-        @$ismediamigration = $data["mediamigratestatus"];
-        $displayimportstring = [];
+        @$ismediamigration    = $data["mediamigratestatus"];
+        $displayimportstring  = [];
         if ($isdatabasemigration == "1") {
             $databasetable = $data["frameworkparams"];
 
             foreach ($databasetable as $field => $value) {
                 if ($value == "1") {
-
-                    $fielddata = array();
-                    if (count($this->importstring) == 0) {
+                    $fielddata = [];
+                    if (\count($this->importstring) == 0) {
                         array_push($fielddata, "active");
                     } else {
                         array_push($fielddata, "remain");
@@ -149,9 +150,8 @@ class HtmlView extends BaseHtmlView
         }
 
         if ($ismediamigration == "1") {
-
-            $fielddata = array();
-            if (count($this->importstring) == 0) {
+            $fielddata = [];
+            if (\count($this->importstring) == 0) {
                 array_push($fielddata, "active");
             } else {
                 array_push($fielddata, "remain");

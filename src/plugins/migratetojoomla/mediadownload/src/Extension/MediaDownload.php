@@ -29,7 +29,7 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
      *
      * @since 1.0
      */
-    public  $mediaDownloadManager;
+    public $mediaDownloadManager;
 
     /**
      * Returns an array of events this subscriber will listen to.
@@ -41,8 +41,8 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            'migratetojoomla_downloadmedia' => 'downloadMedia',
-            'migratetojoomla_testmediaconnection' => 'testMediaConnection'
+            'migratetojoomla_downloadmedia'       => 'downloadMedia',
+            'migratetojoomla_testmediaconnection' => 'testMediaConnection',
         ];
     }
 
@@ -64,10 +64,10 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
         if ($method == "http") {
             // Http
             $response = HttpDownload::testConnection($data['livewebsiteurl']);
-        } else if ($method == "fs") {
+        } elseif ($method == "fs") {
             // File system
             $response = FilesystemDownload::testConnection($data['basedir']);
-        } else if ($method == "ftp") {
+        } elseif ($method == "ftp") {
             $response = FtpDownload::testConnection($data);
         }
 
@@ -82,10 +82,10 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
      *
      * @since  1.0
      */
-    public  function downloadMedia()
+    public function downloadMedia()
     {
-        $app   = Factory::getApplication();
-        $data = $app->getUserState('com_migratetojoomla.information', []);
+        $app    = Factory::getApplication();
+        $data   = $app->getUserState('com_migratetojoomla.information', []);
         $method = $data['mediaoptions'];
         $source = '';
 
@@ -95,17 +95,17 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
                 break;
             case 'ftp':
                 $this->mediaDownloadManager = new FtpDownload($data);
-                $response = $this->mediaDownloadManager->login();
-                $source = $data['ftpbasedir'];
+                $response                   = $this->mediaDownloadManager->login();
+                $source                     = $data['ftpbasedir'];
                 break;
             case "http":
             default:
                 $this->mediaDownloadManager = new HttpDownload($data['livewebsiteurl']);
-                $source = $data['livewebsiteurl'];
+                $source                     = $data['livewebsiteurl'];
                 break;
         }
 
-        $source = PathHelper::addTrailingSlashit($source) . 'wp-content\uploads';
+        $source      = PathHelper::addTrailingSlashit($source) . 'wp-content\uploads';
         $destination = PathHelper::addTrailingSlashit(JPATH_ROOT) . 'images';
 
         try {
@@ -136,10 +136,9 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
         if ($this->mediaDownloadManager->isDir($source)) {
             // Directory
             return $this->copyDir($source, $destination);
-        } else {
-            // File
-            return $this->copyFile($source, $destination);
         }
+        // File
+        return $this->copyFile($source, $destination);
     }
 
     /**
@@ -177,20 +176,20 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
     public function copyDir($source, $destination)
     {
         $destination = PathHelper::clean($destination);
-        $response = true;
+        $response    = true;
         if (!is_dir($destination)) {
             mkdir($destination, 0755, true); // Create the directory if not exist
         }
         $files = $this->mediaDownloadManager->listDirectory($source);
 
-        if (is_array($files) || is_object($files)) {
+        if (\is_array($files) || \is_object($files)) {
             foreach ($files as $file) {
                 if (preg_match('/^\.+$/', $file)) { // Skip . and ..
                     continue;
                 }
                 $source_filename = PathHelper::addTrailingSlashit($source) . $file;
-                $dest_filename = PathHelper::addTrailingSlashit($destination) . $file;
-                $response = $this->copy($source_filename, $dest_filename);
+                $dest_filename   = PathHelper::addTrailingSlashit($destination) . $file;
+                $response        = $this->copy($source_filename, $dest_filename);
             }
         }
         return $response;

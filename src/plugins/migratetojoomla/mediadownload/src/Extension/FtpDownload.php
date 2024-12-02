@@ -10,9 +10,9 @@
 
 namespace Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension;
 
+use Joomla\CMS\Client\FtpClient;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Client\FtpClient;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -22,23 +22,23 @@ class FtpDownload
 {
     /**
      * @var array  ftp parameters
-     * 
+     *
      * @since 1.0
      */
-    public  $options = array();
+    public $options = [];
 
     /**
      * @var object ftpclient object
-     * 
+     *
      * @since 1.0
      */
-    public  $ftp;
+    public $ftp;
 
     /**
      * Class constructor
-     * 
+     *
      * @param array ftpparameters
-     * 
+     *
      * @since 1.0
      */
     public function __construct($data = [])
@@ -48,19 +48,19 @@ class FtpDownload
 
     /**
      * Method to check Enter base url connection
-     * 
+     *
      * @param string Base url of live website
      * @param boolean test by user of not
      * @return boolean True on success
-     * 
+     *
      * @since 1.0
      */
     public static function testConnection($data = [])
     {
-        $instance = new self;
+        $instance          = new self();
         $instance->options = $data;
-        $response = $instance->login();
-        $app = Factory::getApplication();
+        $response          = $instance->login();
+        $app               = Factory::getApplication();
 
         if ($response) {
             $app->enqueueMessage(TEXT::_('COM_MIGRATETOJOOMLA_FTP_CONNECTION_SUCCESFULLY'), 'success');
@@ -71,10 +71,10 @@ class FtpDownload
 
     /**
      * Method to list files in a directory
-     * 
+     *
      * @param string Directory
      * @return array List of files
-     * 
+     *
      * @since  1.0
      */
     public function listDirectory($directory)
@@ -82,16 +82,16 @@ class FtpDownload
         if (!$this->ftp->isConnected()) {
             $this->login();
         }
-        $files = array();
+        $files = [];
         $files = $this->ftp->listNames($directory);
         return $files;
     }
 
     /** Method to check given path is directory
-     * 
+     *
      * @param string $path Path
      * @return boolean
-     * 
+     *
      * @since  1.0
      */
     public function isDir($path)
@@ -104,13 +104,13 @@ class FtpDownload
 
     /**
      *  Method to get content of File with File system
-     * 
-     * @param string Source 
+     *
+     * @param string Source
      * @return string File content
-     * 
+     *
      * @since  1.0
      */
-    public  function getContent($source, $destination)
+    public function getContent($source, $destination)
     {
         if (!$this->ftp->isConnected()) {
             $this->login();
@@ -120,19 +120,19 @@ class FtpDownload
 
     /**
      * Method to login using ftp options
-     * 
+     *
      * @return boolean True on success
-     * 
+     *
      * @since 1.0
      */
     public function login()
     {
         $this->ftp = new FtpClient();
 
-        $instance = $this->ftp;
+        $instance  = $this->ftp;
         $isconnect = $instance->connect($this->options['ftphost'], $this->options['ftpport']);
-        $islogin = $instance->login($this->options['ftpusername'], $this->options['ftppassword']);
-        $isdir = $instance->listNames($this->options['ftpbasedir']);
+        $islogin   = $instance->login($this->options['ftpusername'], $this->options['ftppassword']);
+        $isdir     = $instance->listNames($this->options['ftpbasedir']);
 
         return $isconnect && $islogin && !empty($isdir);
     }

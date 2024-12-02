@@ -21,7 +21,7 @@ use Joomla\CMS\MVC\Controller\BaseController;
  *
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
- * 
+ *
  * @since  1.0
  */
 class DisplayController extends BaseController

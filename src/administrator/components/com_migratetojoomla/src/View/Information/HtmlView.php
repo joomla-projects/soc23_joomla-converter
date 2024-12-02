@@ -2,14 +2,16 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\View\Information;
 
-defined('_JEXEC') or die;
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
-use Joomla\Component\MigrateToJoomla\Administrator\Model\InformationModel;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Model\InformationModel;
 
 /**
  * @package     Joomla.Administrator
@@ -24,7 +26,6 @@ use Joomla\CMS\Toolbar\ToolbarHelper;
  */
 class HtmlView extends BaseHtmlView
 {
-
     /**
      * The Form object
      *
@@ -37,7 +38,7 @@ class HtmlView extends BaseHtmlView
      *
      * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
      * @return  void
-     * 
+     *
      * @since  1.0
      */
     public function display($tpl = null)

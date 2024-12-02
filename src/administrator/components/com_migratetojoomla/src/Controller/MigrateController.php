@@ -25,17 +25,16 @@ use Joomla\CMS\Router\Route;
  */
 class MigrateController extends FormController
 {
-
     /**
      * Method to save form data and redirect to next view
-     * 
+     *
      * @since 1.0
      */
     public function storeFormAndNext()
     {
         $this->checkToken();
         $app   = Factory::getApplication();
-        $data  = $this->input->post->get('jform', array(), 'array');
+        $data  = $this->input->post->get('jform', [], 'array');
 
         $session = Factory::getSession();
         $session->set('framework', $data['framework']);

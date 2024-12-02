@@ -29,85 +29,84 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
  */
 class ProgressController extends BaseController
 {
-	/**
-	 * @var string  Contain current migration field
-	 * 
-	 * @since 1.0
-	 */
+    /**
+     * @var string  Contain current migration field
+     *
+     * @since 1.0
+     */
 
-	public function ajax()
-	{
-		if (!Session::checkToken('get')) {
-			$this->app->setHeader('status', 403, true);
-			$this->app->sendHeaders();
-			echo Text::_('JINVALID_TOKEN_NOTICE');
-			$this->app->close();
-		}
-		$app = Factory::getApplication();
-		$input = $app->input;
-		$field = $input->getArray(array('name' => ''))['name'];
-		$key = $input->getArray(array('key' => ''))['key'];
+    public function ajax()
+    {
+        if (!Session::checkToken('get')) {
+            $this->app->setHeader('status', 403, true);
+            $this->app->sendHeaders();
+            echo Text::_('JINVALID_TOKEN_NOTICE');
+            $this->app->close();
+        }
+        $app   = Factory::getApplication();
+        $input = $app->input;
+        $field = $input->getArray(['name' => ''])['name'];
+        $key   = $input->getArray(['key' => ''])['key'];
 
-		$this->callPluginMethod($field, $key);
+        $this->callPluginMethod($field, $key);
 
-		$default[] = [];
+        $default[] = [];
 
-		$response = Factory::getSession()->get('migratetojoomla.ajaxresponse', $default);
+        $response = Factory::getSession()->get('migratetojoomla.ajaxresponse', $default);
 
-		echo json_encode($response);
-		$this->app->close();
-	}
+        echo json_encode($response);
+        $this->app->close();
+    }
 
-	/**
-	 * Method to call specific plugin methods
-	 * 
-	 * @since 1.0
-	 */
-	public function callPluginMethod($field = '', $key = NULL)
-	{
-		if (empty($field) || is_null($key)) {
-			return;
-		}
+    /**
+     * Method to call specific plugin methods
+     *
+     * @since 1.0
+     */
+    public function callPluginMethod($field = '', $key = null)
+    {
+        if (empty($field) || \is_null($key)) {
+            return;
+        }
 
-		if ($field == "end") {
-			LogHelper::writeLogFileOfSession();
-		}
-		if ($field == "media") {
+        if ($field == "end") {
+            LogHelper::writeLogFileOfSession();
+        }
+        if ($field == "media") {
+            // calling media plugin method
+            PluginHelper::importPlugin('migratetojoomla', 'mediadownload');
 
-			// calling media plugin method
-			PluginHelper::importPlugin('migratetojoomla', 'mediadownload');
+            $event = AbstractEvent::create(
+                'migratetojoomla_downloadmedia',
+                [
+                    'subject'  => $this,
+                    'formname' => 'com_migratetojoomla.parameter',
+                ]
+            );
 
-			$event = AbstractEvent::create(
-				'migratetojoomla_downloadmedia',
-				[
-					'subject'    => $this,
-					'formname'   => 'com_migratetojoomla.parameter',
-				]
-			);
+            Factory::getApplication()->triggerEvent('migratetojoomla_downloadmedia', $event);
+        } else {
+            // calling framework specific plugin method for database migration
 
-			Factory::getApplication()->triggerEvent('migratetojoomla_downloadmedia', $event);
-		} else {
-			// calling framework specific plugin method for database migration
+            $framework = Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework'];
 
-			$framework = Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework'];
+            // import framwork plugin
 
-			// import framwork plugin
+            PluginHelper::importPlugin('migratetojoomla', $framework);
 
-			PluginHelper::importPlugin('migratetojoomla', $framework);
+            $eventname = "migratetojoomla_" . $field;
 
-			$eventname = "migratetojoomla_" . $field;
+            $event = AbstractEvent::create(
+                $eventname,
+                [
+                    'subject'  => $this,
+                    'formname' => 'com_migratetojoomla.parameter',
+                    'key'      => $key,
+                    'field'    => $field,
+                ]
+            );
 
-			$event = AbstractEvent::create(
-				$eventname,
-				[
-					'subject'    => $this,
-					'formname'   => 'com_migratetojoomla.parameter',
-					'key'  => $key,
-					'field' => $field
-				]
-			);
-
-			Factory::getApplication()->triggerEvent($eventname, $event);
-		}
-	}
+            Factory::getApplication()->triggerEvent($eventname, $event);
+        }
+    }
 }

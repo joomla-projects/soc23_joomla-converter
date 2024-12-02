@@ -14,14 +14,14 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Helper;
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
 
-class pathHelper
+class PathHelper
 {
     /**
      * Method to append a trailing slash.
-     * 
+     *
      * @param string file or directory path
      * @return string file or dirctory path
-     * 
+     *
      * @since 1.0
      */
     public static function addTrailingSlashit($path)
@@ -31,10 +31,10 @@ class pathHelper
 
     /**
      * Method to remove trailing forward slashes and backslashes if they exist.
-     * 
+     *
      * @param string file or directory path
      * @return string file or dirctory path
-     * 
+     *
      * @since 1.0
      */
     public static function unTrailingSlashit($path)

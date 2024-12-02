@@ -31,21 +31,21 @@ class InformationController extends FormController
 {
     /**
      * @var object  Media Download object
-     * 
+     *
      * @since 1.0
      */
-    public  $mediaDownloadManager;
+    public $mediaDownloadManager;
 
     /**
      * @var object Database parameters object
-     * 
+     *
      * @since 1.0
      */
     public $options;
 
     /**
      * @var object Database object
-     * 
+     *
      * @since 1.0
      */
     public $db;
@@ -54,20 +54,20 @@ class InformationController extends FormController
      * The prefix to use with controller messages.
      *
      * @var    string
-     * @since  
+     * @since
      */
     protected $text_prefix = 'COM_MIGRATETOJOOMLA_INFORMATION';
 
     /**
      * Method to save form data
-     * 
+     *
      * @since 1.0
      */
     public function storeFormAndPrevious()
     {
         $this->checkToken();
         $app   = Factory::getApplication();
-        $data  = $this->input->post->get('jform', array(), 'array');
+        $data  = $this->input->post->get('jform', [], 'array');
 
         $app->setUserState('com_migratetojoomla.information', $data);
 
@@ -76,14 +76,14 @@ class InformationController extends FormController
 
     /**
      * Method to save form data and redirect to next view
-     * 
+     *
      * @since 1.0
      */
     public function storeFormAndNext()
     {
         $this->checkToken();
         $app   = Factory::getApplication();
-        $data  = $this->input->post->get('jform', array(), 'array');
+        $data  = $this->input->post->get('jform', [], 'array');
 
         $this->checkMediaConnection(0);
         $this->checkDatabaseConnection(0);
@@ -94,7 +94,7 @@ class InformationController extends FormController
 
     /**
      * Method to check media connection.
-     * 
+     *
      * @since 1.0
      */
     public function checkMediaConnection()
@@ -103,7 +103,7 @@ class InformationController extends FormController
 
         $app   = Factory::getApplication();
 
-        $data  = $this->input->post->get('jform', array(), 'array');
+        $data  = $this->input->post->get('jform', [], 'array');
 
         // Store data in session
         $app->setUserState('com_migratetojoomla.information', $data);
@@ -113,7 +113,7 @@ class InformationController extends FormController
         $event = AbstractEvent::create(
             'migratetojoomla_testmediaconnection',
             [
-                'subject'    => $this
+                'subject' => $this,
             ]
         );
 
@@ -126,7 +126,7 @@ class InformationController extends FormController
 
     /**
      * Method to check Database connection
-     * 
+     *
      * @since 1.0
      */
     public function checkDatabaseConnection($msgshow = 1)
@@ -134,7 +134,7 @@ class InformationController extends FormController
         $this->checkToken();
 
         $app   = Factory::getApplication();
-        $data  = $this->input->post->get('jform', array(), 'array');
+        $data  = $this->input->post->get('jform', [], 'array');
 
         $session = Factory::getSession();
 
@@ -142,7 +142,7 @@ class InformationController extends FormController
             $msgshow && $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY'), 'success');
             $session->set('databaseconnectionresult', true);
         } else {
-            $msgshow &&  $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
+            $msgshow && $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
             $session->set('databaseconnectionresult', false);
         }
 
@@ -153,10 +153,10 @@ class InformationController extends FormController
 
     /**
      * Method to set database
-     * 
+     *
      * @param array form data
      * @return boolean True on success
-     * 
+     *
      * @since 1.0
      */
     public static function setdatabase($instance, $data = [])
@@ -166,12 +166,12 @@ class InformationController extends FormController
         }
 
         $options = [
-            'driver'    => $data['dbdriver'],
-            'host'      => $data['dbhostname'] . ':' . $data['dbport'],
-            'user'      => $data['dbusername'],
-            'password'  => $data['dbpassword'],
-            'database'  => $data['dbname'],
-            'prefix'    => $data['dbtableprefix'],
+            'driver'   => $data['dbdriver'],
+            'host'     => $data['dbhostname'] . ':' . $data['dbport'],
+            'user'     => $data['dbusername'],
+            'password' => $data['dbpassword'],
+            'database' => $data['dbname'],
+            'prefix'   => $data['dbtableprefix'],
         ];
 
         try {

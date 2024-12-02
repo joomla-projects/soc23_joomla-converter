@@ -10,10 +10,10 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Extension;
 
-use Joomla\CMS\Extension\BootableExtensionInterface;
-use Joomla\CMS\Extension\MVCComponent;
 use Joomla\CMS\Component\Router\RouterServiceInterface;
 use Joomla\CMS\Component\Router\RouterServiceTrait;
+use Joomla\CMS\Extension\BootableExtensionInterface;
+use Joomla\CMS\Extension\MVCComponent;
 use Psr\Container\ContainerInterface;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -44,5 +44,7 @@ class MigrateToJoomlaComponent extends MVCComponent implements
      *
      * @since 4.3.0
      */
-    public function boot(ContainerInterface $container) {}
+    public function boot(ContainerInterface $container)
+    {
+    }
 }

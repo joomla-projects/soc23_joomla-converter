@@ -53,10 +53,10 @@ class ParameterModel extends AdminModel
         $event = AbstractEvent::create(
             'onContentPrepareFormmigrate',
             [
-                'subject'    => $this,
-                'formname'   => 'com_migratetojoomla.parameter',
-                'form'       => $form,
-                'framework'  => $framework
+                'subject'   => $this,
+                'formname'  => 'com_migratetojoomla.parameter',
+                'form'      => $form,
+                'framework' => $framework,
             ]
         );
 

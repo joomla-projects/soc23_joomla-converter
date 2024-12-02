@@ -19,4 +19,6 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
  *
  * @since  1.0
  */
-class CheckController {}
+class CheckController
+{
+}

@@ -21,7 +21,7 @@ class LogHelper
 {
     /**
      * Method to write in log file
-     * 
+     *
      * @param string content to write
      * @param string Is content is success , error or message(normal)
      * @since 1.0
@@ -39,8 +39,8 @@ class LogHelper
         $logfilename = $selectedframework . '-to-Joomla.log';
         $logfilepath = JPATH_COMPONENT_ADMINISTRATOR . '/logs/' . $logfilename;
 
-        $contentToWrite =  '{' . $type . '}' . $content  . '{' . 'contentend' . '}' . PHP_EOL;
-        $file = @fopen($logfilepath, 'a');
+        $contentToWrite  =  '{' . $type . '}' . $content  . '{' . 'contentend' . '}' . PHP_EOL;
+        $file            = @fopen($logfilepath, 'a');
         $currentDateTime = date('Y-m-d H:i:s') . PHP_EOL;
         fwrite($file, 'Timestamp : ' . $currentDateTime);
         fwrite($file, $contentToWrite);
@@ -48,24 +48,24 @@ class LogHelper
     }
 
     /** Method to write log into session
-     * 
+     *
      * @since 1.0
      */
-    public static function writeSessionLog($status = NULL, $field = NULL)
+    public static function writeSessionLog($status = null, $field = null)
     {
-        if (is_null($status) || is_null($field)) {
+        if (\is_null($status) || \is_null($field)) {
             return;
         }
         $session = Factory::getApplication()->getSession()->get('migratetojoomla.log', []);
 
         $fieldValue = ["success" => 0, "error" => 0];
-        if (array_key_exists($field, $session)) {
+        if (\array_key_exists($field, $session)) {
             $fieldValue = $session[$field];
         }
 
         if ($status == "success") {
             $fieldValue["success"]  = $fieldValue["success"] + 1;
-        } else if ($status == "error") {
+        } elseif ($status == "error") {
             $fieldValue["error"] = $fieldValue["error"] + 1;
         }
 
@@ -75,16 +75,16 @@ class LogHelper
     }
 
     /** Method to write log file from session
-     * 
+     *
      * @since 1.0
      */
     public static function writeLogFileOfSession()
     {
-        $session = Factory::getApplication()->getSession()->get('migratetojoomla.log', []);
+        $session    = Factory::getApplication()->getSession()->get('migratetojoomla.log', []);
         $logsession = ['success' => [], 'error' => []];
         self::writeLog("Migration Report........", "success");
         foreach ($session as $field => $value) {
-            $statementsuccess = ucwords($field) . "s " . Text::_('COM_MIGRATETOJOOMLA_IMPORT_SUCCESSFULLY') . " = " . $value["success"];
+            $statementsuccess   = ucwords($field) . "s " . Text::_('COM_MIGRATETOJOOMLA_IMPORT_SUCCESSFULLY') . " = " . $value["success"];
             $statementunsuccess = ucwords($field) . "s " . Text::_('COM_MIGRATETOJOOMLA_IMPORT_UNSUCCESSFULLY') . " = " . $value["error"];
             self::writeLog($statementsuccess, "success");
             self::writeLog($statementunsuccess, "error");
@@ -96,7 +96,7 @@ class LogHelper
     }
 
     /** Method to check log file exist or not and create if not exist
-     * 
+     *
      * @since 1.0
      */
     public static function checkLogFile()
@@ -104,9 +104,9 @@ class LogHelper
 
         $selectedframework = Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'];
 
-        $logfilename = $selectedframework . '-to-Joomla.log';
+        $logfilename   = $selectedframework . '-to-Joomla.log';
         $logfolderpath = JPATH_COMPONENT_ADMINISTRATOR . '/logs';
-        $logfilepath =  $logfolderpath . $logfilename;
+        $logfilepath   =  $logfolderpath . $logfilename;
         if (!file_exists($logfolderpath)) {
             if (!mkdir($logfolderpath, 0777, true)) {
                 $app   = Factory::getApplication();

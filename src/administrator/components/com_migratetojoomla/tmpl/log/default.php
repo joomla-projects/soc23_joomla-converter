@@ -13,7 +13,6 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 
-
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
 /** @var \Joomla\Component\MigrateToJoomla\Administrator\View\Log\HtmlView $this */
@@ -42,7 +41,7 @@ $data = Factory::getApplication()->getSession()->get('migratetojoomla.logwrite',
         </div>
         <?php
         foreach ($data['success'] as $item) :
-        ?>
+            ?>
             <ul class="list-group">
                 <li class="list-group-item bg-success text-white m-1"><?php echo $item ?></li>
             </ul>
@@ -50,7 +49,7 @@ $data = Factory::getApplication()->getSession()->get('migratetojoomla.logwrite',
         <hr />
         <?php
         foreach ($data['error'] as $item) :
-        ?>
+            ?>
             <ul class="list-group">
                 <?php if (strpos($item, '0') == false) : ?>
                     <li class="list-group-item bg-danger text-white m-1"><?php echo $item ?></li>

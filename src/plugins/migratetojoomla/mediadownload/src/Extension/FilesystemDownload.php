@@ -21,11 +21,11 @@ class FilesystemDownload
 {
     /**
      * Method to check Enter base url connection
-     * 
+     *
      * @param string Base url of live website
      * @param boolean test by user of not
      * @return boolean True on success
-     * 
+     *
      * @since 1.0
      */
     public static function testConnection($path = '')

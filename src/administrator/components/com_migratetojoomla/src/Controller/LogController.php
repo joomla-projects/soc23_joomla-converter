@@ -25,7 +25,6 @@ use Joomla\CMS\MVC\Controller\FormController;
  */
 class LogController extends FormController
 {
-
     /**
      * Download the log file as a text file
      *
@@ -55,12 +54,12 @@ class LogController extends FormController
 
     /**
      * Method to copy lines of a file
-     * 
+     *
      * @since 1.0
      */
     public function echoRawLog()
     {
-        $logfolder = JPATH_ADMINISTRATOR . '\components\com_migratetojoomla\logs\\';
+        $logfolder   = JPATH_ADMINISTRATOR . '\components\com_migratetojoomla\logs\\';
         $logfileName = @trim((Factory::getApplication()->getUserState('com_migratetojoomla.migrate', [])['framework'] . '')) . '-to-Joomla.log';
 
         $logFile = $logfolder . $logfileName;

@@ -25,17 +25,16 @@ use Joomla\CMS\Router\Route;
  */
 class ParameterController extends FormController
 {
-
     /**
      * Method to save form data
-     * 
+     *
      * @since 1.0
      */
     public function storeFormAndNext()
     {
         $this->checkToken();
         $app   = Factory::getApplication();
-        $data  = $this->input->post->get('jform', array(), 'array');
+        $data  = $this->input->post->get('jform', [], 'array');
 
         $app->setUserState('com_migratetojoomla.parameter', $data);
 
@@ -44,14 +43,14 @@ class ParameterController extends FormController
 
     /**
      * Method to save form data
-     * 
+     *
      * @since 1.0
      */
     public function storeFormAndPrevious()
     {
         $this->checkToken();
         $app   = Factory::getApplication();
-        $data  = $this->input->post->get('jform', array(), 'array');
+        $data  = $this->input->post->get('jform', [], 'array');
 
         $session = Factory::getSession();
         $session->set('parameterformdata', $data);
