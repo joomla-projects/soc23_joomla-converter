@@ -12,7 +12,7 @@ steps:
       - composer install --no-progress
 
   - name: phpcs
-    image: joomlaprojects/docker-images:php8.1
+    image: joomlaprojects/docker-images:php8.2
     depends_on: [ composer ]
     commands:
       - echo $(date)
@@ -21,7 +21,7 @@ steps:
       - echo $(date)
 
   - name: phpstan
-    image: joomlaprojects/docker-images:php8.1
+    image: joomlaprojects/docker-images:php8.2
     depends_on: [ composer ]
     failure: ignore
     commands:
@@ -34,6 +34,6 @@ volumes:
 
 ---
 kind: signature
-hmac: 782109c1e1ee68b7fe718155783ea23e35419eaf1dd4a6bce8e1edfd5d32b914
+hmac: 6decb24f46df9cb7806eef529051858136e9c884bbed4303e8528bc4ea0cd8d5
 
 ...
