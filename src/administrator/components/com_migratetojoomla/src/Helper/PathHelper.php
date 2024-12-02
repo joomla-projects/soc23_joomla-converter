@@ -20,7 +20,7 @@ class PathHelper
      * Method to append a trailing slash.
      *
      * @param string file or directory path
-     * @return string file or dirctory path
+     * @return string file or directory path
      *
      * @since 1.0
      */
@@ -33,7 +33,7 @@ class PathHelper
      * Method to remove trailing forward slashes and backslashes if they exist.
      *
      * @param string file or directory path
-     * @return string file or dirctory path
+     * @return string file or directory path
      *
      * @since 1.0
      */
