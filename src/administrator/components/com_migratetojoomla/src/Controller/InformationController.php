@@ -11,7 +11,6 @@
 namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
 use Joomla\CMS\Event\AbstractEvent;
-use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\Plugin\PluginHelper;
@@ -66,10 +65,9 @@ class InformationController extends FormController
     public function storeFormAndPrevious()
     {
         $this->checkToken();
-        $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', [], 'array');
 
-        $app->setUserState('com_migratetojoomla.information', $data);
+        $this->app->setUserState('com_migratetojoomla.information', $data);
 
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=migrate', false));
     }
@@ -82,12 +80,11 @@ class InformationController extends FormController
     public function storeFormAndNext()
     {
         $this->checkToken();
-        $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', [], 'array');
 
         $this->checkMediaConnection(0);
         $this->checkDatabaseConnection(0);
-        $app->setUserState('com_migratetojoomla.information', $data);
+        $this->app->setUserState('com_migratetojoomla.information', $data);
 
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=parameter', false));
     }
@@ -101,12 +98,10 @@ class InformationController extends FormController
     {
         $this->checkToken();
 
-        $app   = Factory::getApplication();
-
         $data  = $this->input->post->get('jform', [], 'array');
 
         // Store data in session
-        $app->setUserState('com_migratetojoomla.information', $data);
+        $this->app->setUserState('com_migratetojoomla.information', $data);
 
         PluginHelper::importPlugin('migratetojoomla', 'mediadownload');
 
@@ -117,9 +112,9 @@ class InformationController extends FormController
             ]
         );
 
-        Factory::getApplication()->triggerEvent('migratetojoomla_testmediaconnection', $event);
+        $this->app->triggerEvent('migratetojoomla_testmediaconnection', $event);
 
-        $app->setUserState('com_migratetojoomla.information', $data);
+        $this->app->setUserState('com_migratetojoomla.information', $data);
 
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
@@ -133,20 +128,19 @@ class InformationController extends FormController
     {
         $this->checkToken();
 
-        $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', [], 'array');
 
-        $session = Factory::getSession();
+        $session = $this->app->getSession();
 
         if (self::setdatabase($this, $data)) {
-            $msgshow && $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY'), 'success');
+            $msgshow && $this->app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_SUCCESSFULLY'), 'success');
             $session->set('databaseconnectionresult', true);
         } else {
-            $msgshow && $app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
+            $msgshow && $this->app->enqueueMessage(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
             $session->set('databaseconnectionresult', false);
         }
 
-        $app->setUserState('com_migratetojoomla.information', $data);
+        $this->app->setUserState('com_migratetojoomla.information', $data);
 
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }

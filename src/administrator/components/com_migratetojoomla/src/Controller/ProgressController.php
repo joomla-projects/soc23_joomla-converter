@@ -43,8 +43,8 @@ class ProgressController extends BaseController
             echo Text::_('JINVALID_TOKEN_NOTICE');
             $this->app->close();
         }
-        $app   = Factory::getApplication();
-        $input = $app->input;
+
+        $input = $this->appinput;
         $field = $input->getArray(['name' => ''])['name'];
         $key   = $input->getArray(['key' => ''])['key'];
 

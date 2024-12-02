@@ -33,10 +33,9 @@ class ParameterController extends FormController
     public function storeFormAndNext()
     {
         $this->checkToken();
-        $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', [], 'array');
 
-        $app->setUserState('com_migratetojoomla.parameter', $data);
+        $this->app->setUserState('com_migratetojoomla.parameter', $data);
 
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=check', false));
     }
@@ -49,13 +48,12 @@ class ParameterController extends FormController
     public function storeFormAndPrevious()
     {
         $this->checkToken();
-        $app   = Factory::getApplication();
         $data  = $this->input->post->get('jform', [], 'array');
 
         $session = Factory::getSession();
         $session->set('parameterformdata', $data);
 
-        $app->setUserState('com_migratetojoomla.parameter', $data);
+        $this->appsetUserState('com_migratetojoomla.parameter', $data);
 
         $this->setRedirect(Route::_('index.php?option=com_migratetojoomla&view=information', false));
     }
