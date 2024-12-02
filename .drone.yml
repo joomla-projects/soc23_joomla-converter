@@ -25,6 +25,11 @@ steps:
     depends_on: [ composer ]
     failure: ignore
     commands:
+      - mkdir cms
+      - cd cms
+      - wget https://joomla.org/latest -O latest.zip
+      - unzip latest.zip
+      - cd ..
       - ./vendor/bin/phpstan
 
 volumes:
@@ -34,6 +39,6 @@ volumes:
 
 ---
 kind: signature
-hmac: 6decb24f46df9cb7806eef529051858136e9c884bbed4303e8528bc4ea0cd8d5
+hmac: 420931061b479146f1bbd85573d6ad47bb284624b2ace628e129564205eef743
 
 ...
