@@ -18,7 +18,7 @@
         <file type="plugin" group="migratetojoomla" id="migratetojoomla">plg_migratetojoomla_wordpress.zip</file>
     </files>
     <languages folder="languages">
-        <language tag="en-GB">administrator/language/en-GB/pkg_migratetojoomla.ini</language>
-        <language tag="en-GB">administrator/language/en-GB/pkg_migratetojoomla.sys.ini</language>
+        <language tag="en-GB">language/en-GB/pkg_migratetojoomla.ini</language>
+        <language tag="en-GB">language/en-GB/pkg_migratetojoomla.sys.ini</language>
     </languages>
 </extension>
