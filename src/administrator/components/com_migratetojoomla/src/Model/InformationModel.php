@@ -11,7 +11,9 @@
 namespace Joomla\Component\MigrateToJoomla\Administrator\Model;
 
 use Joomla\CMS\Factory;
+use Joomla\CMS\Form\Form;
 use Joomla\CMS\MVC\Model\AdminModel;
+use Joomla\CMS\Plugin\PluginHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -42,6 +44,7 @@ class InformationModel extends AdminModel
      */
     public function getForm($data = [], $loadData = true)
     {
+        PluginHelper::importPlugin('migratetojoomla');
 
         // Get the form.
         $form = $this->loadForm('com_migratetojoomla.information', 'information', ['control' => 'jform', 'load_data' => $loadData]);
@@ -68,5 +71,11 @@ class InformationModel extends AdminModel
         $this->preprocessData('com_migratetojoomla.information', $data);
 
         return $data;
+    }
+
+    protected function preprocessForm(Form $form, $data, $group = 'content')
+    {
+        $form->setValue('type','', Factory::getApplication()->getInput()->get('type'));
+        parent::preprocessForm($form, $data);
     }
 }

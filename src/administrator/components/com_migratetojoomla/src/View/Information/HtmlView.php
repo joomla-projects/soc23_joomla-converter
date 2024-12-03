@@ -7,6 +7,7 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\View\Information;
 // phpcs:enable PSR1.Files.SideEffects
 
 use Joomla\CMS\Factory;
+use Joomla\CMS\Form\Form;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\Toolbar;
@@ -29,7 +30,7 @@ class HtmlView extends BaseHtmlView
     /**
      * The Form object
      *
-     * @var  \Joomla\CMS\Form\Form
+     * @var  Form
      */
     protected $form;
 
@@ -43,15 +44,10 @@ class HtmlView extends BaseHtmlView
      */
     public function display($tpl = null)
     {
-        // Get Form
-        // $this->form  = $this->get('Form');
         /** @var InformationModel $model */
         $model       = $this->getModel();
         $this->form  = $model->getForm();
 
-        if (!$this->form) {
-            Factory::getApplication()->enqueueMessage('This is a warning message', 'warning');
-        }
         // Set ToolBar title
         ToolbarHelper::title(Text::_('COM_MIGRATETOJOOMLA'), 'Migrate To Joomla');
 

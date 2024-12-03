@@ -10,12 +10,14 @@
 
 namespace Joomla\Plugin\MigrateToJoomla\Wordpress\Extension;
 
+use Joomla\CMS\Event\Model\PrepareFormEvent;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\Helper\TagsHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Table\Table;
+use Joomla\Component\MigrateToJoomla\Administrator\Event\MigrationtypeEvent;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Event\EventInterface;
@@ -41,6 +43,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
     public $db;
 
+    protected $autoloadLanguage = true;
+
     /**
      * Returns an array of events this subscriber will listen to.
      *
@@ -51,7 +55,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            'onContentPrepareFormmigrate'        => 'onContentPrepareForm',
+            'onContentPrepareForm'               => 'onContentPrepareForm',
             'migratetojoomla_storemaxprimarykey' => 'storeMaxPrimaryKey',
             'migratetojoomla_storeprimarykey'    => 'storePrimaryKey',
             'migratetojoomla_createdisplaydata'  => 'createDisplayData',
@@ -61,7 +65,18 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             'migratetojoomla_menu'               => 'importMenu',
             'migratetojoomla_menuitem'           => 'importMenuItem',
             'migratetojoomla_postsandpage'       => 'importPostsAndPage',
+            'onMigrateToJoomlaTypes'             => 'onMigrateToJoomlaTypes',
         ];
+    }
+
+    public function onMigrateToJoomlaTypes(MigrationtypeEvent $event)
+    {
+        $obj = new \stdClass();
+        $obj->name  = 'wordpress';
+        $obj->title = 'PLG_MIGRATETOJOOMLA_WORDPRESS_TYPE_WORDPRESS_TITLE';
+        $obj->desc  = 'PLG_MIGRATETOJOOMLA_WORDPRESS_TYPE_WORDPRESS_DESC';
+
+        $event->addResult($obj);
     }
 
     /**
@@ -209,39 +224,24 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      *
      * @since   1.0
      */
-    public function onContentPrepareForm(EventInterface $event)
+    public function onContentPrepareForm(PrepareFormEvent $event)
     {
+        /** @var Form $form */
         $form     = $event->getArgument('form');
-        $formName = $event->getArgument('formname');
 
-        if ($this->_name !== $event->getArgument('framework')) {
-            return true;
+        // Only react to com_migratetojoomla
+        if ($form->getName() != 'com_migratetojoomla.information') {
+            return;
         }
 
-        $allowedForms = [
-            'com_migratetojoomla.parameter',
-        ];
-
-        if (!\in_array($formName, $allowedForms, true)) {
-            return true;
+        // Only react to the form when we are the selected type
+        if ($form->getValue('type') != 'wordpress') {
+            return;
         }
 
         Form::addFormPath(JPATH_PLUGINS . '/' . $this->_type . '/' . $this->_name . '/forms');
 
         $form->loadFile('wordpress', false);
-
-        $data = $this->getApplication()->getUserState('com_migratetojoomla.parameter', []);
-
-        if (\array_key_exists('frameworkparams', $data)) {
-            // form data of plugin form
-            $dataextend = $data['frameworkparams'];
-
-            foreach ($dataextend as $field => $value) {
-                $form->setValue($field, 'frameworkparams', $value);
-            }
-        }
-
-        return true;
     }
 
     /**

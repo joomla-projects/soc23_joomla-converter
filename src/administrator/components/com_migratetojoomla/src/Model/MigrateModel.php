@@ -12,6 +12,8 @@ namespace Joomla\Component\MigrateToJoomla\Administrator\Model;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\AdminModel;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Event\MigrationtypeEvent;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -24,6 +26,19 @@ use Joomla\CMS\MVC\Model\AdminModel;
  */
 class MigrateModel extends AdminModel
 {
+    public function getMigrationTypes()
+    {
+        $app = Factory::getApplication();
+
+        // Process the content plugins.
+        $dispatcher = $app->getDispatcher();
+        PluginHelper::importPlugin('migratetojoomla', null, true, $dispatcher);
+        $event = new MigrationtypeEvent('onMigrateToJoomlaTypes');
+        $list = $dispatcher->dispatch('onMigrateToJoomlaTypes', $event)->getArgument('result', []);
+
+        return $list;
+    }
+
     /**
      * @var    string  The type alias for this content type.
      * @since  1.0

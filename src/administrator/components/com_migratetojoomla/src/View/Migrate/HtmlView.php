@@ -27,11 +27,11 @@ use Joomla\Component\MigrateToJoomla\Administrator\Model\MigrateModel;
 class HtmlView extends BaseHtmlView
 {
     /**
-     * The Form object
+     * The list of available migrations
      *
-     * @var  \Joomla\CMS\Form\Form
+     * @var  \stdClass[]
      */
-    protected $form;
+    protected $types;
 
     /**
      * Display the Migrate "Migrate To Joomla" view
@@ -45,31 +45,11 @@ class HtmlView extends BaseHtmlView
     {
         /** @var MigrateModel $model */
         $model       = $this->getModel();
-        $this->form  = $model->getForm();
+        $this->types = $model->getMigrationTypes();
 
-        if (!$this->form) {
-            Factory::getApplication()->enqueueMessage('This is a warning message', 'warning');
-        }
         // Set ToolBar title
         ToolbarHelper::title(Text::_('COM_MIGRATETOJOOMLA'), 'Migrate To Joomla');
 
-        $this->addToolbar();
         parent::display($tpl);
-    }
-
-    /**
-     * Setup the Toolbar
-     *
-     * @return  void
-     *
-     * @since   1.6
-     */
-    protected function addToolbar(): void
-    {
-        $toolbar = Toolbar::getInstance();
-        $toolbar->customButton('next')
-            ->html('<joomla-toolbar-button><button onclick="Joomla.submitbutton(\'migrate.storeFormAndNext\')" '
-                . 'class="btn btn-primary"><span class="icon-next" aria-hidden="true"></span>'
-                . Text::_('COM_MIGRATETOJOOMLA_NEXT') . '</button></joomla-toolbar-button>');
     }
 }

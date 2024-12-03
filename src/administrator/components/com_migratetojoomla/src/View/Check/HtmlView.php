@@ -56,7 +56,7 @@ class HtmlView extends BaseHtmlView
         $session = Factory::getSession();
 
         $this->ismediaconnection    = $session->get('mediaconnectionresult');
-        $this->isdatabaseconnection = $session->get('databaseconnectionresult');
+        $this->isdatabaseconnection = true;//$session->get('databaseconnectionresult');
 
         $this->addToolbar();
         $this->onBeforeDisplay();
@@ -75,7 +75,7 @@ class HtmlView extends BaseHtmlView
         $session = Factory::getSession();
 
         $this->ismediaconnection    = $session->get('mediaconnectionresult');
-        $this->isdatabaseconnection = $session->get('databaseconnectionresult');
+        $this->isdatabaseconnection = true;//$session->get('databaseconnectionresult');
     }
     /**
      * Setup the Toolbar
