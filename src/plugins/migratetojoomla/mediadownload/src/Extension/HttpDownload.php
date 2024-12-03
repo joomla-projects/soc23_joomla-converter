@@ -41,9 +41,8 @@ class HttpDownload
     /**
      * Method to check Enter http url connection
      *
-     * @param string Http url of live website
-     * @param boolean test by user of not
-     * @return boolean True on success
+     * @param   string  $string  Http url of live website
+     * @return  boolean True on success
      *
      * @since 1.0
      */
@@ -74,8 +73,8 @@ class HttpDownload
     /**
      * Method to list files in a directory
      *
-     * @param string Directory
-     * @return array List of files
+     * @param   string  $url  Directory
+     * @return  array List of files
      *
      * @since  1.0
      */
@@ -108,8 +107,8 @@ class HttpDownload
 
     /** Method to check given path is directory
      *
-     * @param string $path Path
-     * @return boolean
+     * @param   string  $path  Path
+     * @return  boolean
      *
      * @since  1.0
      */
@@ -126,7 +125,8 @@ class HttpDownload
     /**
      *  Method to get content of File with Http
      *
-     * @param string Source
+     * @param string $source Source
+     * @param string $destination Destination
      * @return string File content
      *
      * @since  1.0
@@ -156,9 +156,9 @@ class HttpDownload
     /**
      *  Method to get list of directory and files in a http url
      *
-     * @param string a directory url
+     * @param   string  $url  a directory url
      *
-     * @return
+     * @return  array
      * Empty array if directory listing is disable
      * False if given url is file
      * Directory and Files in given directory url
