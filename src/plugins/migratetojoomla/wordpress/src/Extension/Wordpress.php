@@ -154,7 +154,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         try {
             $db = DatabaseDriver::getInstance($options);
             $db->getVersion();
-            $instance->db = $db;
+            $instance->db   = $db;
             $instance->wpDB = $db;
             return true;
         } catch (\RuntimeException $th) {
@@ -340,7 +340,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $this->wpDB->setQuery($query);
             $grouprow = $this->wpDB->loadResult();
 
-            $user               = new User;
+            $user               = new User();
             $user->name         = $wpUser->display_name;
             $user->username     = $wpUser->user_login;
             $user->email        = $wpUser->user_email;
