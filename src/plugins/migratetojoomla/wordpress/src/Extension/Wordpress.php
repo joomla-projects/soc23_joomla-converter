@@ -24,6 +24,7 @@ use Joomla\Database\DatabaseInterface;
 use Joomla\Event\DispatcherInterface;
 use Joomla\Event\EventInterface;
 use Joomla\Event\SubscriberInterface;
+use Joomla\Registry\Registry;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -193,8 +194,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
         $tablesmap = [
             'user'     => $db->getQuery(true)->select($db->quoteName("ID"))->from($db->quoteName($tableusers)),
-            'tag'      => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy))->where($db->quoteName('taxonomy') . '=' . $db->q('post_tag')),
-            "category" => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy))->where($db->quoteName('taxonomy') . '=' . $db->q('category')),
+            'tag'      => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy))->where($db->quoteName('taxonomy') . '=' . $db->quote('post_tag')),
+            "category" => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy))->where($db->quoteName('taxonomy') . '=' . $db->quote('category')),
             "menu"     => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy)),
             "menuitem" => $db->getQuery(true)
                 ->select('DISTINCT ID')
@@ -203,7 +204,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 ->join('LEFT', $db->quoteName($tabletermrelationship, 'c'), $db->quoteName('a.ID') . '=' . $db->quoteName('c.object_id'))
                 ->join('LEFT', $db->quoteName($tabletermtaxonomy, 'd'), $db->quoteName('c.term_taxonomy_id') . '=' . $db->quoteName('d.term_taxonomy_id'))
                 ->join('LEFT', $db->quoteName($tableterms, 'e'), $db->quoteName('d.term_id') . '=' . $db->quoteName('e.term_id'))
-                ->where($db->quoteName('a.post_type') . '=' . $db->q('nav_menu_item') . 'AND' . $db->quoteName('b.meta_value') . '=' . $db->q('category') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('post_tag') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('page') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('custom') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('post')),
+                ->where($db->quoteName('a.post_type') . '=' . $db->quote('nav_menu_item') . 'AND' . $db->quoteName('b.meta_value') . '=' . $db->quote('category') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->quote('post_tag') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->quote('page') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->quote('custom') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->quote('post')),
             "postsandpage" => $db->getQuery(true)->select('ID')->from($db->quoteName($tableposts, 'a'))->where('a.post_status !="trash" AND a.post_status!="inherit" AND a.post_status!="auto-draft"
             AND (a.post_type = "post" OR a.post_type ="page")'),
         ];
@@ -302,6 +303,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      *
      * @param   EventInterface    $event
      *
+     * @return  void
+     *
      * @since 1.0
      */
     public function importUser(EventInterface $event)
@@ -336,7 +339,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 ->select('meta_value')
                 ->from($this->wpDB->quoteName($tableUsersMeta, 'a'))
                 ->where($this->wpDB->quoteName('a.user_id') . '=' . $key, 'AND')
-                ->where($this->wpDB->quoteName('a.meta_key') . '=' . $this->wpDB->q('wp_capabilities'));
+                ->where($this->wpDB->quoteName('a.meta_key') . '=' . $this->wpDB->quote('wp_capabilities'));
             $this->wpDB->setQuery($query);
             $grouprow = $this->wpDB->loadResult();
 
@@ -717,7 +720,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 ->select('meta_value')
                 ->from($db->quoteName($tablepostmeta, 'a'))
                 ->where($db->quoteName('a.post_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('a.meta_key') . '=' . $db->q('_menu_item_object_id'));
+                ->where($db->quoteName('a.meta_key') . '=' . $db->quote('_menu_item_object_id'));
             $db->setQuery($query);
             $result = $db->loadAssocList();
 
@@ -728,7 +731,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 ->select($db->quoteName('meta_value'))
                 ->from($db->quoteName($tablepostmeta, 'a'))
                 ->where($db->quoteName('a.post_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('a.meta_key') . '=' . $db->q('_menu_item_object'));
+                ->where($db->quoteName('a.meta_key') . '=' . $db->quote('_menu_item_object'));
             $db->setQuery($query);
             $resultload   = $db->loadAssocList();
             $taxonomytype = $resultload[0]['meta_value'];
@@ -749,7 +752,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $query = $db->getQuery(true)
                     ->select($db->quoteName('post_title'))
                     ->from($db->quoteName($tableposts, 'a'))
-                    ->where($db->quoteName('a.ID') . '=' . $db->q($taxonomyid));
+                    ->where($db->quoteName('a.ID') . '=' . $db->quote($taxonomyid));
                 $db->setQuery($query);
                 $taxonomyinfo  = $db->loadAssocList();
                 $menuitemtitle = (empty($row['post_title'])) ? $taxonomyinfo['post_title'] : $row['post_title'];
@@ -774,7 +777,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                         ->select($db->quoteName('meta_value'))
                         ->from($db->quoteName($tablepostmeta, 'a'))
                         ->where($db->quoteName('a.post_id') . '=' . $key, 'AND')
-                        ->where($db->quoteName('a.meta_key') . '=' . $db->q('_menu_item_url'));
+                        ->where($db->quoteName('a.meta_key') . '=' . $db->quote('_menu_item_url'));
                     $db->setQuery($query);
                     $menuitemlink = ($db->loadAssocList())[0]['meta_value'];
                     break;
@@ -891,7 +894,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 ->join('LEFT', $db->quoteName($tabletermtaxonomy, 'b'), $db->quoteName('a.term_taxonomy_id') . '=' . $db->quoteName('b.term_taxonomy_id'))
                 ->join('LEFT', $db->quoteName($tableterms, 'c'), $db->quoteName('b.term_id') . '=' . $db->quoteName('c.term_id'))
                 ->where($db->quoteName('a.object_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('b.taxonomy') . '=' . $db->q('category'));
+                ->where($db->quoteName('b.taxonomy') . '=' . $db->quote('category'));
             $db->setQuery($query);
             $allcategories =  $db->loadAssocList();
 
@@ -902,7 +905,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 ->join('LEFT', $db->quoteName($tabletermtaxonomy, 'b'), $db->quoteName('a.term_taxonomy_id') . '=' . $db->quoteName('b.term_taxonomy_id'))
                 ->join('LEFT', $db->quoteName($tableterms, 'c'), $db->quoteName('b.term_id') . '=' . $db->quoteName('c.term_id'))
                 ->where($db->quoteName('a.object_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('b.taxonomy') . '=' . $db->q('post_tag'));
+                ->where($db->quoteName('b.taxonomy') . '=' . $db->quote('post_tag'));
             $db->setQuery($query);
             $alltags =  $db->loadAssocList();
 
@@ -911,7 +914,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 ->select('meta_value')
                 ->from($db->quoteName($tablepostmeta, 'a'))
                 ->where($db->quoteName('a.post_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('a.meta_key') . '=' . $db->q('_thumbnail_id'));
+                ->where($db->quoteName('a.meta_key') . '=' . $db->quote('_thumbnail_id'));
             $db->setQuery($query);
             $tempresult =  $db->loadAssocList();
 
