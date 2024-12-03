@@ -14,10 +14,14 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\Helper\TagsHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Log\Log;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Table\Table;
+use Joomla\CMS\User\User;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseInterface;
+use Joomla\Event\DispatcherInterface;
 use Joomla\Event\EventInterface;
 use Joomla\Event\SubscriberInterface;
 
@@ -42,6 +46,16 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     public $db;
 
     /**
+     * @var  DatabaseInterface  DB object connected to the WP DB
+     *
+     * @since __DEPLOY_VERSION__
+     */
+    public $wpDB;
+
+
+    public $log;
+
+    /**
      * Returns an array of events this subscriber will listen to.
      *
      * @return  array
@@ -62,6 +76,17 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             'migratetojoomla_menuitem'           => 'importMenuItem',
             'migratetojoomla_postsandpage'       => 'importPostsAndPage',
         ];
+    }
+
+    public function __construct(DispatcherInterface $dispatcher, array $config = [])
+    {
+        parent::__construct($dispatcher, $config);
+
+        self::setdatabase($this, $this->getApplication()->getUserState('com_migratetojoomla.information', []));
+
+        $options['format']    = '{DATE}\t{TIME}\t{LEVEL}\t{CODE}\t{MESSAGE}';
+        $options['text_file'] = 'wordpress-to-joomla.php';
+        Log::addLogger($options);
     }
 
     /**
@@ -130,6 +155,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $db = DatabaseDriver::getInstance($options);
             $db->getVersion();
             $instance->db = $db;
+            $instance->wpDB = $db;
             return true;
         } catch (\RuntimeException $th) {
             LogHelper::writeLog(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
@@ -280,57 +306,48 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function importUser(EventInterface $event)
     {
-        $app      = $this->getApplication();
-        $jdb      = Factory::getDbo();
-        $key      = $event->getArgument('key');
-        $field    = $event->getArgument('field');
-        $update[] = [];
-        $maxKey   = $app->getSession()->get('migratetojoomla.maxkey', []);
-        try {
-            if (!\is_resource($this->db)) {
-                self::setdatabase($this, $app->getUserState('com_migratetojoomla.information', []));
-            }
-            $data = $app->getUserState('com_migratetojoomla.information', []);
-            $db   = $this->db;
+        $app    = $this->getApplication();
+        $map    = $app->getUserState('com_migratetojoomla.wordpress.user_map', []);
+        $data   = $app->getUserState('com_migratetojoomla.information', []);
+        $key    = $event->getArgument('key');
+        $field  = $event->getArgument('field');
+        $update = [];
 
+        try {
             // Specify the table name
             $tableUsers     = rtrim($data['dbtableprefix'], '_') . '_users';
             $tableUsersMeta = rtrim($data['dbtableprefix'], '_') . '_usermeta';
-            $config['dbo']  = $db;
-            $tablePrefix    = $app->get('dbprefix');
 
             // load data from framework table
-            $query = $db->getQuery(true)
+            $query = $this->wpDB->getQuery(true)
                 ->select('*')
-                ->from($db->quoteName($tableUsers))
-                ->where($db->quoteName('ID') . '=' . $key);
+                ->from($this->wpDB->quoteName($tableUsers))
+                ->where($this->wpDB->quoteName('ID') . '=' . $key);
 
-            $db->setQuery($query);
-            $results = $db->loadAssocList();
-            $row     = $results[0];
+            $this->wpDB->setQuery($query);
+            $wpUser = $this->wpDB->loadObject();
 
-            $user               = new \stdClass();
-            $user->id           = $row['ID'] + $maxKey['users'];
-            $user->name         = $row['display_name'];
-            $user->username     = $row['user_login'];
-            $user->email        = $row['user_email'];
-            $user->registerDate = $row['user_registered'];
-            $user->activation   = $row['user_activation_key'];
-            $user->requireReset = 1;
-            $user->params       = '{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}';
-
-            $jdb->insertObject($tablePrefix . 'users', $user);
+            if (!$wpUser) {
+                throw new \Exception('User with ID ' . $key . ' not found');
+            }
 
             // load user group
-            $query = $db->getQuery(true)
+            $query = $this->wpDB->getQuery(true)
                 ->select('meta_value')
-                ->from($db->quoteName($tableUsersMeta, 'a'))
-                ->where($db->quoteName('a.user_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('a.meta_key') . '=' . $db->q('wp_capabilities'));
-            $db->setQuery($query);
-            $result = $db->loadAssocList();
+                ->from($this->wpDB->quoteName($tableUsersMeta, 'a'))
+                ->where($this->wpDB->quoteName('a.user_id') . '=' . $key, 'AND')
+                ->where($this->wpDB->quoteName('a.meta_key') . '=' . $this->wpDB->q('wp_capabilities'));
+            $this->wpDB->setQuery($query);
+            $grouprow = $this->wpDB->loadResult();
 
-            $grouprow = $result[0]['meta_value'];
+            $user               = new User;
+            $user->name         = $wpUser->display_name;
+            $user->username     = $wpUser->user_login;
+            $user->email        = $wpUser->user_email;
+            $user->registerDate = $wpUser->user_registered;
+            $user->activation   = $wpUser->user_activation_key;
+            $user->requireReset = 1;
+            $user->params       = new Registry('{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}');
 
             $groupId = 1;
 
@@ -340,29 +357,23 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $groupId = 3;
             } elseif (preg_match("/editor/", $grouprow)) {
                 $groupId = 4;
-            } else {
-                $groupId = 1; // default as public
             }
-            LogHelper::writeLog("GroupID:   " . $groupId, "success");
 
-            // inserting in user_usergroup_map
-            $usergroup           = new \stdClass();
-            $usergroup->user_id  = $row['ID'] + $maxKey['users'];
-            $usergroup->group_id = $groupId;
+            $user->groups = [$groupId];
+            $user->save();
+            $map[$wpUser->ID] = $user->id;
+            Log::add('User with WP ID ' . $key . ' (Joomla: ' . $user->id . ') and group ' . $groupId . ' successfully imported.');
 
-            $jdb->insertObject($tablePrefix . 'user_usergroup_map', $usergroup);
-
-            $contentTowrite = 'User Imported Successfully with id = ' . $key;
-            LogHelper::writeLog($contentTowrite, 'success');
             LogHelper::writeSessionLog("success", $field);
             $update[] = ['status' => "success"];
-        } catch (\RuntimeException $th) {
-            LogHelper::writeLog('User Imported Unsuccessfully with id = ' . $key, 'error');
+        } catch (\RuntimeException $e) {
+            Log::add('Error: Importing user with ID ' . $key . 'failed. ' . $e->getMessage(), Log::ERROR);
+
             LogHelper::writeSessionLog("error", $field);
             $update[] = ['status' => "error"];
-            LogHelper::writeLog($th, 'normal');
         }
         $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
+        $app->setUserState('com_migratetojoomla.wordpress.user_map', $map);
     }
 
     /**
