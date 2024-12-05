@@ -504,7 +504,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
             $patharray  = [];
             $levelarray = [];
-            // manupulate data to find parentcategory path and level
+            // manipulate data to find parentcategory path and level
 
             if ($row['parent'] != 0) {
                 // It is a child category
