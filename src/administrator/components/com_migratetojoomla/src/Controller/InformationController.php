@@ -54,7 +54,7 @@ class InformationController extends FormController
      * The prefix to use with controller messages.
      *
      * @var    string
-     * @since
+     * @since  1.0
      */
     protected $text_prefix = 'COM_MIGRATETOJOOMLA_INFORMATION';
 

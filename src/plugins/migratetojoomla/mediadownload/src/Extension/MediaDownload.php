@@ -36,7 +36,7 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
      *
      * @return  array
      *
-     * @since   4.3.0
+     * @since   1.0
      */
     public static function getSubscribedEvents(): array
     {
