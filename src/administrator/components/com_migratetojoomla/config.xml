@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
-    <fieldset name="permissions" description="JCONFIG_PERMISSIONS_DESC" label="JCONFIG_PERMISSIONS_LABEL">
-        <field name="rules" type="rules" component="com_migratetojoomla" class="inputbox" filter="rules" validate="rules" label="JCONFIG_PERMISSIONS_LABEL" section="component" />
+    <fieldset
+		name="permissions"
+		label="JCONFIG_PERMISSIONS_LABEL"
+		>
+        <field
+            name="rules"
+            type="rules"
+            label="JCONFIG_PERMISSIONS_LABEL"
+            component="com_migratetojoomla"
+            class="inputbox"
+            filter="rules"
+            validate="rules"
+            section="component"
+        />
     </fieldset>
 </config>

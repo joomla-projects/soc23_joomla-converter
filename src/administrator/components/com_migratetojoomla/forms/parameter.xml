@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <form>
-	<field name="mediamigratestatus"
-		   type="radio"
-		   label="COM_MIGRATETOJOOMLA_MEDIA_MIGRATE_STATUS_LABEL"
-		   description="COM_MIGRATETOJOOMLA_MEDIA_MIGRATE_STATUS_DESC"
-		   default="1"
-		   layout="joomla.form.field.radio.switcher"
-		   validate="options">
+	<field
+		name="mediamigratestatus"
+		type="radio"
+		label="COM_MIGRATETOJOOMLA_MEDIA_MIGRATE_STATUS_LABEL"
+		description="COM_MIGRATETOJOOMLA_MEDIA_MIGRATE_STATUS_DESC"
+		default="1"
+		layout="joomla.form.field.radio.switcher"
+		validate="options"
+		>
 		<option value="0">JNO</option>
 		<option value="1">JYES</option>
 	</field>
 	<field name="databasemigratestatus"
-		   type="radio"
-		   label="COM_MIGRATETOJOOMLA_DATABASE_MIGRATE_STATUS_LABEL"
-		   description="COM_MIGRATETOJOOMLA_DATABASE_MIGRATE_STATUS_DESC"
-		   default="1"
-		   layout="joomla.form.field.radio.switcher"
-		   validate="options">
+		type="radio"
+		label="COM_MIGRATETOJOOMLA_DATABASE_MIGRATE_STATUS_LABEL"
+		description="COM_MIGRATETOJOOMLA_DATABASE_MIGRATE_STATUS_DESC"
+		default="1"
+		layout="joomla.form.field.radio.switcher"
+		validate="options"
+		>
 		<option value="0">JNO</option>
 		<option value="1">JYES</option>
 	</field>
