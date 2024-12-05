@@ -10,12 +10,14 @@
 
 namespace Joomla\Plugin\MigrateToJoomla\Wordpress\Extension;
 
+use Joomla\CMS\Event\Model\PrepareFormEvent;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\Helper\TagsHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Table\Table;
+use Joomla\Component\MigrateToJoomla\Administrator\Event\MigrationtypeEvent;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Event\EventInterface;
@@ -41,6 +43,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
     public $db;
 
+    protected $autoloadLanguage = true;
+
     /**
      * Returns an array of events this subscriber will listen to.
      *
@@ -51,7 +55,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            'onContentPrepareFormmigrate'        => 'onContentPrepareForm',
+            'onContentPrepareForm'               => 'onContentPrepareForm',
             'migratetojoomla_storemaxprimarykey' => 'storeMaxPrimaryKey',
             'migratetojoomla_storeprimarykey'    => 'storePrimaryKey',
             'migratetojoomla_createdisplaydata'  => 'createDisplayData',
@@ -61,7 +65,18 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             'migratetojoomla_menu'               => 'importMenu',
             'migratetojoomla_menuitem'           => 'importMenuItem',
             'migratetojoomla_postsandpage'       => 'importPostsAndPage',
+            'onMigrateToJoomlaTypes'             => 'onMigrateToJoomlaTypes',
         ];
+    }
+
+    public function onMigrateToJoomlaTypes(MigrationtypeEvent $event)
+    {
+        $obj = new \stdClass();
+        $obj->name  = 'wordpress';
+        $obj->title = 'PLG_MIGRATETOJOOMLA_WORDPRESS_TYPE_WORDPRESS_TITLE';
+        $obj->desc  = 'PLG_MIGRATETOJOOMLA_WORDPRESS_TYPE_WORDPRESS_DESC';
+
+        $event->addResult($obj);
     }
 
     /**
@@ -71,7 +86,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public static function storeMaxPrimaryKey()
     {
-        Factory::getApplication()->getSession()->clear('migratetojoomla.maxkey');
+        $app = Factory::getApplication();
+        $app->getSession()->clear('migratetojoomla.maxkey');
         $tables = [
             "users",
             "tags",
@@ -81,7 +97,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             "content",
         ];
         $maxKey      = [];
-        $tablePrefix = Factory::getConfig()->get('dbprefix');
+        $tablePrefix = $app->get('dbprefix');
         $jdb         = Factory::getDbo();
         foreach ($tables as $table) {
             $tableName = $tablePrefix . $table;
@@ -98,15 +114,15 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         }
 
         // how update session value as if user want again import than max value of key must update to avoid duplicate key
-        Factory::getApplication()->getSession()->set('migratetojoomla.maxkey', $maxKey);
+        $app->getSession()->set('migratetojoomla.maxkey', $maxKey);
     }
 
     /**
      * Method to set database $db if it is not set
      *
-     * @param object $instance instance of class
-     * @param array form data
-     * @return boolean True on success
+     * @param   object  $instance  instance of class
+     * @param   array   $data      form data
+     * @return  boolean True on success
      *
      * @since 1.0
      */
@@ -144,16 +160,16 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function storePrimarykey()
     {
-
+        $app = $this->getApplication();
 
         if (!\is_resource($this->db)) {
-            self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            self::setdatabase($this, $app->getUserState('com_migratetojoomla.information', []));
         }
-        Factory::getApplication()->getSession()->clear('migratetojoomla.tablekeys');
-        $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+        $app->getSession()->clear('migratetojoomla.tablekeys');
+        $data = $app->getUserState('com_migratetojoomla.information', []);
         $db   = $this->db;
 
-        $importstring = Factory::getApplication()->getSession()->get('migratetojoomla.arrayimportstring', []);
+        $importstring = $app->getSession()->get('migratetojoomla.arrayimportstring', []);
 
         // Specify the table name
         $tablePrefix           = rtrim($data['dbtableprefix'], '_');
@@ -180,7 +196,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             "postsandpage" => $db->getQuery(true)->select('ID')->from($db->quoteName($tableposts, 'a'))->where('a.post_status !="trash" AND a.post_status!="inherit" AND a.post_status!="auto-draft"
             AND (a.post_type = "post" OR a.post_type ="page")'),
         ];
-        $globalkey   = Factory::getApplication()->getSession()->get('migratetojoomla.tablekeys', []);
+        $globalkey   = $app->getSession()->get('migratetojoomla.tablekeys', []);
         $tablePrefix = rtrim($data['dbtableprefix'], '_');
 
         foreach ($tablesmap as $table => $query) {
@@ -196,7 +212,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $globalkey[$table] = $tempkeys;
             }
         }
-        Factory::getApplication()->getSession()->set('migratetojoomla.tablekeys', $globalkey);
+        $app->getSession()->set('migratetojoomla.tablekeys', $globalkey);
     }
 
     /**
@@ -208,39 +224,24 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      *
      * @since   1.0
      */
-    public function onContentPrepareForm(EventInterface $event)
+    public function onContentPrepareForm(PrepareFormEvent $event)
     {
+        /** @var Form $form */
         $form     = $event->getArgument('form');
-        $formName = $event->getArgument('formname');
 
-        if ($this->_name !== $event->getArgument('framework')) {
-            return true;
+        // Only react to com_migratetojoomla
+        if ($form->getName() != 'com_migratetojoomla.information') {
+            return;
         }
 
-        $allowedForms = [
-            'com_migratetojoomla.parameter',
-        ];
-
-        if (!\in_array($formName, $allowedForms, true)) {
-            return true;
+        // Only react to the form when we are the selected type
+        if ($form->getValue('type') != 'wordpress') {
+            return;
         }
 
         Form::addFormPath(JPATH_PLUGINS . '/' . $this->_type . '/' . $this->_name . '/forms');
 
         $form->loadFile('wordpress', false);
-
-        $data = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
-
-        if (\array_key_exists('frameworkparams', $data)) {
-            // form data of plugin form
-            $dataextend = $data['frameworkparams'];
-
-            foreach ($dataextend as $field => $value) {
-                $form->setValue($field, 'frameworkparams', $value);
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -279,22 +280,24 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function importUser(EventInterface $event)
     {
+        $app      = $this->getApplication();
+        $jdb      = Factory::getDbo();
         $key      = $event->getArgument('key');
         $field    = $event->getArgument('field');
         $update[] = [];
-        $maxKey   = Factory::getSession()->get('migratetojoomla.maxkey', []);
+        $maxKey   = $app->getSession()->get('migratetojoomla.maxkey', []);
         try {
             if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+                self::setdatabase($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+            $data = $app->getUserState('com_migratetojoomla.information', []);
             $db   = $this->db;
 
             // Specify the table name
             $tableUsers     = rtrim($data['dbtableprefix'], '_') . '_users';
             $tableUsersMeta = rtrim($data['dbtableprefix'], '_') . '_usermeta';
             $config['dbo']  = $db;
-            $tablePrefix    = Factory::getConfig()->get('dbprefix');
+            $tablePrefix    = $app->get('dbprefix');
 
             // load data from framework table
             $query = $db->getQuery(true)
@@ -316,7 +319,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $user->requireReset = 1;
             $user->params       = '{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}';
 
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'users', $user);
+            $jdb->insertObject($tablePrefix . 'users', $user);
 
             // load user group
             $query = $db->getQuery(true)
@@ -347,7 +350,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $usergroup->user_id  = $row['ID'] + $maxKey['users'];
             $usergroup->group_id = $groupId;
 
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'user_usergroup_map', $usergroup);
+            $jdb->insertObject($tablePrefix . 'user_usergroup_map', $usergroup);
 
             $contentTowrite = 'User Imported Successfully with id = ' . $key;
             LogHelper::writeLog($contentTowrite, 'success');
@@ -359,7 +362,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $update[] = ['status' => "error"];
             LogHelper::writeLog($th, 'normal');
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
     }
 
     /**
@@ -371,20 +374,22 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function importTag(EventInterface $event)
     {
+        $app      = $this->getApplication();
+        $jdb      = Factory::getDbo();
         $key      = $event->getArgument('key');
         $field    = $event->getArgument('field');
         $update[] = [];
         // current login user
-        $user   = Factory::getApplication()->getIdentity();
+        $user   = $app->getIdentity();
         $userid = $user->id;
-        $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
+        $maxKey = $app->getSession()->get('migratetojoomla.maxkey', []);
         // datetime
         $date = (string)Factory::getDate();
         try {
             if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+                self::setdatabase($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+            $data = $app->getUserState('com_migratetojoomla.information', []);
             $db   = $this->db;
 
             // Specify the table name
@@ -392,7 +397,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $tableterms        = rtrim($data['dbtableprefix'], '_') . '_terms';
 
             $config['dbo'] = $db;
-            $tablePrefix   = Factory::getConfig()->get('dbprefix');
+            $tablePrefix   = $app->get('dbprefix');
 
             // load data from framework table
             $query = $db->getQuery(true)
@@ -437,7 +442,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $tag->publish_up       = $date;
             $tag->publish_down     = null;
 
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'tags', $tag);
+            $jdb->insertObject($tablePrefix . 'tags', $tag);
 
             $contentTowrite = 'Tag Imported Successfully with id = ' . $key;
             LogHelper::writeLog($contentTowrite, 'success');
@@ -449,7 +454,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             LogHelper::writeSessionLog("error", $field);
             $update[] = ['status' => "error"];
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
     }
 
     /**
@@ -461,20 +466,21 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function importCategory(EventInterface $event)
     {
+        $app      = $this->getApplication();
         $key      = $event->getArgument('key');
         $field    = $event->getArgument('field');
         $update[] = [];
         // current login user
-        $user   = Factory::getApplication()->getIdentity();
+        $user   = $app->getIdentity();
         $userid = $user->id;
-        $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
+        $maxKey = $app->getSession()->get('migratetojoomla.maxkey', []);
         // datetime
         $date = (string)Factory::getDate();
         try {
             if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+                self::setdatabase($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+            $data = $app->getUserState('com_migratetojoomla.information', []);
             $db   = $this->db;
 
             // Specify the table name
@@ -482,7 +488,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $tableterms        = rtrim($data['dbtableprefix'], '_') . '_terms';
 
             $config['dbo'] = $db;
-            $tablePrefix   = Factory::getConfig()->get('dbprefix');
+            $tablePrefix   = $app->get('dbprefix');
 
             // load data from framework table
             $query = $db->getQuery(true)
@@ -493,7 +499,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
             $db->setQuery($query);
             $results       = $db->loadAssocList();
-            $totalcategory = \count(@Factory::getApplication()->getSession()->get('migratetojoomla.tablekeys', [])['category']);
+            $totalcategory = \count(@$app->getSession()->get('migratetojoomla.tablekeys', [])['category']);
             $row           = $results[0];
 
             $patharray  = [];
@@ -578,7 +584,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             LogHelper::writeSessionLog("error", $field);
             $update[] = ['status' => "error"];
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
     }
 
     /**
@@ -590,20 +596,21 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function importMenu(EventInterface $event)
     {
+        $app      = $this->getApplication();
         $key      = $event->getArgument('key');
         $field    = $event->getArgument('field');
         $update[] = [];
         // current login user
-        $user   = Factory::getApplication()->getIdentity();
+        $user   = $app->getIdentity();
         $userid = $user->id;
-        $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
+        $maxKey = $app->getSession()->get('migratetojoomla.maxkey', []);
         // datetime
         $date = (string)Factory::getDate();
         try {
             if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+                self::setdatabase($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+            $data = $app->getUserState('com_migratetojoomla.information', []);
             $db   = $this->db;
 
             // Specify the table name
@@ -611,7 +618,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $tableterms        = rtrim($data['dbtableprefix'], '_') . '_terms';
 
             $config['dbo'] = $db;
-            $tablePrefix   = Factory::getConfig()->get('dbprefix');
+            $tablePrefix   = $app->get('dbprefix');
 
             // load data from framework table
             $query = $db->getQuery(true)
@@ -644,7 +651,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             LogHelper::writeSessionLog("error", $field);
             $update[] = ['status' => "error"];
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
     }
 
     /**
@@ -657,16 +664,17 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function importMenuItem(EventInterface $event)
     {
+        $app      = $this->getApplication();
         $key      = $event->getArgument('key');
         $field    = $event->getArgument('field');
         $update[] = [];
         try {
             if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+                self::setdatabase($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data   = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
+            $data   = $app->getUserState('com_migratetojoomla.information', []);
             $db     = $this->db;
-            $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
+            $maxKey = $app->getSession()->get('migratetojoomla.maxkey', []);
 
             $databaseprefix = rtrim($data['dbtableprefix'], '_');
             // Specify the table name
@@ -677,7 +685,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $tabletermrelationship = $databaseprefix . '_term_relationships';
 
             $config['dbo'] = $db;
-            $tablePrefix   = Factory::getConfig()->get('dbprefix');
+            $tablePrefix   = $app->get('dbprefix');
 
             $query = $db->getQuery(true)
                 ->select('DISTINCT ID , post_title , post_parent , menu_order , post_date , e.name')
@@ -804,7 +812,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             LogHelper::writeSessionLog("error", $field);
             $update[] = ['status' => "error"];
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
     }
 
     /**
@@ -817,25 +825,27 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function importPostsAndPage(EventInterface $event)
     {
+        $app         = $this->getApplication();
         $key         = $event->getArgument('key');
         $field       = $event->getArgument('field');
+        $joomladb    = Factory::getDbo();
         $update[]    = [];
         $articletype = "";
         try {
             if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+                self::setdatabase($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data          = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-            $dataparameter = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
+            $data          = $app->getUserState('com_migratetojoomla.information', []);
+            $dataparameter = $app->getUserState('com_migratetojoomla.parameter', []);
             // $imagemigrateway = 1;
             $imagemigrateway = @$dataparameter['postfeatureimage'];
             // datetime
-            $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
+            $maxKey = $app->getSession()->get('migratetojoomla.maxkey', []);
 
             $date = (string)Factory::getDate();
             $db   = $this->db;
             // current login user
-            $user   = Factory::getApplication()->getIdentity();
+            $user   = $app->getIdentity();
             $userid = $user->id;
 
             $databaseprefix = rtrim($data['dbtableprefix'], '_');
@@ -847,7 +857,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $tabletermrelationship = $databaseprefix . '_term_relationships';
 
             $config['dbo'] = $db;
-            $tablePrefix   = Factory::getConfig()->get('dbprefix');
+            $tablePrefix   = $app->get('dbprefix');
 
             $query = $db->getQuery(true)
                 ->select('*')
@@ -983,7 +993,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $article->language         = '*';
             $article->note             = "";
 
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'content', $article);
+            $joomladb->insertObject('#__content', $article);
             // tag map all item associate tags
             foreach ($alltags as $tag) {
                 $tagmap                  = new \stdClass();
@@ -994,14 +1004,13 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $tagmap->tag_time        = $date;
                 $tagmap->type_id         = 1;
 
-                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'contentitem_tag_map', $tagmap);
+                $joomladb->insertObject('#__contentitem_tag_map', $tagmap);
             }
 
             // more that one category convert into tags
             if (\count($allcategories) > 1) {
                 foreach ($allcategories as $category) {
                     // one category can associate with multiple item so check whether it's already in tag table before import
-                    $tagTable  = Table::getInstance('Tag', 'TagsTable');
                     $th        = new TagsHelper();
                     $tagnames  = $th->getTagNames([$category['term_id']]);
 
@@ -1011,7 +1020,6 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                     }
 
                     // one category can associate with multiple pages and post so to avoid duplicate key error checking whether it already exist or not
-                    $joomladb = Factory::getDbo();
                     $query    = $joomladb->getQuery(true)
                         ->select('id')
                         ->from($joomladb->quoteName($tablePrefix . 'tags'))
@@ -1053,7 +1061,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                         $tag->publish_down     = null;
 
 
-                        $jdb = Factory::getDbo()->insertObject($tablePrefix . 'tags', $tag);
+                        $joomladb->insertObject('#__tags', $tag);
                     }
                     $tagmap                  = new \stdClass();
                     $tagmap->type_alias      = "com_content.article";
@@ -1063,7 +1071,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                     $tagmap->tag_time        = $date;
                     $tagmap->type_id         = 1;
 
-                    $jdb = Factory::getDbo()->insertObject($tablePrefix . 'contentitem_tag_map', $tagmap);
+                    $jdb = $joomladb->insertObject('#__contentitem_tag_map', $tagmap);
                 }
             }
             // if item is page then create a menuitem pointing to that article
@@ -1097,7 +1105,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $menuitem->publish_up        = $row['post_date'];
                 $menuitem->publish_down      = null;
 
-                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'menu', $menuitem);
+                $joomladb->insertObject('#__menu', $menuitem);
             }
 
             $contentTowrite = $articletype . ' Imported Successfully with id = ' . $key;
@@ -1110,6 +1118,6 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $update[] = ['status' => "error"];
             LogHelper::writeLog($th, 'normal');
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
     }
 }

@@ -1,85 +1,194 @@
 <?xml version="1.0" encoding="utf-8"?>
 <form>
-	<fields name="frameworkparams">
-		<fieldset name="frameworkparams">
-			<field
-				name="postsandpagedata"
-				type="radio"
-				label="PLG_MIGRATETOJOOMLA_WORDPRESS_POST_AND_PAGES_DATA_LABEL"
-				default="1"
-				layout="joomla.form.field.radio.switcher"
-				validate="options"
-			>
-				<option value="0">JNO</option>
-				<option value="1">JYES</option>
-			</field>
-			<field
-				name="postfeatureimage"
-				type="list"
-				label="PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_LABEL"
-				description="PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_DESCRIPTION"
-				validate="options"
-				default="both"
-			>
-				<option value="both">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_BOTH_FULL_INTRO</option>
-				<option value="fullonly">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_FULL</option>
-				<option value="introonly">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_INTRO</option>
-			</field>
-			<field
-				name="userdata"
-				type="radio"
-				label="PLG_MIGRATETOJOOMLA_WORDPRESS_USER_DATA_LABEL"
-				default="1"
-				layout="joomla.form.field.radio.switcher"
-				validate="options"
-			>
-				<option value="0">JNO</option>
-				<option value="1">JYES</option>
-			</field>
-			<field
-				name="tagdata"
-				type="radio"
-				label="PLG_MIGRATETOJOOMLA_WORDPRESS_TAGS_DATA_LABEL"
-				default="1"
-				layout="joomla.form.field.radio.switcher"
-				validate="options"
-			>
-				<option value="0">JNO</option>
-				<option value="1">JYES</option>
-			</field>
-			<field
-				name="categorydata"
-				type="radio"
-				label="PLG_MIGRATETOJOOMLA_WORDPRESS_CATEGORY_DATA_LABEL"
-				default="1"
-				layout="joomla.form.field.radio.switcher"
-				validate="options"
-			>
-				<option value="0">JNO</option>
-				<option value="1">JYES</option>
-			</field>
-			<field
-				name="menudata"
-				type="radio"
-				label="PLG_MIGRATETOJOOMLA_WORDPRESS_MENU_DATA_LABEL"
-				default="1"
-				layout="joomla.form.field.radio.switcher"
-				validate="options"
-			>
-				<option value="0">JNO</option>
-				<option value="1">JYES</option>
-			</field>
-			<field
-				name="menuitemdata"
-				type="radio"
-				label="PLG_MIGRATETOJOOMLA_WORDPRESS_MENUITEM_DATA_LABEL"
-				default="1"
-				layout="joomla.form.field.radio.switcher"
-				validate="options"
-			>
-				<option value="0">JNO</option>
-				<option value="1">JYES</option>
-			</field>
-		</fieldset>
-	</fields>
+	<fieldset name="wordpress">
+		<field
+			name="mediaoptions"
+			type="list"
+			label="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_LABEL"
+			description="COM_MIGRATETOJOOMLA_SELECT_OPTION_FOR_MEDIA_DESC"
+			class="form-select"
+			default="fs"
+			validate="options"
+		>
+			<option value="fs">COM_MIGRATETOJOOMLA_FS</option>
+			<!-- <option value="http">COM_MIGRATETOJOOMLA_HTTP</option>
+			<option value="ftp">COM_MIGRATETOJOOMLA_FTP</option> -->
+		</field>
+		<field
+			name="livewebsiteurl"
+			type="text"
+			showon="mediaoptions:http"
+			label="COM_MIGRATETOJOOMLA_HTTP_LINK_LABEL"
+			description="COM_MIGRATETOJOOMLA_HTTP_LINK_DESC"/>
+		<field
+			name="basedir"
+			type="text"
+			showon="mediaoptions:fs"
+			label="COM_MIGRATETOJOOMLA_WEBSITE_BASE_DIRECTORY_LABEL"
+			description="COM_MIGRATETOJOOMLA_WEBSITE_BASE_DIRECTORY_DESC"/>
+		<field
+			name="ftphost"
+			type="text"
+			showon="mediaoptions:ftp"
+			label="COM_MIGRATETOJOOMLA_FTP_HOST_LABEL"
+			description="COM_MIGRATETOJOOMLA_FTP_HOST_DESC"/>
+		<field
+			name="ftpport"
+			type="int"
+			showon="mediaoptions:ftp"
+			default="21"
+			label="COM_MIGRATETOJOOMLA_FTP_PORT_LABEL"
+			description="COM_MIGRATETOJOOMLA_FTP_PORT_DESC"/>
+		<field
+			name="ftpusername"
+			type="text"
+			showon="mediaoptions:ftp"
+			label="COM_MIGRATETOJOOMLA_FTP_USERNAME_LABEL"
+			description="COM_MIGRATETOJOOMLA_FTP_USERNAME_DESC"/>
+		<field
+			name="ftppassword"
+			type="password"
+			showon="mediaoptions:ftp"
+			label="COM_MIGRATETOJOOMLA_FTP_PASSWORD_LABEL"
+			description="COM_MIGRATETOJOOMLA_FTP_PASSWORD_DESC"/>
+		<field
+			name="ftpprotocoloptions"
+			type="list"
+			label="COM_MIGRATETOJOOMLA_FTP_PROTOCOL_LABEL"
+			class="form-select"
+			default="ftp"
+			showon="mediaoptions:ftp"
+			validate="options"
+			description="COM_MIGRATETOJOOMLA_FTP_PROTOCOL_DESC"
+		>
+			<option value="ftp">COM_MIGRATETOJOOMLA_FTP</option>
+			<option value="ftps">COM_MIGRATETOJOOMLA_FTPS</option>
+			<option value="sftp">COM_MIGRATETOJOOMLA_SFTP</option>
+		</field>
+		<field
+			name="ftpbasedir"
+			type="text"
+			showon="mediaoptions:ftp"
+			label="COM_MIGRATETOJOOMLA_FTP_BASE_DIR_LABEL"
+			description="COM_MIGRATETOJOOMLA_FTP_BASE_DIR_DESC"/>
+		<field
+			name="dbhostname"
+			type="text"
+			label="COM_MIGRATETOJOOMLA_DATABASE_HOSTNAME_LABEL"
+			description="COM_MIGRATETOJOOMLA_DATABASE_HOSTNAME_DESC"/>
+		<field
+			name="dbdriver"
+			type="text"
+			default="mysqli"
+			label="COM_MIGRATETOJOOMLA_DATABASE_DRIVER_LABEL"
+			description="COM_MIGRATETOJOOMLA_DATABASE_DRIVER_DESC"/>
+		<field
+			name="dbport"
+			type="int"
+			default='3306'
+			label="COM_MIGRATETOJOOMLA_DATABASE_PORT_LABEL"
+			description="COM_MIGRATETOJOOMLA_DATABASE_PORT_DESC"/>
+		<field
+			name="dbname"
+			type="text"
+			label="COM_MIGRATETOJOOMLA_DATABASE_NAME_LABEL"
+			description="COM_MIGRATETOJOOMLA_DATABASE_NAME_DESC"/>
+		<field
+			name="dbusername"
+			type="text"
+			label="COM_MIGRATETOJOOMLA_DATABASE_USERNAME_LABEL"
+			description="COM_MIGRATETOJOOMLA_DATABASE_USERNAME_DESC"/>
+		<field
+			name="dbpassword"
+			type="text"
+			default=""
+			label="COM_MIGRATETOJOOMLA_DATABASE_PASSWORD_LABEL"
+			description="COM_MIGRATETOJOOMLA_DATABASE_PASSWORD_DESC"/>
+		<field
+			name="dbtableprefix"
+			type="text"
+			label="COM_MIGRATETOJOOMLA_DATABASE_TABLE_PREFIX_LABEL"
+			description="COM_MIGRATETOJOOMLA_DATABASE_TABLE_PREFIX_DESC"/>
+	</fieldset>
+
+	<fieldset name="frameworkparams">
+		<field
+			name="postsandpagedata"
+			type="radio"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_POST_AND_PAGES_DATA_LABEL"
+			default="1"
+			layout="joomla.form.field.radio.switcher"
+			validate="options"
+		>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="postfeatureimage"
+			type="list"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_LABEL"
+			description="PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_DESCRIPTION"
+			validate="options"
+			default="both"
+		>
+			<option value="both">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_BOTH_FULL_INTRO</option>
+			<option value="fullonly">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_FULL</option>
+			<option value="introonly">PLG_MIGRATETOJOOMLA_WORDPRESS_FEATURE_IMAGE_AS_INTRO</option>
+		</field>
+		<field
+			name="userdata"
+			type="radio"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_USER_DATA_LABEL"
+			default="1"
+			layout="joomla.form.field.radio.switcher"
+			validate="options"
+		>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="tagdata"
+			type="radio"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_TAGS_DATA_LABEL"
+			default="1"
+			layout="joomla.form.field.radio.switcher"
+			validate="options"
+		>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="categorydata"
+			type="radio"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_CATEGORY_DATA_LABEL"
+			default="1"
+			layout="joomla.form.field.radio.switcher"
+			validate="options"
+		>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="menudata"
+			type="radio"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_MENU_DATA_LABEL"
+			default="1"
+			layout="joomla.form.field.radio.switcher"
+			validate="options"
+		>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="menuitemdata"
+			type="radio"
+			label="PLG_MIGRATETOJOOMLA_WORDPRESS_MENUITEM_DATA_LABEL"
+			default="1"
+			layout="joomla.form.field.radio.switcher"
+			validate="options"
+		>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+	</fieldset>
 </form>
