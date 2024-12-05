@@ -210,7 +210,7 @@ class HttpDownload
         }
 
         // remove unnecceary elements
-        // response optain using href contain 4 unwanted element
+        // response obtain using href contain 4 unwanted element
         if (\count($tmpfiles) > 4) {
             // remove unwanted elements from array
             $tmpfiles = \array_slice($tmpfiles, 4);
