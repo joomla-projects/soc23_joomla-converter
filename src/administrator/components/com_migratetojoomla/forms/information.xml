@@ -8,7 +8,7 @@
 		class="form-select"
 		default="fs"
 		validate="options"
-	>
+		>
 		<option value="fs">COM_MIGRATETOJOOMLA_FS</option>
 		<!-- <option value="http">COM_MIGRATETOJOOMLA_HTTP</option>
 		<option value="ftp">COM_MIGRATETOJOOMLA_FTP</option> -->
@@ -16,50 +16,56 @@
 	<field
 		name="livewebsiteurl"
 		type="text"
-		showon="mediaoptions:http"
 		label="COM_MIGRATETOJOOMLA_HTTP_LINK_LABEL"
-		description="COM_MIGRATETOJOOMLA_HTTP_LINK_DESC"/>
+		description="COM_MIGRATETOJOOMLA_HTTP_LINK_DESC"
+		showon="mediaoptions:http"
+		/>
 	<field
 		name="basedir"
 		type="text"
-		showon="mediaoptions:fs"
 		label="COM_MIGRATETOJOOMLA_WEBSITE_BASE_DIRECTORY_LABEL"
-		description="COM_MIGRATETOJOOMLA_WEBSITE_BASE_DIRECTORY_DESC"/>
+		description="COM_MIGRATETOJOOMLA_WEBSITE_BASE_DIRECTORY_DESC"
+		showon="mediaoptions:fs"
+	/>
 	<field
 		name="ftphost"
 		type="text"
-		showon="mediaoptions:ftp"
 		label="COM_MIGRATETOJOOMLA_FTP_HOST_LABEL"
-		description="COM_MIGRATETOJOOMLA_FTP_HOST_DESC"/>
+		description="COM_MIGRATETOJOOMLA_FTP_HOST_DESC"
+		showon="mediaoptions:ftp"
+	/>
 	<field
 		name="ftpport"
 		type="int"
+		label="COM_MIGRATETOJOOMLA_FTP_PORT_LABEL"
+		description="COM_MIGRATETOJOOMLA_FTP_PORT_DESC"
 		showon="mediaoptions:ftp"
 		default="21"
-		label="COM_MIGRATETOJOOMLA_FTP_PORT_LABEL"
-		description="COM_MIGRATETOJOOMLA_FTP_PORT_DESC"/>
+	/>
 	<field
 		name="ftpusername"
 		type="text"
-		showon="mediaoptions:ftp"
 		label="COM_MIGRATETOJOOMLA_FTP_USERNAME_LABEL"
-		description="COM_MIGRATETOJOOMLA_FTP_USERNAME_DESC"/>
+		description="COM_MIGRATETOJOOMLA_FTP_USERNAME_DESC"
+		showon="mediaoptions:ftp"
+	/>
 	<field
 		name="ftppassword"
 		type="password"
-		showon="mediaoptions:ftp"
 		label="COM_MIGRATETOJOOMLA_FTP_PASSWORD_LABEL"
-		description="COM_MIGRATETOJOOMLA_FTP_PASSWORD_DESC"/>
+		description="COM_MIGRATETOJOOMLA_FTP_PASSWORD_DESC"
+		showon="mediaoptions:ftp"
+	/>
 	<field
 		name="ftpprotocoloptions"
 		type="list"
 		label="COM_MIGRATETOJOOMLA_FTP_PROTOCOL_LABEL"
+		description="COM_MIGRATETOJOOMLA_FTP_PROTOCOL_DESC"
 		class="form-select"
 		default="ftp"
 		showon="mediaoptions:ftp"
 		validate="options"
-		description="COM_MIGRATETOJOOMLA_FTP_PROTOCOL_DESC"
-	>
+		>
 		<option value="ftp">COM_MIGRATETOJOOMLA_FTP</option>
 		<option value="ftps">COM_MIGRATETOJOOMLA_FTPS</option>
 		<option value="sftp">COM_MIGRATETOJOOMLA_SFTP</option>
@@ -67,45 +73,53 @@
 	<field
 		name="ftpbasedir"
 		type="text"
-		showon="mediaoptions:ftp"
 		label="COM_MIGRATETOJOOMLA_FTP_BASE_DIR_LABEL"
-		description="COM_MIGRATETOJOOMLA_FTP_BASE_DIR_DESC"/>
+		description="COM_MIGRATETOJOOMLA_FTP_BASE_DIR_DESC"
+		showon="mediaoptions:ftp"
+	/>
 	<field
 		name="dbhostname"
 		type="text"
 		label="COM_MIGRATETOJOOMLA_DATABASE_HOSTNAME_LABEL"
-		description="COM_MIGRATETOJOOMLA_DATABASE_HOSTNAME_DESC"/>
+		description="COM_MIGRATETOJOOMLA_DATABASE_HOSTNAME_DESC"
+	/>
 	<field
 		name="dbdriver"
 		type="text"
-		default="mysqli"
 		label="COM_MIGRATETOJOOMLA_DATABASE_DRIVER_LABEL"
-		description="COM_MIGRATETOJOOMLA_DATABASE_DRIVER_DESC"/>
+		description="COM_MIGRATETOJOOMLA_DATABASE_DRIVER_DESC"
+		default="mysqli"
+	/>
 	<field
 		name="dbport"
 		type="int"
-		default='3306'
 		label="COM_MIGRATETOJOOMLA_DATABASE_PORT_LABEL"
-		description="COM_MIGRATETOJOOMLA_DATABASE_PORT_DESC"/>
+		description="COM_MIGRATETOJOOMLA_DATABASE_PORT_DESC"
+		default='3306'
+	/>
 	<field
 		name="dbname"
 		type="text"
 		label="COM_MIGRATETOJOOMLA_DATABASE_NAME_LABEL"
-		description="COM_MIGRATETOJOOMLA_DATABASE_NAME_DESC"/>
+		description="COM_MIGRATETOJOOMLA_DATABASE_NAME_DESC"
+	/>
 	<field
 		name="dbusername"
 		type="text"
 		label="COM_MIGRATETOJOOMLA_DATABASE_USERNAME_LABEL"
-		description="COM_MIGRATETOJOOMLA_DATABASE_USERNAME_DESC"/>
+		description="COM_MIGRATETOJOOMLA_DATABASE_USERNAME_DESC"
+	/>
 	<field
 		name="dbpassword"
 		type="text"
-		default=""
 		label="COM_MIGRATETOJOOMLA_DATABASE_PASSWORD_LABEL"
-		description="COM_MIGRATETOJOOMLA_DATABASE_PASSWORD_DESC"/>
+		description="COM_MIGRATETOJOOMLA_DATABASE_PASSWORD_DESC"
+		default=""
+	/>
 	<field
 		name="dbtableprefix"
 		type="text"
 		label="COM_MIGRATETOJOOMLA_DATABASE_TABLE_PREFIX_LABEL"
-		description="COM_MIGRATETOJOOMLA_DATABASE_TABLE_PREFIX_DESC"/>
+		description="COM_MIGRATETOJOOMLA_DATABASE_TABLE_PREFIX_DESC"
+	/>
 </form>
