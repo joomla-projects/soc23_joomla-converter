@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="plugin" group="migratetojoomla" method="upgrade">
 	<name>PLG_MIGRATETOJOOMLA_MEDIADOWNLOAD</name>
-    <author>Joomla! Project</author>
+	<author>Joomla! Project</author>
 	<creationDate>2024</creationDate>
 	<copyright>(C) 2024 Open Source Matters, Inc.</copyright>
 	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
@@ -13,9 +13,6 @@
 	<files>
 		<folder plugin="mediadownload">services</folder>
 		<folder>src</folder>
+		<folder>language</folder>
 	</files>
-	<languages folder="admin">
-        <language tag="en-GB">language/en-GB/plg_migratetojoomla_mediadownload.ini</language>
-        <language tag="en-GB">language/en-GB/plg_migratetojoomla_mediadownload.sys.ini</language>
-	</languages>
 </extension>

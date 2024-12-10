@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @package     Joomla.Administrator
- * @subpackage  com_migratetojoomla.mediadownload
+ * @package     Joomla.Plugin
+ * @subpackage  Migratetojoomla.mediadownload
  *
  * @copyright   (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
@@ -36,7 +36,7 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
      *
      * @return  array
      *
-     * @since   4.3.0
+     * @since   1.0
      */
     public static function getSubscribedEvents(): array
     {

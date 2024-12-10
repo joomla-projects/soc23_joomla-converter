@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @package     Joomla.Administrator
- * @subpackage  com_migratetojoomla.mediadownload
+ * @package     Joomla.Plugin
+ * @subpackage  Migratetojoomla.mediadownload
  *
  * @copyright   (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
@@ -210,7 +210,7 @@ class HttpDownload
         }
 
         // remove unnecceary elements
-        // response optain using href contain 4 unwanted element
+        // response obtain using href contain 4 unwanted element
         if (\count($tmpfiles) > 4) {
             // remove unwanted elements from array
             $tmpfiles = \array_slice($tmpfiles, 4);

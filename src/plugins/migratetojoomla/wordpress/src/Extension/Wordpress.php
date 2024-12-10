@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @package     Joomla.Administrator
- * @subpackage  com_migratetojoomla.wordpress
+ * @package     Joomla.Plugin
+ * @subpackage  Migratetojoomla.wordpress
  *
  * @copyright   (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
@@ -61,7 +61,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      *
      * @return  array
      *
-     * @since   4.3.0
+     * @since   1.0
      */
     public static function getSubscribedEvents(): array
     {
@@ -518,7 +518,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
             $patharray  = [];
             $levelarray = [];
-            // manupulate data to find parentcategory path and level
+            // manipulate data to find parentcategory path and level
 
             if ($row['parent'] != 0) {
                 // It is a child category

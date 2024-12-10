@@ -8,7 +8,7 @@
 		class="form-select"
 		validate="options"
 		require="true"
-	>
+		>
 		<option value="wordpress">COM_MIGRATETOJOOMLA_WORDPRESS</option>
 	</field>
 </form>

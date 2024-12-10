@@ -90,7 +90,7 @@ class ProgressController extends BaseController
 
             $framework = Factory::getApplication()->getUserState('com_migratetojoomla.migrate')['framework'];
 
-            // import framwork plugin
+            // import framework plugin
 
             PluginHelper::importPlugin('migratetojoomla', $framework);
 
