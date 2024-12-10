@@ -14,9 +14,6 @@
 		<folder>forms</folder>
 		<folder plugin="wordpress">services</folder>
 		<folder>src</folder>
+		<folder>language</folder>
 	</files>
-	<languages folder="admin">
-		<language tag="en-GB">language/en-GB/plg_migratetojoomla_wordpress.ini</language>
-		<language tag="en-GB">language/en-GB/plg_migratetojoomla_wordpress.sys.ini</language>
-	</languages>
 </extension>

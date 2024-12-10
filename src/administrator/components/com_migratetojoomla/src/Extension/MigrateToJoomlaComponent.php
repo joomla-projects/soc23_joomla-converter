@@ -42,7 +42,7 @@ class MigrateToJoomlaComponent extends MVCComponent implements
      *
      * @return void
      *
-     * @since 4.3.0
+     * @since 1.0
      */
     public function boot(ContainerInterface $container)
     {

@@ -68,7 +68,7 @@ class HtmlView extends BaseHtmlView
      *
      * @return  void
      *
-     * @since   1.6
+     * @since   1.0
      */
     public function onBeforeDisplay()
     {
@@ -82,7 +82,7 @@ class HtmlView extends BaseHtmlView
      *
      * @return  void
      *
-     * @since   1.6
+     * @since   1.0
      */
     protected function addToolbar(): void
     {
