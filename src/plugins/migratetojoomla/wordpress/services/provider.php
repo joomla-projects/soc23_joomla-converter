@@ -39,6 +39,7 @@ return new class () implements ServiceProviderInterface {
                     (array) PluginHelper::getPlugin('migratetojoomla', 'wordpress')
                 );
                 $plugin->setApplication(Factory::getApplication());
+                $plugin->setDatabase(Factory::getDbo());
 
                 return $plugin;
             }
