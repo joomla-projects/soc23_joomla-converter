@@ -21,7 +21,6 @@ use Joomla\CMS\User\User;
 use Joomla\Component\Categories\Administrator\Table\CategoryTable;
 use Joomla\Component\Menus\Administrator\Table\MenuTable;
 use Joomla\Component\MigrateToJoomla\Administrator\Event\MigrationStatusEvent;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 use Joomla\Component\Tags\Administrator\Table\TagTable;
 use Joomla\Database\DatabaseAwareInterface;
 use Joomla\Database\DatabaseAwareTrait;
@@ -81,10 +80,6 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface, Database
     public function __construct(DispatcherInterface $dispatcher, array $config = [])
     {
         parent::__construct($dispatcher, $config);
-
-        $options['format']    = '{DATE}\t{TIME}\t{LEVEL}\t{CODE}\t{MESSAGE}';
-        $options['text_file'] = 'wordpress-to-joomla.php';
-        Log::addLogger($options);
 
         $app = Factory::getApplication();
         $this->createWPDB($app->getUserState('com_migratetojoomla.information', []));
@@ -527,15 +522,14 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface, Database
             $category->store();
 
             $map[$key] = $category->id;
-            Log::add('Tag with WP ID ' . $key . ' (Joomla: ' . $category->id . ') successfully imported.');
-            LogHelper::writeSessionLog("success", $field);
-            $update[] = ['status' => "success"];
+            $event->setStatus(1);
+            $event->setLastID($row->term_id);
+            Log::add('Category with WP ID ' . $row->term_id . ' (Joomla: ' . $category->id . ') successfully imported.');
         } catch (\RuntimeException $e) {
             Log::add('Error: Importing Category with ID ' . $key . ' failed. ' . $e->getMessage(), Log::ERROR);
-            LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "error"];
+            $event->setStatus(0);
+            $event->setError($e->getMessage());
         }
-        $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
         $app->setUserState('com_migratetojoomla.wordpress.category_map', $map);
     }
 
@@ -577,17 +571,15 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface, Database
             $menu->setLocation($map[$row->parent], 'last-child');
             $menu->store();
 
-            $contentTowrite = 'Menu Imported Successfully with id = ' . $key;
-            LogHelper::writeLog($contentTowrite, 'success');
-            LogHelper::writeSessionLog("success", $field);
-            $update[] = ['status' => "success"];
-        } catch (\RuntimeException $th) {
-            LogHelper::writeLog('Menu Imported Unsuccessfully with id = ' . $key, 'error');
-            LogHelper::writeLog($th, 'normal');
-            LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "error"];
+            $map[$key] = $menu->id;
+            $event->setStatus(1);
+            $event->setLastID($row->term_id);
+            Log::add('Menu with WP ID ' . $row->term_id . ' (Joomla: ' . $menu->id . ') successfully imported.');
+        } catch (\RuntimeException $e) {
+            Log::add('Error: Importing Menu with ID ' . $key . ' failed. ' . $e->getMessage(), Log::ERROR);
+            $event->setStatus(0);
+            $event->setError($e->getMessage());
         }
-        $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
     }
 
     /**
@@ -643,7 +635,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface, Database
             // load taxonomy title information
 
             if ($taxonomytype == "category" || $taxonomytype == "post_tag") {
-                LogHelper::writeLog('logfilecategory  ' . $taxonomyid . \gettype($taxonomyid));
+                Log::add('logfilecategory  ' . $taxonomyid . \gettype($taxonomyid));
 
                 $query = $this->wpDB->getQuery(true)
                     ->select($this->wpDB->quoteName('name'))
@@ -718,17 +710,15 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface, Database
             $menuitem->publish_down      = null;
             $menuitem->store();
 
-            $contentTowrite = 'MenuItem Imported Successfully with id = ' . $key;
-            LogHelper::writeLog($contentTowrite, 'success');
-            LogHelper::writeSessionLog("success", $field);
-            $update[] = ['status' => "success"];
-        } catch (\RuntimeException $th) {
-            LogHelper::writeLog('MenuItem Imported Unsuccessfully with id = ' . $key, 'error');
-            LogHelper::writeLog($th, 'normal');
-            LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "error"];
+            $map[$key] = $menuitem->id;
+            $event->setStatus(1);
+            $event->setLastID($row->term_id);
+            Log::add('Menu with WP ID ' . $row->term_id . ' (Joomla: ' . $menu->id . ') successfully imported.');
+        } catch (\RuntimeException $e) {
+            Log::add('Error: Importing Menuitem with ID ' . $key . ' failed. ' . $e->getMessage(), Log::ERROR);
+            $event->setStatus(0);
+            $event->setError($e->getMessage());
         }
-        $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
     }
 
     /**
@@ -847,7 +837,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface, Database
                         break;
 
                     default:
-                        LogHelper::writeLog($imageinfo['post_title'], "success");
+                        Log::add($imageinfo['post_title'], "success");
                         $articleimage = '{"image_intro":' . $imageurl . ',"image_intro_alt":' . $imageinfo['post_title'] . ',"float_intro":"","image_intro_caption":' . $imageinfo['post_excerpt'] . ',"image_fulltext":' . $imageurl . ',"image_fulltext_alt":' . $imageinfo['post_title'] . ',"float_fulltext":"","image_fulltext_caption":' . $imageinfo['post_content'] . '}';
                         break;
                 }
@@ -1012,16 +1002,15 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface, Database
                 $db->insertObject('#__menu', $menuitem);
             }
 
-            $contentTowrite = $articletype . ' Imported Successfully with id = ' . $key;
-            LogHelper::writeLog($contentTowrite, 'success');
-            LogHelper::writeSessionLog("success", $field);
-            $update[] = ['status' => "success"];
+            $map[$key] = $menu->id;
+            $event->setStatus(1);
+            $event->setLastID($row->term_id);
+            Log::add('Article with WP ID ' . $row->term_id . ' (Joomla: ' . $menu->id . ') successfully imported.');
         } catch (\RuntimeException $e) {
             Log::add('Error: Importing article with ID ' . $key . ' failed. ' . $e->getMessage(), Log::ERROR);
-            LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "error"];
+            $event->setStatus(0);
+            $event->setError($e->getMessage());
         }
-        $app->getSession()->set('migratetojoomla.ajaxresponse', $update);
         $app->setUserState('com_migratetojoomla.wordpress.content_map', $map);
     }
 }

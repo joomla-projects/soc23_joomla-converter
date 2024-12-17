@@ -13,8 +13,8 @@ namespace Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Log\Log;
 use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 use Joomla\Component\MigrateToJoomla\Administrator\Helper\PathHelper;
 use Joomla\Event\SubscriberInterface;
 
@@ -114,10 +114,10 @@ final class MediaDownload extends CMSPlugin implements SubscriberInterface
             } else {
                 $this->copy($source, $destination);
             }
-            LogHelper::writeLog(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
+            Log::add(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_SUCCESSFULLY'), 'success');
         } catch (\RuntimeException $th) {
-            LogHelper::writeLog(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_UNSUCCESSFULLY'), 'error');
-            LogHelper::writeLog($th, 'normal');
+            Log::add(TEXT::_('COM_MIGRATETOJOOMLA_DOWNLOAD_MEDIA_UNSUCCESSFULLY'), 'error');
+            Log::add($th, 'normal');
         }
     }
 

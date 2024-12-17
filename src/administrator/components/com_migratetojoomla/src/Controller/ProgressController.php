@@ -10,14 +10,11 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
-use Joomla\CMS\Event\AbstractEvent;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Language\Text;
+use Joomla\CMS\Log\Log;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\Plugin\PluginHelper;
-use Joomla\CMS\Session\Session;
 use Joomla\Component\MigrateToJoomla\Administrator\Event\MigrationStatusEvent;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -74,9 +71,13 @@ class ProgressController extends BaseController
             return;
         }
 
-        if ($field == "end") {
-            LogHelper::writeLogFileOfSession();
-        }
+
+        $options = [
+            'format'    => '{DATE}\t{TIME}\t{LEVEL}\t{CODE}\t{MESSAGE}',
+            'text_file' => 'wordpress-to-joomla.php',
+            ];
+        Log::addLogger($options);
+
         if ($field == "media") {
             // calling media plugin method
             PluginHelper::importPlugin('migratetojoomla', 'mediadownload');
