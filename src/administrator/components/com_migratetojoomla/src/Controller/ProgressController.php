@@ -10,13 +10,11 @@
 
 namespace Joomla\Component\MigrateToJoomla\Administrator\Controller;
 
-use Joomla\CMS\Event\AbstractEvent;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Language\Text;
+use Joomla\CMS\Log\Log;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\Plugin\PluginHelper;
-use Joomla\CMS\Session\Session;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
+use Joomla\Component\MigrateToJoomla\Administrator\Event\MigrationStatusEvent;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -37,22 +35,26 @@ class ProgressController extends BaseController
 
     public function ajax()
     {
-        if (!Session::checkToken('get')) {
+        /**if (!Session::checkToken('get')) {
             $this->app->setHeader('status', 403, true);
             $this->app->sendHeaders();
             echo Text::_('JINVALID_TOKEN_NOTICE');
             $this->app->close();
-        }
+        }**/
 
-        $input = $this->appinput;
+        $input = $this->app->getInput();
         $field = $input->getArray(['name' => ''])['name'];
         $key   = $input->getArray(['key' => ''])['key'];
 
-        $this->callPluginMethod($field, $key);
+        $event = $this->callPluginMethod($field, $key);
 
-        $default[] = [];
-
-        $response = Factory::getSession()->get('migratetojoomla.ajaxresponse', $default);
+        if ($event->getStatus() == 1) {
+            $response = ['status' => 'success'];
+        } elseif ($event->getStatus() == 0) {
+            $response = ['status' => 'error'];
+        } elseif ($event->getStatus() == -1) {
+            $response = ['status' => 'notice'];
+        }
 
         echo json_encode($response);
         $this->app->close();
@@ -69,14 +71,18 @@ class ProgressController extends BaseController
             return;
         }
 
-        if ($field == "end") {
-            LogHelper::writeLogFileOfSession();
-        }
+
+        $options = [
+            'format'    => '{DATE}\t{TIME}\t{LEVEL}\t{CODE}\t{MESSAGE}',
+            'text_file' => 'wordpress-to-joomla.php',
+            ];
+        Log::addLogger($options);
+
         if ($field == "media") {
             // calling media plugin method
             PluginHelper::importPlugin('migratetojoomla', 'mediadownload');
 
-            $event = AbstractEvent::create(
+            $event = new MigrationStatusEvent(
                 'migratetojoomla_downloadmedia',
                 [
                     'subject'  => $this,
@@ -84,7 +90,7 @@ class ProgressController extends BaseController
                 ]
             );
 
-            Factory::getApplication()->triggerEvent('migratetojoomla_downloadmedia', $event);
+            $this->app->getDispatcher()->dispatch('migratetojoomla_downloadmedia', $event);
         } else {
             // calling framework specific plugin method for database migration
 
@@ -96,7 +102,7 @@ class ProgressController extends BaseController
 
             $eventname = "migratetojoomla_" . $field;
 
-            $event = AbstractEvent::create(
+            $event = new MigrationStatusEvent(
                 $eventname,
                 [
                     'subject'  => $this,
@@ -105,8 +111,14 @@ class ProgressController extends BaseController
                     'field'    => $field,
                 ]
             );
-
-            Factory::getApplication()->triggerEvent($eventname, $event);
+            $event->setLastID((int) $this->app->getUserState('com_migratetojoomla.migrate.lastKey', 0));
+            $this->app->getDispatcher()->dispatch($eventname, $event);
+            $this->app->setUserState('com_migratetojoomla.migrate.lastKey', $event->getLastID());
+            if ($event->getStatus() == -1) {
+                $this->app->setUserState('com_migratetojoomla.migrate.lastKey', 0);
+            }
         }
+
+        return $event;
     }
 }
