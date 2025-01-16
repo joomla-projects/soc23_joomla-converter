@@ -13,7 +13,6 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 
-
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
 /** @var \Joomla\Component\MigrateToJoomla\Administrator\View\Log\HtmlView $this */
@@ -24,7 +23,7 @@ $wa->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
 
-$data = Factory::getApplication()->getSession()->get('migratetojoomla.logwrite', []);
+$data = Factory::getApplication()->getSession()->get('com_migratetojoomla.logwrite', []);
 ?>
 <div id="migratetojoomla" class="p-3">
     <div id="migratetojoomla_log">

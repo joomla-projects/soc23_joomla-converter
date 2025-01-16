@@ -28,7 +28,7 @@ use Joomla\DI\ServiceProviderInterface;
  */
 
 return new class implements ServiceProviderInterface {
-
+    
     /**
      * Registers the service provider with a DI container.
      *

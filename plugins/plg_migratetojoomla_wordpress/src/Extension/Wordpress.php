@@ -10,16 +10,26 @@
 
 namespace Joomla\Plugin\MigrateToJoomla\Wordpress\Extension;
 
-use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\Helper\TagsHelper;
-use Joomla\CMS\Table\Table;
-use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Table\Table;
+use Joomla\CMS\User\User;
+use Joomla\Component\Categories\Administrator\Table\CategoryTable;
+use Joomla\Component\Menus\Administrator\Table\MenuTable;
+use Joomla\Component\Menus\Administrator\Table\MenuTypeTable;
+use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
+use Joomla\Component\Tags\Administrator\Table\TagTable;
+use Joomla\Database\DatabaseAwareInterface;
+use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseInterface;
+use Joomla\Event\DispatcherInterface;
 use Joomla\Event\EventInterface;
 use Joomla\Event\SubscriberInterface;
+use Joomla\Registry\Registry;
 use stdClass;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -32,16 +42,16 @@ use stdClass;
  * @since  1.0
  */
 
-final class Wordpress extends CMSPlugin implements SubscriberInterface
+final class Wordpress extends CMSPlugin implements SubscriberInterface, DatabaseAwareInterface
 {
+    use DatabaseAwareTrait;
 
     /**
-     * @var object Database object
-     * 
-     * @since 1.0
+     * @var  DatabaseInterface  DB object connected to the WP DB
+     *
+     * @since __DEPLOY_VERSION__
      */
-
-    public  $db;
+    public  $wpDB;
 
     /**
      * Returns an array of events this subscriber will listen to.
@@ -62,8 +72,16 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             'migratetojoomla_category' => 'importCategory',
             'migratetojoomla_menu' => 'importMenu',
             'migratetojoomla_menuitem' => 'importMenuItem',
-            'migratetojoomla_postsandpage' => 'importPostsAndPage'
+            'migratetojoomla_postsandpage' => 'importArticle'
         ];
+    }
+
+    public function __construct(DispatcherInterface $dispatcher, array $config = [])
+    {
+        parent::__construct($dispatcher, $config);
+
+        $app = Factory::getApplication();
+        self::createWPDB($this, $app->getUserState('com_migratetojoomla.information', []));
     }
 
     /**
@@ -73,7 +91,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public static function storeMaxPrimaryKey()
     {
-        Factory::getApplication()->getSession()->clear('migratetojoomla.maxkey');
+        $app = Factory::getApplication();
+        $app->getSession()->clear('com_migratetojoomla.maxkey');
         $tables = [
             "users",
             "tags",
@@ -83,28 +102,23 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             "content"
         ];
         $maxKey = [];
-        $tablePrefix = Factory::getConfig()->get('dbprefix');
-        $jdb = Factory::getDbo();
+        $db     = Factory::getContainer()->get(DatabaseInterface::class);;
         foreach ($tables as $table) {
-            $tableName = $tablePrefix . $table;
-            $query = $jdb->getQuery(true)
-                ->select('MAX(' . $jdb->quoteName('id') . ')')
-                ->from($jdb->quoteName($tableName));
+            $tableName = '#__' . $table;
+            $query     = $db->getQuery(true)
+                ->select('MAX(' . $db->quoteName('id') . ')')
+                ->from($db->quoteName($tableName));
 
-            $jdb->setQuery($query);
-            $result = $jdb->loadAssocList();
-
-            foreach ($result[0] as $key => $value) {
-                $maxKey[$table] = $value + 1;
-            }
+            $db->setQuery($query);
+            $maxKey[$table] = $db->loadResult();
         }
 
-        // how update session value as if user want again import than max value of key must update to avoid duplicate key
-        Factory::getApplication()->getSession()->set('migratetojoomla.maxkey', $maxKey);
+        // how status session value as if user want again import than max value of key must status to avoid duplicate key
+        $app->getSession()->set('com_migratetojoomla.maxkey', $maxKey);
     }
 
     /**
-     * Method to set database $db if it is not set
+     * Method to set database $wpDB if it is not set
      * 
      * @param object $instance instance of class
      * @param array form data
@@ -112,9 +126,9 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      * 
      * @since 1.0
      */
-    public static function setdatabase($instance, $data = [])
+    public static function createWPDB($instance, $data = [])
     {
-        if (\is_resource($instance->db)) {
+        if (\is_resource($instance->wpDB)) {
             return true;
         }
 
@@ -128,9 +142,10 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         ];
 
         try {
-            $db = DatabaseDriver::getInstance($options);
-            $db->getVersion();
-            $instance->db = $db;
+            $wpDB = DatabaseDriver::getInstance($options);
+            $wpDB->getVersion();
+            $instance->wpDB = $wpDB;
+            $instance->setdatabase(Factory::getContainer()->get(DatabaseInterface::class));
             return true;
         } catch (\RuntimeException $th) {
             LogHelper::writeLog(Text::_('COM_MIGRATETOJOOMLA_DATABASE_CONNECTION_UNSUCCESSFULLY'), 'error');
@@ -146,50 +161,45 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
      */
     public function storePrimarykey()
     {
-
-
-        if (!\is_resource($this->db)) {
-            self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+        $app = Factory::getApplication();
+        if (!\is_resource($this->wpDB)) {
+            self::createWPDB($this, $app->getUserState('com_migratetojoomla.information', []));
         }
-        Factory::getApplication()->getSession()->clear('migratetojoomla.tablekeys');
-        $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-        $db = $this->db;
+        $app->getSession()->clear('com_migratetojoomla.tablekeys');
+        $wpDB = $this->wpDB;
 
-        $importstring = Factory::getApplication()->getSession()->get('migratetojoomla.arrayimportstring', []);
+        $importstring = $app->getSession()->get('migratetojoomla.arrayimportstring', []);
 
-        // Specify the table name
-        $tablePrefix = rtrim($data['dbtableprefix'], '_');
-        $tableusers = $tablePrefix . '_users';
-        $tableposts = $tablePrefix . '_posts';
-        $tablepostmeta = $tablePrefix . '_postmeta';
-        $tabletermtaxonomy = $tablePrefix . '_term_taxonomy';
-        $tableterms = $tablePrefix . '_terms';
-        $tabletermrelationship = $tablePrefix . '_term_relationships';
+        $tableusers = '#__users';
+        $tableposts = '#__posts';
+        $tablepostmeta = '#__postmeta';
+        $tabletermtaxonomy = '#__term_taxonomy';
+        $tableterms = '#__terms';
+        $tabletermrelationship = '#__term_relationships';
 
         $tablesmap = [
-            'user' => $db->getQuery(true)->select($db->quoteName("ID"))->from($db->quoteName($tableusers)),
-            'tag' => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy))->where($db->quoteName('taxonomy') . '=' . $db->q('post_tag')),
-            "category" => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy))->where($db->quoteName('taxonomy') . '=' . $db->q('category')),
-            "menu" => $db->getQuery(true)->select($db->quoteName("term_id"))->from($db->quoteName($tabletermtaxonomy)),
-            "menuitem" => $db->getQuery(true)
+            'user' => $wpDB->getQuery(true)->select($wpDB->quoteName("ID"))->from($wpDB->quoteName($tableusers)),
+            'tag' => $wpDB->getQuery(true)->select($wpDB->quoteName("term_id"))->from($wpDB->quoteName($tabletermtaxonomy))->where($wpDB->quoteName('taxonomy') . '=' . $wpDB->q('post_tag')),
+            "category" => $wpDB->getQuery(true)->select($wpDB->quoteName("term_id"))->from($wpDB->quoteName($tabletermtaxonomy))->where($wpDB->quoteName('taxonomy') . '=' . $wpDB->q('category')),
+            "menu" => $wpDB->getQuery(true)->select($wpDB->quoteName("term_id"))->from($wpDB->quoteName($tabletermtaxonomy)),
+            "menuitem" => $wpDB->getQuery(true)
                 ->select('DISTINCT ID')
-                ->from($db->quoteName($tableposts, 'a'))
-                ->join('LEFT', $db->quoteName($tablepostmeta, 'b'), $db->quoteName('a.ID') . '=' . $db->quoteName('b.post_id'))
-                ->join('LEFT', $db->quoteName($tabletermrelationship, 'c'), $db->quoteName('a.ID') . '=' . $db->quoteName('c.object_id'))
-                ->join('LEFT', $db->quoteName($tabletermtaxonomy, 'd'), $db->quoteName('c.term_taxonomy_id') . '=' . $db->quoteName('d.term_taxonomy_id'))
-                ->join('LEFT', $db->quoteName($tableterms, 'e'), $db->quoteName('d.term_id') . '=' . $db->quoteName('e.term_id'))
-                ->where($db->quoteName('a.post_type') . '=' . $db->q('nav_menu_item') . 'AND' . $db->quoteName('b.meta_value') . '=' . $db->q('category') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('post_tag') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('page') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('custom') . 'OR' . $db->quoteName('b.meta_value') . '=' . $db->q('post')),
-            "postsandpage" => $db->getQuery(true)->select('ID')->from($db->quoteName($tableposts, 'a'))->where('a.post_status !="trash" AND a.post_status!="inherit" AND a.post_status!="auto-draft"
+                ->from($wpDB->quoteName($tableposts, 'a'))
+                ->leftjoin($wpDB->quoteName($tablepostmeta, 'b'), $wpDB->quoteName('a.ID') . '=' . $wpDB->quoteName('b.post_id'))
+                ->leftjoin($wpDB->quoteName($tabletermrelationship, 'c'), $wpDB->quoteName('a.ID') . '=' . $wpDB->quoteName('c.object_id'))
+                ->leftjoin($wpDB->quoteName($tabletermtaxonomy, 'd'), $wpDB->quoteName('c.term_taxonomy_id') . '=' . $wpDB->quoteName('d.term_taxonomy_id'))
+                ->leftjoin($wpDB->quoteName($tableterms, 'e'), $wpDB->quoteName('d.term_id') . '=' . $wpDB->quoteName('e.term_id'))
+                ->where($wpDB->quoteName('a.post_type') . '=' . $wpDB->q('nav_menu_item') . 'AND' . $wpDB->quoteName('b.meta_value') . '=' . $wpDB->q('category') . 'OR' . $wpDB->quoteName('b.meta_value') . '=' . $wpDB->q('post_tag') . 'OR' . $wpDB->quoteName('b.meta_value') . '=' . $wpDB->q('page') . 'OR' . $wpDB->quoteName('b.meta_value') . '=' . $wpDB->q('custom') . 'OR' . $wpDB->quoteName('b.meta_value') . '=' . $wpDB->q('post')),
+            "postsandpage" => $wpDB->getQuery(true)->select('ID')->from($wpDB->quoteName($tableposts, 'a'))->where('a.post_status !="trash" AND a.post_status!="inherit" AND a.post_status!="auto-draft"
             AND (a.post_type = "post" OR a.post_type ="page")')
         ];
-        $globalkey = Factory::getApplication()->getSession()->get('migratetojoomla.tablekeys', []);
-        $tablePrefix = rtrim($data['dbtableprefix'], '_');
+        $globalkey = $app->getSession()->get('com_migratetojoomla.tablekeys', []);
 
         foreach ($tablesmap as $table => $query) {
-            if (@in_array($table, $importstring)) {
+            if (in_array($table, $importstring)) {
 
-                $db->setQuery($query);
-                $result = $db->loadAssocList();
+                $wpDB->setQuery($query);
+                $result = $wpDB->loadAssocList();
 
                 $tempkeys = [];
                 foreach ($result as $key => $value) {
@@ -199,7 +209,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $globalkey[$table] = $tempkeys;
             }
         }
-        Factory::getApplication()->getSession()->set('migratetojoomla.tablekeys', $globalkey);
+        $app->getSession()->set('com_migratetojoomla.tablekeys', $globalkey);
     }
 
     /**
@@ -270,9 +280,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
         }
 
         // set data into session
-        Factory::getSession()->set('migratetojoomla.displayimportstring', $importstring);
+        Factory::getApplication()->getSession()->set('migratetojoomla.displayimportstring', $importstring);
     }
-
 
     /** 
      * Method to import user table
@@ -285,86 +294,72 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         $key = $event->getArgument('key');
         $field = $event->getArgument('field');
-        $update[] = [];
-        $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
+        $status[] = [];
+        $app = Factory::getApplication();
         try {
 
-            if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            if (!\is_resource($this->wpDB)) {
+                self::createWPDB($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-            $db = $this->db;
 
-            // Specify the table name
-            $tableUsers = rtrim($data['dbtableprefix'], '_') . '_users';
-            $tableUsersMeta = rtrim($data['dbtableprefix'], '_') . '_usermeta';
-            $config['dbo'] = $db;
-            $tablePrefix = Factory::getConfig()->get('dbprefix');
+            $maxKey = $app->getSession()->get('com_migratetojoomla.maxkey', []);
 
-            // load data from framework table
-            $query = $db->getQuery(true)
+            $wpDB = $this->wpDB;
+
+            $config['dbo'] = $wpDB;
+
+            $query = $wpDB->getQuery(true)
                 ->select('*')
-                ->from($db->quoteName($tableUsers))
-                ->where($db->quoteName('ID') . '=' . $key);
+                ->from($wpDB->quoteName('#__users'))
+                ->where($wpDB->quoteName('ID') . '=' . $key);
 
-            $db->setQuery($query);
-            $results = $db->loadAssocList();
-            $row = $results[0];
-
-            $user = new stdClass();
-            $user->id = $row['ID'] + $maxKey['users'];
-            $user->name = $row['display_name'];
-            $user->username = $row['user_login'];
-            $user->email = $row['user_email'];
-            $user->registerDate = $row['user_registered'];
-            $user->activation = $row['user_activation_key'];
-            $user->requireReset = 1;
-            $user->params = '{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}';
-
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'users', $user);
+            $wpDB->setQuery($query);
+            $wpUser = $this->wpDB->loadObject();
 
             // load user group
-            $query = $db->getQuery(true)
+            $query = $wpDB->getQuery(true)
                 ->select('meta_value')
-                ->from($db->quoteName($tableUsersMeta, 'a'))
-                ->where($db->quoteName('a.user_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('a.meta_key') . '=' . $db->q('wp_capabilities'));
-            $db->setQuery($query);
-            $result = $db->loadAssocList();
+                ->from($wpDB->quoteName('#__usermeta', 'a'))
+                ->where($wpDB->quoteName('a.user_id') . '=' . $wpUser->ID, 'AND')
+                ->where($wpDB->quoteName('a.meta_key') . '=' . $this->wpDB->quote('#__capabilities'));
+            $this->wpDB->setQuery($query);
+            $grouprow = $wpDB->loadResult();
 
-            $grouprow = $result[0]['meta_value'];
+            $user               = new User();
+            $user->ID           = $maxKey['users'] + $key;
+            $user->name         = $wpUser->display_name;
+            $user->username     = $wpUser->user_login;
+            $user->email        = $wpUser->user_email;
+            $user->registerDate = $wpUser->user_registered;
+            $user->activation   = $wpUser->user_activation_key;
+            $user->requireReset = 1;
+            $user->password     = $wpUser->user_pass;
+            $user->params       = new Registry('{"admin_style":"","admin_language":"","language":"","editor":"","timezone":"","a11y_mono":"0","a11y_contrast":"0","a11y_highlight":"0","a11y_font":"0"}');
 
             $groupId = 1;
 
             if (preg_match("/administrator/", $grouprow)) {
                 $groupId = 7;
-            } else if (preg_match("/author/", $grouprow)) {
+            } elseif (preg_match("/author/", $grouprow)) {
                 $groupId = 3;
-            } else if (preg_match("/editor/", $grouprow)) {
+            } elseif (preg_match("/editor/", $grouprow)) {
                 $groupId = 4;
-            } else {
-                $groupId = 1; // default as public
             }
-            LogHelper::writeLog("GroupID:   " . $groupId, "success");
 
-            // inserting in user_usergroup_map
-            $usergroup = new stdClass();
-            $usergroup->user_id = $row['ID'] + $maxKey['users'];
-            $usergroup->group_id = $groupId;
+            $user->groups = [$groupId];
 
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'user_usergroup_map', $usergroup);
-
-            $contentTowrite = 'User Imported Successfully with id = ' . $key;
+            $user->save();
+            $contentTowrite = 'User Imported Successfully with Wordpress ID = ' . $key;
             LogHelper::writeLog($contentTowrite, 'success');
             LogHelper::writeSessionLog("success", $field);
-            $update[] = ['status' => "success"];
+            $status[] = ['status' => "success"];
         } catch (\RuntimeException $th) {
-            LogHelper::writeLog('User Imported Unsuccessfully with id = ' . $key, 'error');
-            LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "error"];
+            LogHelper::writeLog('User Imported Unsuccessfully with Wordpress ID = ' . $key, 'error');
             LogHelper::writeLog($th, 'normal');
+            LogHelper::writeSessionLog("error", $field);
+            $status[] = ['status' => "error"];
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        $app->getSession()->set('com_migratetojoomla.ajaxresponse', $status);
     }
 
     /** 
@@ -378,62 +373,54 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         $key = $event->getArgument('key');
         $field = $event->getArgument('field');
-        $update[] = [];
-        // current login user
-        $user = Factory::getApplication()->getIdentity();
-        $userid = $user->id;
-        $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
-        // datetime
+        $status[] = [];
+        $app     = Factory::getApplication();
+        $user    = $app->getIdentity();
         $date = (string)Factory::getDate();
         try {
-
-            if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            LogHelper::writeLog("Tag start saved", 'error');
+            if (!\is_resource($this->wpDB)) {
+                self::createWPDB($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-            $db = $this->db;
 
-            // Specify the table name
-            $tabletermtaxonomy = rtrim($data['dbtableprefix'], '_') . '_term_taxonomy';
-            $tableterms = rtrim($data['dbtableprefix'], '_') . '_terms';
+            $maxKey = $app->getSession()->get('com_migratetojoomla.maxkey', []);
+            $wpDB = $this->wpDB;
 
-            $config['dbo'] = $db;
-            $tablePrefix = Factory::getConfig()->get('dbprefix');
+            $config['dbo'] = $wpDB;
 
             // load data from framework table
-            $query = $db->getQuery(true)
+            $query = $wpDB->getQuery(true)
                 ->select('*')
-                ->from($db->quoteName($tabletermtaxonomy, 'b'))
-                ->join('LEFT', $db->quoteName($tableterms, 'a'), $db->quoteName('a.term_id') . '=' . $db->quoteName('b.term_id'))
-                ->where($db->quoteName('b.term_id') . '=' . $key);
+                ->from($wpDB->quoteName('#__term_taxonomy', 'b'))
+                ->leftjoin($wpDB->quoteName('#__terms', 'a'), $wpDB->quoteName('a.term_id') . '=' . $wpDB->quoteName('b.term_id'))
+                ->where($wpDB->quoteName('b.term_id') . '=' . $key);
 
-            $db->setQuery($query);
-            $results = $db->loadAssocList();
-            $row = $results[0];
+            $wpDB->setQuery($query);
+            $row = $wpDB->loadObject();
 
-            $tag = new stdClass();
-            $tag->id = $row['term_id'] + $maxKey['tags'];
+            $tag = new TagTable($this->getDatabase());
+            $tag->ID = $row->term_id + $maxKey['tags'];
             $tag->parent_id = 0;
             $tag->lft = 0;
             $tag->rgt = 0;
             $tag->level = 0;
-            $tag->path = $row['name'];
-            $tag->title = $row['name'];
-            $tag->alias = $row['slug'];
-            $tag->note = "";
-            $tag->description = $row['description'];
+            $tag->path = $row->name;
+            $tag->title = $row->name;
+            $tag->alias = $row->slug;
+            $tag->note = '';
+            $tag->description = $row->description;
             $tag->published = 0;
-            $tag->check_out = NULL;
-            $tag->check_out_time = NULL;
+            $tag->checked_out = NULL;
+            $tag->checked_out_time = NULL;
             $tag->access = 0;
             $tag->params = '{}';
             $tag->metadesc = '';
             $tag->metakey = '';
             $tag->metadata = '{}';
-            $tag->created_user_id = $userid;
+            $tag->created_user_id = $user->id;
             $tag->created_time = $date;
             $tag->created_by_alias = '';
-            $tag->modified_user_id = $userid;
+            $tag->modified_user_id = $user->id;
             $tag->modified_time = $date;
             $tag->images = '{}';
             $tag->urls = '{}';
@@ -442,20 +429,20 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $tag->version = 1;
             $tag->publish_up = $date;
             $tag->publish_down = NULL;
-
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'tags', $tag);
+            $tag->setLocation(1, 'last-child');
+            $tag->store();
 
             $contentTowrite = 'Tag Imported Successfully with id = ' . $key;
             LogHelper::writeLog($contentTowrite, 'success');
             LogHelper::writeSessionLog("success", $field);
-            $update[] = ['status' => "success"];
+            $status[] = ['status' => "success"];
         } catch (\RuntimeException $th) {
             LogHelper::writeLog('Tag Imported Unsuccessfully with id = ' . $key, 'error');
             LogHelper::writeLog($th, 'normal');
             LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "error"];
+            $status[] = ['status' => "error"];
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        Factory::getSession()->set('com_migratetojoomla.ajaxresponse', $status);
     }
 
     /** 
@@ -469,67 +456,61 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         $key = $event->getArgument('key');
         $field = $event->getArgument('field');
-        $update[] = [];
-        // current login user
-        $user = Factory::getApplication()->getIdentity();
-        $userid = $user->id;
-        $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
-        // datetime
+        $status[] = [];
+
+        $app = Factory::getApplication();
+        $user    = $app->getIdentity();
         $date = (string)Factory::getDate();
+
         try {
 
-            if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            if (!\is_resource($this->wpDB)) {
+                self::createWPDB($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-            $db = $this->db;
 
-            // Specify the table name
-            $tabletermtaxonomy = rtrim($data['dbtableprefix'], '_') . '_term_taxonomy';
-            $tableterms = rtrim($data['dbtableprefix'], '_') . '_terms';
+            $maxKey = $app->getSession()->get('com_migratetojoomla.maxkey', []);
+            $wpDB = $this->wpDB;
 
-            $config['dbo'] = $db;
-            $tablePrefix = Factory::getConfig()->get('dbprefix');
+            $config['dbo'] = $wpDB;
 
             // load data from framework table
-            $query = $db->getQuery(true)
+            $query = $wpDB->getQuery(true)
                 ->select(['a.term_id', 'b.parent', 'a.name', 'a.slug', 'b.description'])
-                ->from($db->quoteName($tabletermtaxonomy, 'b'))
-                ->join('LEFT', $db->quoteName($tableterms, 'a'), $db->quoteName('a.term_id') . '=' . $db->quoteName('b.term_id'))
-                ->where($db->quoteName('b.term_id') . '=' . $key);
+                ->from($wpDB->quoteName("#__term_taxonomy", 'b'))
+                ->leftjoin($wpDB->quoteName('#__terms', 'a'), $wpDB->quoteName('a.term_id') . '=' . $wpDB->quoteName('b.term_id'))
+                ->where($wpDB->quoteName('b.term_id') . '=' . $key);
 
-            $db->setQuery($query);
-            $results = $db->loadAssocList();
-            $totalcategory = count(@Factory::getApplication()->getSession()->get('migratetojoomla.tablekeys', [])['category']);
-            $row = $results[0];
+            $wpDB->setQuery($query);
+            $row = $wpDB->loadObject();
+            $totalcategory = count($app->getSession()->get('com_migratetojoomla.tablekeys', [])['category']);
 
             $patharray = [];
             $levelarray = [];
-            // manupulate data to find parentcategory path and level
 
-            if ($row['parent'] != 0) {
+            // manipulate data to find parentcategory path and level
+
+            if ($row->parent != 0) {
                 // It is a child category
-
                 $parrentsarray = [];
                 $currentelement = $row;
                 $iteration = 0;
-                while ($currentelement['parent'] != 0 && $iteration < $totalcategory) {
-                    array_push($parrentsarray, $currentelement['name']);
-                    $iteration = $iteration + 1; // to avoid infinite loop over
+                while ($currentelement->parent != 0 && $iteration < $totalcategory) {
+                    array_push($parrentsarray, $currentelement->name);
+                    $iteration = $iteration; // to avoid infinite loop over
 
                     // finding parent row and assign it as currentelement for next iteration
-                    $query = $db->getQuery(true)
+                    $query = $wpDB->getQuery(true)
                         ->select(['a.term_id', 'a.name', 'b.parent'])
-                        ->from($db->quoteName($tabletermtaxonomy, 'b'))
-                        ->join('LEFT', $db->quoteName($tableterms, 'a'), $db->quoteName('a.term_id') . '=' . $db->quoteName('b.term_id'))
-                        ->where($db->quoteName('b.term_id') . '=' . $currentelement['parent']);
+                        ->from($wpDB->quoteName("#__term_taxonomy", 'b'))
+                        ->leftjoin($wpDB->quoteName('#__terms', 'a'), $wpDB->quoteName('a.term_id') . '=' . $wpDB->quoteName('b.term_id'))
+                        ->where($wpDB->quoteName('b.term_id') . '=' . $currentelement->parent);
 
-                    $db->setQuery($query);
-                    $results = $db->loadAssocList();
-                    $currentelement = $results[0];
+                    $wpDB->setQuery($query);
+                    $currentelement = $wpDB->loadObject();
                 }
+
                 // pushing currentelement in parent array
-                array_push($parrentsarray, $currentelement['name']);
+                array_push($parrentsarray, $currentelement->name);
 
                 // reverse array element
                 $reverseparent = array_reverse($parrentsarray);
@@ -540,23 +521,23 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 array_push($levelarray, count($parrentsarray));
             } else {
                 // It is not a child category
-                array_push($patharray, $row['name']);
+                array_push($patharray, $row->name);
                 array_push($levelarray, 1);
             }
 
-            $category = new stdClass();
-            $category->id = $row['term_id'] + $maxKey['categories'];
+            $category = new CategoryTable($this->getDatabase());
+            $category->ID = $row->term_id + $maxKey['categories'];
             $category->asset_id = 0;
-            $category->parent_id = $row['parent'];
+            $category->parent_id = $row->parent;
             $category->lft = 0;
             $category->rgt = 0;
             $category->level = $levelarray[0];
             $category->path = $patharray[0];
             $category->extension = 'com_content';
-            $category->title = $row['name'];
-            $category->alias = $row['slug'];
+            $category->title = $row->name;
+            $category->alias = $row->slug;
             $category->note = "";
-            $category->description = $row['description'];
+            $category->description = $row->description;
             $category->published = 0;
             $category->check_out = NULL;
             $category->check_out_time = NULL;
@@ -565,27 +546,26 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $category->metadesc = '';
             $category->metakey = '';
             $category->metadata = '{}';
-            $category->created_user_id = $userid;
+            $category->created_user_id = $user->id;
             $category->created_time = $date;
-            $category->modified_user_id = $userid;
+            $category->modified_user_id = $user->id;
             $category->modified_time = $date;
             $category->hits = 0;
             $category->language = '*';
             $category->version = 1;
-
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'categories', $category);
+            $category->store();
 
             $contentTowrite = 'Category Imported Successfully with id = ' . $key;
             LogHelper::writeLog($contentTowrite, 'success');
             LogHelper::writeSessionLog("success", $field);
-            $update[] = ['status' => "success"];
+            $status[] = ['status' => "success"];
         } catch (\RuntimeException $th) {
             LogHelper::writeLog('Category  Imported Unsuccessfully with id = ' . $key, 'error');
             LogHelper::writeLog($th, 'normal');
             LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "error"];
+            $status[] = ['status' => "error"];
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        Factory::getSession()->set('com_migratetojoomla.ajaxresponse', $status);
     }
 
     /** 
@@ -599,65 +579,53 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         $key = $event->getArgument('key');
         $field = $event->getArgument('field');
-        $update[] = [];
-        // current login user
-        $user = Factory::getApplication()->getIdentity();
-        $userid = $user->id;
-        $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
-        // datetime
-        $date = (string)Factory::getDate();
+        $status[] = [];
+        $app = Factory::getApplication();
         try {
 
-            if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            if (!\is_resource($this->wpDB)) {
+                self::createWPDB($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-            $db = $this->db;
 
-            // Specify the table name
-            $tabletermtaxonomy = rtrim($data['dbtableprefix'], '_') . '_term_taxonomy';
-            $tableterms = rtrim($data['dbtableprefix'], '_') . '_terms';
+            $maxKey = $app->getSession()->get('com_migratetojoomla.maxkey', []);
+            $wpDB = $this->wpDB;
 
-            $config['dbo'] = $db;
-            $tablePrefix = Factory::getConfig()->get('dbprefix');
+            $config['dbo'] = $wpDB;
 
             // load data from framework table
-            $query = $db->getQuery(true)
+            $query = $wpDB->getQuery(true)
                 ->select(['a.term_id', 'a.slug', 'a.name', 'b.description'])
-                ->from($db->quoteName($tabletermtaxonomy, 'b'))
-                ->join('LEFT', $db->quoteName($tableterms, 'a'), $db->quoteName('a.term_id') . '=' . $db->quoteName('b.term_id'))
-                ->where($db->quoteName('b.term_id') . '=' . $key);
+                ->from($wpDB->quoteName('#__term_taxonomy', 'b'))
+                ->leftjoin($wpDB->quoteName('#__terms', 'a'), $wpDB->quoteName('a.term_id') . '=' . $wpDB->quoteName('b.term_id'))
+                ->where($wpDB->quoteName('b.term_id') . '=' . $key);
 
-            $db->setQuery($query);
-            $results = $db->loadAssocList();
-            $row = $results[0];
+            $wpDB->setQuery($query);
+            $row = $wpDB->loadObject();
 
-            $menu = new stdClass();
-            $menu->id = $row['term_id'] + $maxKey['menu'];
+            $menu = new MenuTypeTable($this->getDatabase());
+            $menu->ID = $row->term_id + $maxKey['menu_types'];
             $menu->asset_id = 0;
-            $menu->menutype = $row['slug'];
-            $menu->title = $row['name'];
-            $menu->description = $row['description'];
+            $menu->menutype = $row->slug;
+            $menu->title = $row->name;
+            $menu->description = $row->description;
             $menu->client_id = 0;
-
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'menu_types', $menu);
+            $menu->store();
 
             $contentTowrite = 'Menu Imported Successfully with id = ' . $key;
             LogHelper::writeLog($contentTowrite, 'success');
             LogHelper::writeSessionLog("success", $field);
-            $update[] = ['status' => "success"];
+            $status[] = ['status' => "success"];
         } catch (\RuntimeException $th) {
             LogHelper::writeLog('Menu Imported Unsuccessfully with id = ' . $key, 'error');
             LogHelper::writeLog($th, 'normal');
             LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "error"];
+            $status[] = ['status' => "error"];
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        Factory::getSession()->set('com_migratetojoomla.ajaxresponse', $status);
     }
 
     /** 
      * Method to import Menu Items
-     * 
      * 
      * @param   EventInterface    $event  
      *
@@ -667,82 +635,77 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
     {
         $key = $event->getArgument('key');
         $field = $event->getArgument('field');
-        $update[] = [];
+        $status[] = [];
+        $app = Factory::getApplication();
+
         try {
 
-            if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            if (!\is_resource($this->wpDB)) {
+                self::createWPDB($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-            $db = $this->db;
-            $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
 
-            $databaseprefix = rtrim($data['dbtableprefix'], '_');
-            // Specify the table name
-            $tableposts = $databaseprefix . '_posts';
-            $tablepostmeta = $databaseprefix . '_postmeta';
-            $tabletermtaxonomy = $databaseprefix . '_term_taxonomy';
-            $tableterms = $databaseprefix . '_terms';
-            $tabletermrelationship = $databaseprefix . '_term_relationships';
+            $maxKey = $app->getSession()->get('com_migratetojoomla.maxkey', []);
+            $wpDB = $this->wpDB;
 
-            $config['dbo'] = $db;
-            $tablePrefix = Factory::getConfig()->get('dbprefix');
+            $config['dbo'] = $wpDB;
+            $tableposts = '#__posts';
+            $tablepostmeta = '#__postmeta';
+            $tabletermtaxonomy = '#__term_taxonomy';
+            $tableterms = '#__terms';
+            $tabletermrelationship = '#__term_relationships';
 
-            $query = $db->getQuery(true)
+            $query = $wpDB->getQuery(true)
                 ->select('DISTINCT ID , post_title , post_parent , menu_order , post_date , e.name')
-                ->from($db->quoteName($tableposts, 'a'))
-                ->join('LEFT', $db->quoteName($tablepostmeta, 'b'), $db->quoteName('a.ID') . '=' . $db->quoteName('b.post_id'))
-                ->join('LEFT', $db->quoteName($tabletermrelationship, 'c'), $db->quoteName('a.ID') . '=' . $db->quoteName('c.object_id'))
-                ->join('LEFT', $db->quoteName($tabletermtaxonomy, 'd'), $db->quoteName('c.term_taxonomy_id') . '=' . $db->quoteName('d.term_taxonomy_id'))
-                ->join('LEFT', $db->quoteName($tableterms, 'e'), $db->quoteName('d.term_id') . '=' . $db->quoteName('e.term_id'))
-                ->where($db->quoteName('ID') . '=' . $key);
+                ->from($wpDB->quoteName($tableposts, 'a'))
+                ->leftjoin($wpDB->quoteName($tablepostmeta, 'b'), $wpDB->quoteName('a.ID') . '=' . $wpDB->quoteName('b.post_id'))
+                ->leftjoin($wpDB->quoteName($tabletermrelationship, 'c'), $wpDB->quoteName('a.ID') . '=' . $wpDB->quoteName('c.object_id'))
+                ->leftjoin($wpDB->quoteName($tabletermtaxonomy, 'd'), $wpDB->quoteName('c.term_taxonomy_id') . '=' . $wpDB->quoteName('d.term_taxonomy_id'))
+                ->leftjoin($wpDB->quoteName($tableterms, 'e'), $wpDB->quoteName('d.term_id') . '=' . $wpDB->quoteName('e.term_id'))
+                ->where($wpDB->quoteName('ID') . '=' . $key);
 
-            $db->setQuery($query);
-            $results = $db->loadAssocList();
-            $row = $results[0];
-
+            $wpDB->setQuery($query);
+            $row = $wpDB->loadObject();
 
             // load taxonomy id
-            $query = $db->getQuery(true)
+            $query = $wpDB->getQuery(true)
                 ->select('meta_value')
-                ->from($db->quoteName($tablepostmeta, 'a'))
-                ->where($db->quoteName('a.post_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('a.meta_key') . '=' . $db->q('_menu_item_object_id'));
-            $db->setQuery($query);
-            $result = $db->loadAssocList();
+                ->from($wpDB->quoteName($tablepostmeta, 'a'))
+                ->where($wpDB->quoteName('a.post_id') . '=' . $key, 'AND')
+                ->where($wpDB->quoteName('a.meta_key') . '=' . $wpDB->q('_menu_item_object_id'));
+            $wpDB->setQuery($query);
+            $result = $wpDB->loadObject();;
 
-            $taxonomyid = intval($result[0]['meta_value']);
+            $taxonomyid = intval($result->meta_value);
 
             // Is category or tag or page or post or customLink
-            $query = $db->getQuery(true)
-                ->select($db->quoteName('meta_value'))
-                ->from($db->quoteName($tablepostmeta, 'a'))
-                ->where($db->quoteName('a.post_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('a.meta_key') . '=' . $db->q('_menu_item_object'));
-            $db->setQuery($query);
-            $resultload = $db->loadAssocList();
-            $taxonomytype = $resultload[0]['meta_value'];
+            $query = $wpDB->getQuery(true)
+                ->select($wpDB->quoteName('meta_value'))
+                ->from($wpDB->quoteName($tablepostmeta, 'a'))
+                ->where($wpDB->quoteName('a.post_id') . '=' . $key, 'AND')
+                ->where($wpDB->quoteName('a.meta_key') . '=' . $wpDB->q('_menu_item_object'));
+            $wpDB->setQuery($query);
+            $resultload = $wpDB->loadObject();;
+            $taxonomytype = $resultload->meta_value;
 
             // load taxonomy title information
-
             if ($taxonomytype == "category" || $taxonomytype == "post_tag") {
                 LogHelper::writeLog('logfilecategory  ' . $taxonomyid . gettype($taxonomyid));
 
-                $query = $db->getQuery(true)
-                    ->select($db->quoteName('name'))
-                    ->from($db->quoteName($tableterms, 'a'))
-                    ->where($db->quoteName('a.term_id') . '=' . $taxonomyid);
-                $db->setQuery($query);
-                $taxonomyinfo = $db->loadAssocList();
-                $menuitemtitle = (empty($row['post_title'])) ? $taxonomyinfo[0]['name'] : $row['post_title'];
+                $query = $wpDB->getQuery(true)
+                    ->select($wpDB->quoteName('name'))
+                    ->from($wpDB->quoteName($tableterms, 'a'))
+                    ->where($wpDB->quoteName('a.term_id') . '=' . $taxonomyid);
+                $wpDB->setQuery($query);
+                $taxonomyinfo = $wpDB->loadObject();;
+                $menuitemtitle = (empty($row->post_title)) ? $taxonomyinfo->name : $row->post_title;
             } else {
-                $query = $db->getQuery(true)
-                    ->select($db->quoteName('post_title'))
-                    ->from($db->quoteName($tableposts, 'a'))
-                    ->where($db->quoteName('a.ID') . '=' . $db->q($taxonomyid));
-                $db->setQuery($query);
-                $taxonomyinfo = $db->loadAssocList();
-                $menuitemtitle = (empty($row['post_title'])) ? $taxonomyinfo['post_title'] : $row['post_title'];
+                $query = $wpDB->getQuery(true)
+                    ->select($wpDB->quoteName('post_title'))
+                    ->from($wpDB->quoteName($tableposts, 'a'))
+                    ->where($wpDB->quoteName('a.ID') . '=' . $wpDB->q($taxonomyid));
+                $wpDB->setQuery($query);
+                $taxonomyinfo = $wpDB->loadObject();;
+                $menuitemtitle = (empty($row->post_title)) ? $taxonomyinfo->post_title : $row->post_title;
             }
 
             // set menu item Link
@@ -760,22 +723,22 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                     $menuitemlink =  'index.php?option=com_content&view=article&id={' . $taxonomyid . '}';
                     break;
                 case "custom":
-                    $query = $db->getQuery(true)
-                        ->select($db->quoteName('meta_value'))
-                        ->from($db->quoteName($tablepostmeta, 'a'))
-                        ->where($db->quoteName('a.post_id') . '=' . $key, 'AND')
-                        ->where($db->quoteName('a.meta_key') . '=' . $db->q('_menu_item_url'));
-                    $db->setQuery($query);
-                    $menuitemlink = ($db->loadAssocList())[0]['meta_value'];
+                    $query = $wpDB->getQuery(true)
+                        ->select($wpDB->quoteName('meta_value'))
+                        ->from($wpDB->quoteName($tablepostmeta, 'a'))
+                        ->where($wpDB->quoteName('a.post_id') . '=' . $key, 'AND')
+                        ->where($wpDB->quoteName('a.meta_key') . '=' . $wpDB->q('_menu_item_url'));
+                    $wpDB->setQuery($query);
+                    $menuitemlink = $wpDB->loadObject()->meta_value;
                     break;
                 default:
                     $menuitemlink = " ";
                     break;
             }
 
-            $menuitem = new stdClass();
-            $menuitem->id = $row['ID'] + $maxKey['menu'];
-            $menuitem->menutype = $row['name'];
+            $menuitem = new MenuTable($this->getDatabase());
+            $menuitem->ID = $row->ID + $maxKey['menu'];
+            $menuitem->menutype = $row->name;
             $menuitem->title = $menuitemtitle;
             $menuitem->alias = strtolower($menuitemtitle);
             $menuitem->note = '';
@@ -783,8 +746,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $menuitem->link = $menuitemlink;
             $menuitem->type = 'component';
             $menuitem->published = 1;
-            $menuitem->parent_id = $row['post_parent'];
-            $menuitem->level = $row['menu_order'];
+            $menuitem->parent_id = $row->post_parent;
+            $menuitem->level = $row->menu_order;
             $menuitem->component_id = 19;
             $menuitem->checked_out = NULL;
             $menuitem->checked_out_time = NULL;
@@ -798,110 +761,103 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $menuitem->home = 0;
             $menuitem->language = '*';
             $menuitem->client_id = 0;
-            $menuitem->publish_up = $row['post_date'];
+            $menuitem->publish_up = $row->post_date;
             $menuitem->publish_down = NULL;
-
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'menu', $menuitem);
+            $menuitem->store();
 
             $contentTowrite = 'MenuItem Imported Successfully with id = ' . $key;
             LogHelper::writeLog($contentTowrite, 'success');
             LogHelper::writeSessionLog("success", $field);
-            $update[] = ['status' => "success"];
+            $status[] = ['status' => "success"];
         } catch (\RuntimeException $th) {
             LogHelper::writeLog('MenuItem Imported Unsuccessfully with id = ' . $key, 'error');
             LogHelper::writeLog($th, 'normal');
             LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "error"];
+            $status[] = ['status' => "error"];
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        Factory::getSession()->set('com_migratetojoomla.ajaxresponse', $status);
     }
 
     /** 
      * Method to import post and pages
      * 
-     * 
      * @param   EventInterface    $event  
      *
      * @since 1.0
      */
-    public function importPostsAndPage(EventInterface $event)
+    public function importArticle(EventInterface $event)
     {
         $key = $event->getArgument('key');
         $field = $event->getArgument('field');
-        $update[] = [];
+        $status[] = [];
+        $app = Factory::getApplication();
         $articletype = "";
+
         try {
-            if (!\is_resource($this->db)) {
-                self::setdatabase($this, Factory::getApplication()->getUserState('com_migratetojoomla.information', []));
+            if (!\is_resource($this->wpDB)) {
+                self::createWPDB($this, $app->getUserState('com_migratetojoomla.information', []));
             }
-            $data = Factory::getApplication()->getUserState('com_migratetojoomla.information', []);
-            $dataparameter = Factory::getApplication()->getUserState('com_migratetojoomla.parameter', []);
+
+            $dataparameter = $app->getUserState('com_migratetojoomla.parameter', []);
             // $imagemigrateway = 1;
-            $imagemigrateway = @$dataparameter['postfeatureimage'];
-            // datetime
-            $maxKey = Factory::getSession()->get('migratetojoomla.maxkey', []);
+            $imagemigrateway = $dataparameter['frameworkparams']['postfeatureimage'];
+            // // datetime
+            $maxKey = $app->getSession()->get('com_migratetojoomla.maxkey', []);
 
             $date = (string)Factory::getDate();
-            $db = $this->db;
+            $wpDB = $this->wpDB;
             // current login user
-            $user = Factory::getApplication()->getIdentity();
+            $user = $app->getIdentity();
             $userid = $user->id;
 
-            $databaseprefix = rtrim($data['dbtableprefix'], '_');
             // Specify the table name
-            $tableposts = $databaseprefix . '_posts';
-            $tablepostmeta = $databaseprefix . '_postmeta';
-            $tabletermtaxonomy = $databaseprefix . '_term_taxonomy';
-            $tableterms = $databaseprefix . '_terms';
-            $tabletermrelationship = $databaseprefix . '_term_relationships';
+            $tableposts = '#__posts';
+            $tablepostmeta = '#__postmeta';
+            $tabletermtaxonomy = '#__term_taxonomy';
+            $tableterms = '#__terms';
+            $tabletermrelationship = '#__term_relationships';
 
-            $config['dbo'] = $db;
-            $tablePrefix = Factory::getConfig()->get('dbprefix');
+            $config['dbo'] = $wpDB;
 
-            $query = $db->getQuery(true)
+            $query = $wpDB->getQuery(true)
                 ->select('*')
-                ->from($db->quoteName($tableposts, 'a'))
-                ->where($db->quoteName('a.ID') . '=' . $key);
+                ->from($wpDB->quoteName($tableposts, 'a'))
+                ->where($wpDB->quoteName('a.ID') . '=' . $key);
 
-            $db->setQuery($query);
-            $results = $db->loadAssocList();
-            $row = $results[0];
-            // $totalcount = count($results);
-            // foreach ($results as $row) {
-
-            $articleid = $key + $maxKey['content'];
-            $articletype = $row['post_type'];
+            $wpDB->setQuery($query);
+            $row = $wpDB->loadObject();
+            $articletype = $row->post_type;
 
             // getting all categories associate with item
-            $query  = $db->getQuery(true)
+            $query  = $wpDB->getQuery(true)
                 ->select('*')
-                ->from($db->quoteName($tabletermrelationship, 'a'))
-                ->join('LEFT', $db->quoteName($tabletermtaxonomy, 'b'), $db->quoteName('a.term_taxonomy_id') . '=' . $db->quoteName('b.term_taxonomy_id'))
-                ->join('LEFT', $db->quoteName($tableterms, 'c'), $db->quoteName('b.term_id') . '=' . $db->quoteName('c.term_id'))
-                ->where($db->quoteName('a.object_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('b.taxonomy') . '=' . $db->q('category'));
-            $db->setQuery($query);
-            $allcategories =  $db->loadAssocList();
+                ->from($wpDB->quoteName($tabletermrelationship, 'a'))
+                ->leftjoin($wpDB->quoteName($tabletermtaxonomy, 'b'), $wpDB->quoteName('a.term_taxonomy_id') . '=' . $wpDB->quoteName('b.term_taxonomy_id'))
+                ->leftjoin($wpDB->quoteName($tableterms, 'c'), $wpDB->quoteName('b.term_id') . '=' . $wpDB->quoteName('c.term_id'))
+                ->where($wpDB->quoteName('a.object_id') . '=' . $key, 'AND')
+                ->where($wpDB->quoteName('b.taxonomy') . '=' . $wpDB->q('category'));
+            $wpDB->setQuery($query);
+            $allcategories =  $wpDB->loadAssocList();
 
             // getting all tags associate with item
-            $query  = $db->getQuery(true)
+            $query  = $wpDB->getQuery(true)
                 ->select('*')
-                ->from($db->quoteName($tabletermrelationship, 'a'))
-                ->join('LEFT', $db->quoteName($tabletermtaxonomy, 'b'), $db->quoteName('a.term_taxonomy_id') . '=' . $db->quoteName('b.term_taxonomy_id'))
-                ->join('LEFT', $db->quoteName($tableterms, 'c'), $db->quoteName('b.term_id') . '=' . $db->quoteName('c.term_id'))
-                ->where($db->quoteName('a.object_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('b.taxonomy') . '=' . $db->q('post_tag'));
-            $db->setQuery($query);
-            $alltags =  $db->loadAssocList();
+                ->from($wpDB->quoteName($tabletermrelationship, 'a'))
+                ->leftjoin($wpDB->quoteName($tabletermtaxonomy, 'b'), $wpDB->quoteName('a.term_taxonomy_id') . '=' . $wpDB->quoteName('b.term_taxonomy_id'))
+                ->leftjoin($wpDB->quoteName($tableterms, 'c'), $wpDB->quoteName('b.term_id') . '=' . $wpDB->quoteName('c.term_id'))
+                ->where($wpDB->quoteName('a.object_id') . '=' . $key, 'AND')
+                ->where($wpDB->quoteName('b.taxonomy') . '=' . $wpDB->q('post_tag'));
+            $wpDB->setQuery($query);
+            $alltags =  $wpDB->loadAssocList();
 
             // getting id of featured image
-            $query = $db->getQuery(true)
+            $query = $wpDB->getQuery(true)
                 ->select('meta_value')
-                ->from($db->quoteName($tablepostmeta, 'a'))
-                ->where($db->quoteName('a.post_id') . '=' . $key, 'AND')
-                ->where($db->quoteName('a.meta_key') . '=' . $db->q('_thumbnail_id'));
-            $db->setQuery($query);
-            $tempresult =  $db->loadAssocList();
+                ->from($wpDB->quoteName($tablepostmeta, 'a'))
+                ->where($wpDB->quoteName('a.post_id') . '=' . $key, 'AND')
+                ->where($wpDB->quoteName('a.meta_key') . '=' . $wpDB->q('_thumbnail_id'));
+            $wpDB->setQuery($query);
+            $tempresult =  $wpDB->loadAssocList();
 
             $imageid = NULL;
             if (count($tempresult) > 0) {
@@ -913,13 +869,12 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $imageurl = NULL;
             $articleimage = '{"image_intro":"","image_intro_alt":"","float_intro":"","image_intro_caption":"","image_fulltext":"","image_fulltext_alt":"","float_fulltext":"","image_fulltext_caption":""}';
             if (!is_null($imageid)) {
-                $query = $db->getQuery(true)
+                $query = $wpDB->getQuery(true)
                     ->select('post_title , post_content, post_excerpt, post_name , guid')
-                    ->from($db->quoteName($tableposts, 'a'))
-                    ->where($db->quoteName('a.ID') . '=' . $imageid);
-                $db->setQuery($query);
-                $imageinfo =  $db->loadAssocList();
-                $imageinfo = $imageinfo[0];
+                    ->from($wpDB->quoteName($tableposts, 'a'))
+                    ->where($wpDB->quoteName('a.ID') . '=' . $imageid);
+                $wpDB->setQuery($query);
+                $imageinfo = $wpDB->loadObject();
                 $url = $imageinfo['guid'];
                 if (!empty($url)) {
 
@@ -942,7 +897,6 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                         break;
 
                     default:
-                        LogHelper::writeLog($imageinfo['post_title'], "success");
                         $articleimage = '{"image_intro":' . $imageurl . ',"image_intro_alt":' . $imageinfo['post_title'] . ',"float_intro":"","image_intro_caption":' . $imageinfo['post_excerpt'] . ',"image_fulltext":' . $imageurl . ',"image_fulltext_alt":' . $imageinfo['post_title'] . ',"float_fulltext":"","image_fulltext_caption":' . $imageinfo['post_content'] . '}';
                         break;
                 }
@@ -950,28 +904,38 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
 
             $articlecategoryId = 0;
 
+            // default category for article
+            $joomladb = Factory::getContainer()->get(DatabaseInterface::class);
+            $query = $wpDB->getQuery(true)
+                    ->select('id')
+                    ->from($wpDB->quoteName("#__categories", 'a'))
+                    ->where($wpDB->quoteName('a.extension') . '=' . $joomladb->q("com_content"))
+                    ->setLimit(1);
+            $joomladb->setQuery($query);
+            $articlecategoryId = $joomladb->loadObject()->id;
+
+
             if (count($allcategories) == 1) {
                 $articlecategoryId = $allcategories[0]['term_id'];
             }
 
             // state of article
             $articlestate = 1; // for post publish and future
-            if ($row['post_status'] == 'draft' || $row['post_status'] == 'pending') {
+            if ($row->post_status == 'draft' || $row->post_status == 'pending') {
                 $articlestate = 0;
             }
 
             // article import
             $article = new stdClass();
-            $article->id = $articleid;
             $article->asset_id = 0;
-            $article->title = $row['post_title'];
-            $article->alias = $row['post_name'];
-            $article->introtext = empty($row['post_exerpt']) ? '' : $row['post_exerpt'];
-            $article->fulltext = $row['post_content'];
+            $article->title = $row->post_title;
+            $article->alias = $row->post_name;
+            $article->introtext = empty($row->post_exerpt) ? '' : $row->post_exerpt;
+            $article->fulltext = $row->post_content;
             $article->state = $articlestate;
             $article->catid = $articlecategoryId;
-            $article->created = $row['post_date'];
-            $article->created_by = $row['post_author'];
+            $article->created = $row->post_date;
+            $article->created_by = $row->post_author;
             $article->created_by_alias = "";
             $article->modified = $date;
             $article->modified_by = $userid;
@@ -993,8 +957,25 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
             $article->language = '*';
             $article->note = "";
 
-            $jdb = Factory::getDbo()->insertObject($tablePrefix . 'content', $article);
+ 
+            $content_array = $article;
+            $content_array = json_decode(json_encode($article), true);
+            $factory       = $app->bootComponent('com_content')->getMVCFactory();
+            $content_model = $factory->createModel('Article', 'Administrator', ['ignore_request' => true]);
+
+            // Simple Object to Array conversion.
+            $content_model->save($content_array);
+            if (!$content_model->save($content_array)) {
+                LogHelper::writeLog($articletype . ' Imported Unsuccessfully with id = ' . $key, 'error');
+                LogHelper::writeSessionLog("error", $field);
+                $status[] = ['status' => "error"];
+                LogHelper::writeLog($content_model->getError(), 'normal');
+                throw new \Exception($content_model->getError());
+            }
+
             // tag map all item associate tags
+            $articleid = $content_model->getState('article.id');
+
             foreach ($alltags as $tag) {
                 $tagmap = new stdClass();
                 $tagmap->type_alias = "com_content.article";
@@ -1004,7 +985,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $tagmap->tag_time = $date;
                 $tagmap->type_id = 1;
 
-                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'contentitem_tag_map', $tagmap);
+                $jdb = $joomladb->insertObject('#__contentitem_tag_map', $tagmap);
             }
 
             // more that one category convert into tags
@@ -1023,18 +1004,18 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                     }
 
                     // one category can associate with multiple pages and post so to avoid duplicate key error checking whether it already exist or not
-                    $joomladb = Factory::getDbo();
                     $query = $joomladb->getQuery(true)
                         ->select('id')
-                        ->from($joomladb->quoteName($tablePrefix . 'tags'))
+                        ->from($joomladb->quoteName('#__tags'))
                         ->where($joomladb->quoteName('id') . '=' . $category['term_id'] + $maxKey['categories']);
                     $joomladb->setQuery($query);
                     $tempdata =  $joomladb->loadAssocList();
 
                     if (count($tempdata) == 0) {
 
-                        $tag = new stdClass();
-                        $tag->id = $category['term_id'] + $maxKey['categories']; // will change in future to avoid duplicate key error (when id map implemented)
+                        // $tag = new stdClass();
+                        $tag = new TagTable($this->getDatabase());
+                        $tag->id = $category['term_id'] + $maxKey['categories'];
                         $tag->parent_id = 0;
                         $tag->lft = 0;
                         $tag->rgt = 0;
@@ -1064,9 +1045,8 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                         $tag->version = 1;
                         $tag->publish_up = $date;
                         $tag->publish_down = NULL;
-
-
-                        $jdb = Factory::getDbo()->insertObject($tablePrefix . 'tags', $tag);
+                        $tag->setLocation(1, 'last-child');
+                        $tag->store();
                     }
                     $tagmap = new stdClass();
                     $tagmap->type_alias = "com_content.article";
@@ -1076,24 +1056,23 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                     $tagmap->tag_time = $date;
                     $tagmap->type_id = 1;
 
-                    $jdb = Factory::getDbo()->insertObject($tablePrefix . 'contentitem_tag_map', $tagmap);
+                    $jdb = $joomladb->insertObject('#__contentitem_tag_map', $tagmap);
                 }
             }
             // if item is page then create a menuitem pointing to that article
             if ($articletype == "page") {
 
-                $menuitem = new stdClass();
-                $menuitem->id = $key + $maxKey['menu'];
-                $menuitem->menutype = $row['post_name'];
-                $menuitem->title = $row['post_title'];
-                $menuitem->alias = strtolower($row['post_title']);
+                $menuitem =new MenuTable($this->getDatabase());
+                $menuitem->menutype = $row->post_name;
+                $menuitem->title = $row->post_title;
+                $menuitem->alias = strtolower($row->post_title);
                 $menuitem->note = '';
-                $menuitem->path = strtolower($row['post_title']);
-                $menuitem->link = 'index.php?option=com_content&view=article&id={' . $articleid . '}';;
+                $menuitem->path = strtolower($row->post_title);
+                $menuitem->link = 'index.php?option=com_content&view=article&id={' . $articleid . '}';
                 $menuitem->type = 'component';
                 $menuitem->published = 1;
-                $menuitem->parent_id = $row['post_parent'];
-                $menuitem->level = $row['menu_order'];
+                $menuitem->parent_id = $row->post_parent;
+                $menuitem->level = $row->menu_order;
                 $menuitem->component_id = 19;
                 $menuitem->checked_out = NULL;
                 $menuitem->checked_out_time = NULL;
@@ -1107,22 +1086,21 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface
                 $menuitem->home = 0;
                 $menuitem->language = '*';
                 $menuitem->client_id = 0;
-                $menuitem->publish_up = $row['post_date'];
+                $menuitem->publish_up = $row->post_date;
                 $menuitem->publish_down = NULL;
-
-                $jdb = Factory::getDbo()->insertObject($tablePrefix . 'menu', $menuitem);
+                $menuitem->store();
             }
 
             $contentTowrite = $articletype . ' Imported Successfully with id = ' . $key;
             LogHelper::writeLog($contentTowrite, 'success');
             LogHelper::writeSessionLog("success", $field);
-            $update[] = ['status' => "success"];
+            $status[] = ['status' => "success"];
         } catch (\RuntimeException $th) {
             LogHelper::writeLog($articletype . ' Imported Unsuccessfully with id = ' . $key, 'error');
             LogHelper::writeSessionLog("error", $field);
-            $update[] = ['status' => "error"];
+            $status[] = ['status' => "error"];
             LogHelper::writeLog($th, 'normal');
         }
-        Factory::getSession()->set('migratetojoomla.ajaxresponse', $update);
+        Factory::getSession()->set('com_migratetojoomla.ajaxresponse', $status);
     }
 }

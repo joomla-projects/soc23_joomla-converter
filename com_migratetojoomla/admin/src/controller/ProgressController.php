@@ -4,7 +4,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_migratetojoomla
  *
- * @copyright   (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
+ * @copyright   (C) 2006 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -23,7 +23,7 @@ use Joomla\Component\MigrateToJoomla\Administrator\Helper\LogHelper;
 // phpcs:enable PSR1.Files.SideEffects
 
 /**
- * Progress controller class.
+ * Migrate controller class.
  *
  * @since  1.0
  */
@@ -52,7 +52,7 @@ class ProgressController extends BaseController
 
 		$default[] = [];
 
-		$response = Factory::getSession()->get('migratetojoomla.ajaxresponse', $default);
+		$response = Factory::getSession()->get('com_migratetojoomla.ajaxresponse', $default);
 
 		echo json_encode($response);
 		$this->app->close();

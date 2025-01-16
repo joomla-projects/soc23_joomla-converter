@@ -85,7 +85,7 @@ class HtmlView extends BaseHtmlView
         $doc->addScriptOptions("com_migratetojoomla.arrayimportstring", $output);
 
         $doc->addScriptOptions('com_migratetojoomla.displayimportstring', Factory::getSession()->get('migratetojoomla.displayimportstring', []));
-        $doc->addScriptOptions('com_migratetojoomla.keys', Factory::getSession()->get('migratetojoomla.tablekeys', []));
+        $doc->addScriptOptions('com_migratetojoomla.keys', Factory::getSession()->get('com_migratetojoomla.tablekeys', []));
         // Ajax url
         $doc->addScriptOptions('migratetojoomla.AjaxURL', 'index.php?option=com_migratetojoomla&view=information&task=ajax');
 
