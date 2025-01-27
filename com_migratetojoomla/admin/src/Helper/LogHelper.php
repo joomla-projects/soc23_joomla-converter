@@ -56,7 +56,7 @@ class LogHelper
         if (is_null($status) || is_null($field)) {
             return;
         }
-        $session = Factory::getApplication()->getSession()->get('migratetojoomla.log', []);
+        $session = Factory::getApplication()->getSession()->get('com_migratetojoomla.log', []);
 
         $fieldValue = ["success" => 0, "error" => 0];
         if (array_key_exists($field, $session)) {
@@ -71,7 +71,7 @@ class LogHelper
 
         $session[$field] = $fieldValue;
 
-        Factory::getApplication()->getSession()->set('migratetojoomla.log', $session);
+        Factory::getApplication()->getSession()->set('com_migratetojoomla.log', $session);
     }
 
     /** Method to write log file from session
@@ -80,7 +80,7 @@ class LogHelper
      */
     public static function writeLogFileOfSession()
     {
-        $session = Factory::getApplication()->getSession()->get('migratetojoomla.log', []);
+        $session = Factory::getApplication()->getSession()->get('com_migratetojoomla.log', []);
         $logsession = ['success' => [], 'error' => []];
         self::writeLog("Migration Report........", "success");
         foreach ($session as $field => $value) {
@@ -91,8 +91,8 @@ class LogHelper
             array_push($logsession['success'], $statementsuccess);
             array_push($logsession['error'], $statementunsuccess);
         }
-        Factory::getApplication()->getSession()->clear('migratetojoomla.log');
-        Factory::getApplication()->getSession()->set('migratetojoomla.logwrite', $logsession);
+        Factory::getApplication()->getSession()->clear('com_migratetojoomla.log');
+        Factory::getApplication()->getSession()->set('com_migratetojoomla.logwrite', $logsession);
     }
 
     /** Method to check log file exist or not and create if not exist

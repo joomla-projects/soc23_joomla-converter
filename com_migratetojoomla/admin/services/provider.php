@@ -8,43 +8,53 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-namespace Joomla\Component\MigrateToJoomla\Administrator\Extension;
+defined('_JEXEC') or die;
 
-use Joomla\CMS\Extension\BootableExtensionInterface;
-use Joomla\CMS\Extension\MVCComponent;
-use Joomla\CMS\Component\Router\RouterServiceInterface;
-use Joomla\CMS\Component\Router\RouterServiceTrait;
-use Psr\Container\ContainerInterface;
-
-// phpcs:disable PSR1.Files.SideEffects
-\defined('JPATH_PLATFORM') or die;
-// phpcs:enable PSR1.Files.SideEffects
+use Joomla\Component\MigrateToJoomla\Administrator\Extension\MigrateToJoomlaComponent;
+use Joomla\CMS\Component\Router\RouterFactoryInterface;
+use Joomla\CMS\Dispatcher\ComponentDispatcherFactoryInterface;
+use Joomla\CMS\Extension\ComponentInterface;
+use Joomla\CMS\Extension\Service\Provider\ComponentDispatcherFactory;
+use Joomla\CMS\Extension\Service\Provider\MVCFactory;
+use Joomla\CMS\Extension\Service\Provider\RouterFactory;
+use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
 
 /**
- * Component class for com_migratetojoomla
+ * The migratetojoomla service provider.
  *
  * @since  1.0
  */
-class MigrateToJoomlaComponent extends MVCComponent implements 
-    RouterServiceInterface,
-    BootableExtensionInterface
-{
-    use RouterServiceTrait;
 
+return new class implements ServiceProviderInterface {
+    
     /**
-     * Booting the extension. This is the function to set up the environment of the extension like
-     * registering new class loaders, etc.
+     * Registers the service provider with a DI container.
      *
-     * If required, some initial set up can be done from services of the container, eg.
-     * registering HTML services.
+     * @param   Container  $container  The DI container.
      *
-     * @param   ContainerInterface $container The container
+     * @return  void
      *
-     * @return void
-     *
-     * @since 4.3.0
+     * @since  1.0
      */
-    public function boot(ContainerInterface $container)
+
+    public function register(Container $container): void
     {
+        $container->registerServiceProvider(new MVCFactory('\\Joomla\\Component\\MigrateToJoomla'));
+        $container->registerServiceProvider(new ComponentDispatcherFactory('\\Joomla\\Component\\MigrateToJoomla'));
+        $container->registerServiceProvider(new RouterFactory('\\Joomla\\Component\\MigrateToJoomla'));
+
+        $container->set(
+            ComponentInterface::class,
+            function (Container $container) {
+                $component = new MigrateToJoomlaComponent($container->get(ComponentDispatcherFactoryInterface::class));
+
+                $component->setMVCFactory($container->get(MVCFactoryInterface::class));
+                $component->setRouterFactory($container->get(RouterFactoryInterface::class));
+
+                return $component;
+            }
+        );
     }
-}
+};
