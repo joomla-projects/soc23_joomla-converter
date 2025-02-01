@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @package     Joomla.Plugin
- * @subpackage  Migratetojoomla.mediadownload
+ * @package     Joomla.Administrator
+ * @subpackage  com_migratetojoomla.mediadownload
  *
  * @copyright   (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
@@ -21,11 +21,11 @@ class FilesystemDownload
 {
     /**
      * Method to check Enter base url connection
-     *
+     * 
      * @param string Base url of live website
      * @param boolean test by user of not
      * @return boolean True on success
-     *
+     * 
      * @since 1.0
      */
     public static function testConnection($path = '')

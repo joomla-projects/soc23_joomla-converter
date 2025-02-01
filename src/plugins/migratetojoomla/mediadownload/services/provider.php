@@ -1,14 +1,14 @@
 <?php
 
 /**
- * @package     Joomla.Plugin
- * @subpackage  Migratetojoomla.mediadownload
+ * @package     Joomla.Administrator
+ * @subpackage  com_migratetojoomla.mediadownload
  *
  * @copyright   (C) 2024 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-\defined('_JEXEC') or die;
+defined('_JEXEC') or die;
 
 use Joomla\CMS\Extension\PluginInterface;
 use Joomla\CMS\Factory;
@@ -18,7 +18,8 @@ use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
 use Joomla\Plugin\MigrateToJoomla\MediaDownload\Extension\MediaDownload;
 
-return new class () implements ServiceProviderInterface {
+return new class() implements ServiceProviderInterface
+{
     /**
      * Registers the service provider with a DI container.
      *
@@ -26,7 +27,7 @@ return new class () implements ServiceProviderInterface {
      *
      * @return  void
      *
-     * @since   1.0
+     * @since   4.3.0
      */
     public function register(Container $container)
     {

@@ -15,17 +15,16 @@ use Joomla\CMS\Plugin\PluginHelper;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
-/** @var \Joomla\Component\MigrateToJoomla\Administrator\View\Check\HtmlView $this */
+/** @var \Joomla\Component\MigrateToJoomla\Administrator\View\check\HtmlView $this */
 
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
-$wa = $this->getDocument()->getWebAssetManager();
+$wa = $this->document->getWebAssetManager();
 $wa->useScript('keepalive')
     ->useStyle('com_migratetojoomla.migratetojoomla');
 
 $app = Factory::getApplication();
 
-$data = $app->getUserState('com_migratetojoomla.parameter', []);
-;
+$data = $app->getUserState('com_migratetojoomla.parameter', []);;
 
 $parameterformdata = @$data["frameworkparams"];
 $framework = @$app->getUserState('com_migratetojoomla.migrate', [])['framework'];
@@ -129,7 +128,7 @@ if (@$data['databasemigratestatus'] == '0') {
             <div class="col-sm-6">
                 <?php
                 foreach ($datafieldskey as $item) :
-                    ?>
+                ?>
                     <ul class="list-group">
                         <?php if (in_array($item, $importstring) && $parameterformdata[$item] == '1') : ?>
                             <li class="list-group-item bg-success text-white m-1"><?php echo ucfirst($item) . " " . TEXT::_('COM_MIGRATETOJOOMLA_WILL_MIGRATE') ?></li>
@@ -140,7 +139,7 @@ if (@$data['databasemigratestatus'] == '0') {
             <div class="col-sm-6">
                 <?php
                 foreach ($datafieldskey as $item) :
-                    ?>
+                ?>
                     <ul class="list-group">
                         <?php if (in_array($item, $importstring) && $parameterformdata[$item] == '0') : ?>
                             <li class="list-group-item bg-danger text-white m-1"><?php echo ucfirst($item) . " " . TEXT::_('COM_MIGRATETOJOOMLA_WILL_NOT_MIGRATE') ?></li>
