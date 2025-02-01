@@ -883,22 +883,58 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface, Database
                     if ($position !== false) {
                         // Remove the characters before the continuous part
                         $result = substr($url, $position + strlen("uploads"));
-                        $imageurl = JPATH_ROOT . $result;
+                        $imageurl = "images/" . $result;
                     }
                 }
 
                 switch ($imagemigrateway) {
                     case "introonly":
-                        $articleimage = '{"image_intro":' . $imageurl . ',"image_intro_alt":' . $imageinfo['post_title'] . ',"float_intro":"","image_intro_caption":' . $imageinfo['post_excerpt'] . '}';
+                        $articleimage = json_encode([
+                            "image_intro" => (string) $imageurl,
+                            "image_intro_alt" => (string) $imageinfo['post_title'],
+                            "float_intro" => "",
+                            "image_intro_caption" => (string) $imageinfo['post_excerpt']
+                        ]);
                         break;
-
+            
                     case "fullonly":
-                        $articleimage = '{"image_fulltext":' . $imageurl . ',"image_fulltext_alt":' . $imageinfo['post_title'] . ',"float_fulltext":"","image_fulltext_caption":' . $imageinfo['post_content'] . '}';
+                        $articleimage = json_encode([
+                            "image_fulltext" => (string) $imageurl,
+                            "image_fulltext_alt" => (string) $imageinfo['post_title'],
+                            "float_fulltext" => "",
+                            "image_fulltext_caption" => (string) $imageinfo['post_content']
+                        ]);
                         break;
-
+            
                     default:
-                        $articleimage = '{"image_intro":' . $imageurl . ',"image_intro_alt":' . $imageinfo['post_title'] . ',"float_intro":"","image_intro_caption":' . $imageinfo['post_excerpt'] . ',"image_fulltext":' . $imageurl . ',"image_fulltext_alt":' . $imageinfo['post_title'] . ',"float_fulltext":"","image_fulltext_caption":' . $imageinfo['post_content'] . '}';
+                        $articleimage = json_encode([
+                            "image_intro" => "Kaushik",
+                            "image_intro_alt" => (string) $imageinfo['post_title'],
+                            "float_intro" => "",
+                            "image_intro_caption" => (string) $imageinfo['post_excerpt'],
+                            "image_fulltext" => (string) $imageurl,
+                            "image_fulltext_alt" => (string) $imageinfo['post_title'],
+                            "float_fulltext" => "",
+                            "image_fulltext_caption" => (string) $imageinfo['post_content']
+                        ]);
                         break;
+                }
+            }
+            
+            # change links in image tags
+            $pattern = '/<img[^>]+src=["\']([^"\']+)\"[^>]*>/i';
+
+            $html = $row->post_content;
+
+            preg_match_all($pattern, $html, $matches);
+
+            foreach ($matches[1] as $originalSrc) {
+
+                $pos = strpos($originalSrc, 'uploads/');
+                if ($pos !== false) {
+
+                    $newSrc = 'images/' . substr($originalSrc, $pos + strlen('uploads/'));
+                    $html = str_replace($originalSrc, $newSrc, $html);
                 }
             }
 
@@ -931,7 +967,7 @@ final class Wordpress extends CMSPlugin implements SubscriberInterface, Database
             $article->title = $row->post_title;
             $article->alias = $row->post_name;
             $article->introtext = empty($row->post_exerpt) ? '' : $row->post_exerpt;
-            $article->fulltext = $row->post_content;
+            $article->fulltext = $html;
             $article->state = $articlestate;
             $article->catid = $articlecategoryId;
             $article->created = $row->post_date;
